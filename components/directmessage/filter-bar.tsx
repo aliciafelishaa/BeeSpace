@@ -1,3 +1,4 @@
+import { COLORS } from "@/constants/utils/colors";
 import { FilterType } from "@/types/directmessage/dm";
 import React, { useEffect, useRef } from "react";
 import {
@@ -57,16 +58,25 @@ export const FilterModal: React.FC<FilterModalProps> = ({
       animationType="slide"
       onRequestClose={onClose}
     >
-      <View className="flex-1 justify-end bg-black/50">
+      <View
+        className="flex-1 justify-end"
+        style={{ backgroundColor: COLORS.neutral700 + "80" }}
+      >
         <TouchableOpacity
           className="flex-1"
           activeOpacity={1}
           onPress={onClose}
         />
 
-        <View className="bg-white rounded-t-3xl">
+        <View
+          style={{ backgroundColor: COLORS.white }}
+          className="rounded-t-3xl"
+        >
           <View className="px-6 py-5">
-            <Text className="text-xl font-bold text-[#F59E0B]">
+            <Text
+              className="text-xl font-bold"
+              style={{ color: COLORS.primary }}
+            >
               Choose Category
             </Text>
           </View>
@@ -79,17 +89,29 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                   className="flex-row items-center justify-between py-4"
                   activeOpacity={0.7}
                 >
-                  <Text className="text-base text-gray-900">
+                  <Text
+                    className="text-base"
+                    style={{ color: COLORS.neutral900 }}
+                  >
                     {filter.label}
                   </Text>
-                  <View className="w-5 h-5 rounded-full border-2 border-gray-300 justify-center items-center">
+                  <View
+                    className="w-5 h-5 rounded-full justify-center items-center border-2"
+                    style={{ borderColor: COLORS.neutral300 }}
+                  >
                     {selectedFilter === filter.value && (
-                      <View className="w-3 h-3 bg-[#F59E0B] rounded-full" />
+                      <View
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: COLORS.primary }}
+                      />
                     )}
                   </View>
                 </TouchableOpacity>
                 {index < filters.length - 1 && (
-                  <View className="h-px bg-gray-200" />
+                  <View
+                    className="h-px"
+                    style={{ backgroundColor: COLORS.neutral300 }}
+                  />
                 )}
               </View>
             ))}
@@ -98,7 +120,8 @@ export const FilterModal: React.FC<FilterModalProps> = ({
           <View className="px-6 py-5 pb-8">
             <TouchableOpacity
               onPress={onClose}
-              className="bg-[#F59E0B] py-3 rounded-xl active:opacity-80"
+              className="py-3 rounded-xl active:opacity-80"
+              style={{ backgroundColor: COLORS.primary }}
             >
               <Text className="text-white text-center font-semibold text-base">
                 Terapkan

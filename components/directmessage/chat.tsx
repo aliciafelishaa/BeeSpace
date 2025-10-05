@@ -1,3 +1,4 @@
+import { COLORS } from "@/constants/utils/colors";
 import { currentUser, getMockMessages } from "@/dummy/data";
 import { Chat, Message } from "@/types/directmessage/dm";
 import React, { useEffect, useRef, useState } from "react";
@@ -64,15 +65,27 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
 
   if (!chat) {
     return (
-      <View className="flex-1 items-center justify-center bg-[#F6F6F6]">
+      <View
+        className="flex-1 items-center justify-center"
+        style={{ backgroundColor: COLORS.neutral100 }}
+      >
         <View className="items-center p-8">
-          <View className="w-16 h-16 bg-gray-200 rounded-full items-center justify-center mb-4">
+          <View
+            className="w-16 h-16 rounded-full items-center justify-center mb-4"
+            style={{ backgroundColor: COLORS.neutral300 }}
+          >
             <Text className="text-4xl">💬</Text>
           </View>
-          <Text className="text-lg font-medium text-gray-900 mb-2 text-center">
-            Select a chat to start messaging
+          <Text
+            className="text-lg font-medium mb-2 text-center"
+            style={{ color: COLORS.neutral900 }}
+          >
+            Select a chat to start messaging...
           </Text>
-          <Text className="text-gray-500 text-sm text-center">
+          <Text
+            className="text-sm text-center"
+            style={{ color: COLORS.neutral500 }}
+          >
             Choose a conversation from the list
           </Text>
         </View>
@@ -83,9 +96,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 bg-white"
+      style={{ backgroundColor: COLORS.white, flex: 1 }}
     >
-      <View className="px-6 py-4 bg-white flex-row items-center">
+      <View
+        className="px-6 py-4 flex-row items-center"
+        style={{ backgroundColor: COLORS.white }}
+      >
         <TouchableOpacity onPress={onBack} className="mr-8" activeOpacity={0.7}>
           <Image
             source={require("../../assets/directmessage/arrow-down.png")}
@@ -100,33 +116,54 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
             className="w-12 h-12 rounded-full mr-3"
           />
         ) : (
-          <View className="w-12 h-12 bg-gray-300 rounded-full items-center justify-center mr-3">
-            <Text className="text-white font-semibold text-base">
+          <View
+            className="w-12 h-12 rounded-full items-center justify-center mr-3"
+            style={{ backgroundColor: COLORS.neutral300 }}
+          >
+            <Text
+              className="font-semibold text-base"
+              style={{ color: COLORS.white }}
+            >
               {chat.user?.name?.charAt(0).toUpperCase() || "U"}
             </Text>
           </View>
         )}
 
         <View className="flex-1">
-          <Text className="font-bold text-gray-900 text-lg">
+          <Text
+            className="font-bold text-lg"
+            style={{ color: COLORS.neutral900 }}
+          >
             {chat.user?.name}
           </Text>
-          <Text className="text-xs text-green-500 font-medium">Online</Text>
+          <Text
+            className="text-xs font-medium"
+            style={{ color: COLORS.success }}
+          >
+            Online
+          </Text>
         </View>
       </View>
 
       <ScrollView
         ref={scrollViewRef}
-        className="flex-1 bg-[#F6F6F6]"
-        contentContainerStyle={{ paddingVertical: 20, paddingHorizontal: 16 }}
+        style={{
+          backgroundColor: COLORS.neutral100,
+          flex: 1,
+          paddingVertical: 20,
+          paddingHorizontal: 16,
+        }}
       >
-
         <View className="items-center mb-6">
-          <View className="bg-[#EBEBEB] px-5 py-2 rounded-full">
-            <Text className="text-xs text-gray-600">Today</Text>
+          <View
+            className="px-5 py-2 rounded-full"
+            style={{ backgroundColor: COLORS.neutral300 }}
+          >
+            <Text className="text-xs" style={{ color: COLORS.neutral700 }}>
+              Today
+            </Text>
           </View>
         </View>
-
 
         <View>
           {messages.map((message) => {
@@ -140,19 +177,29 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
                 <View
                   className={`max-w-[80%] px-4 py-3 ${
                     isOwnMessage
-                      ? "bg-white rounded-3xl rounded-br-sm"
-                      : "bg-white rounded-3xl rounded-bl-sm"
+                      ? "rounded-3xl rounded-br-sm"
+                      : "rounded-3xl rounded-bl-sm"
                   }`}
+                  style={{ backgroundColor: COLORS.white }}
                 >
-                  <Text className="text-sm text-black leading-5 mb-1">
+                  <Text
+                    className="text-sm leading-5 mb-1"
+                    style={{ color: COLORS.neutral900 }}
+                  >
                     {message.text}
                   </Text>
                   <View className="flex-row items-center justify-end gap-1">
-                    <Text className="text-[10px] text-gray-400">
+                    <Text
+                      className="text-[10px]"
+                      style={{ color: COLORS.neutral500 }}
+                    >
                       {formatMessageTime(message.timestamp)}
                     </Text>
                     {isOwnMessage && message.status === "read" && (
-                      <Text className="text-[10px] text-[#F59E0B] ml-1">
+                      <Text
+                        className="text-[10px] ml-1"
+                        style={{ color: COLORS.primary }}
+                      >
                         ✓✓ Read
                       </Text>
                     )}
@@ -164,8 +211,17 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
         </View>
       </ScrollView>
 
-      <View className="px-4 py-3 bg-white border-t border-gray-100">
-        <View className="flex-row items-center bg-[#F6F6F6] rounded-full px-3 py-2">
+      <View
+        className="px-4 py-3 border-t"
+        style={{
+          backgroundColor: COLORS.white,
+          borderTopColor: COLORS.neutral100,
+        }}
+      >
+        <View
+          className="flex-row items-center rounded-full px-3 py-2"
+          style={{ backgroundColor: COLORS.neutral100 }}
+        >
           <TouchableOpacity className="mr-2" activeOpacity={0.7}>
             <Image
               source={require("../../assets/directmessage/LogoImg.png")}
@@ -177,8 +233,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
             value={newMessage}
             onChangeText={setNewMessage}
             placeholder="Write a chat..."
-            placeholderTextColor="#9CA3AF"
-            className="flex-1 text-black text-sm py-1"
+            className="flex-1 text-sm py-1"
+            style={{ color: COLORS.neutral900 }}
+            placeholderTextColor={COLORS.neutral500}
             multiline={false}
           />
 

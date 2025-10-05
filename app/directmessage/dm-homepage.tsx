@@ -15,11 +15,9 @@ export default function DirectMessage() {
   });
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
-  // Filter and search chats
   const filteredChats = useMemo(() => {
     let result = [...mockChats];
 
-    // Apply search
     if (filters.query) {
       const query = filters.query.toLowerCase();
       result = result.filter(
@@ -29,7 +27,6 @@ export default function DirectMessage() {
       );
     }
 
-    // Apply category filters
     switch (filters.category) {
       case "not-read":
         result = result.filter((chat) => chat.unreadCount > 0);
@@ -49,7 +46,6 @@ export default function DirectMessage() {
         );
         break;
       default:
-        // Default: newest first (sesuai screenshot)
         result = result.sort(
           (a, b) =>
             new Date(b.lastMessage.timestamp).getTime() -
@@ -74,47 +70,19 @@ export default function DirectMessage() {
 
   return (
     <div className="flex h-screen bg-white">
-      {/* Sidebar - Left Panel */}
       <div
         className={`${selectedChat ? "hidden md:flex" : "flex"} w-full md:w-80 lg:w-96 flex-col bg-white border-r border-gray-200`}
       >
-        {/* Header - Direct Message */}
+
         <div className="px-4 py-3 border-b border-gray-200">
           <div className="flex justify-between items-center">
             <h1 className="text-lg font-semibold text-gray-900">
               Direct Message
             </h1>
-            <div className="flex items-center space-x-2">
-              {/* Search Icon */}
-              <button className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </button>
-
-              {/* Filter Button */}
-              <button
-                onClick={() => setIsFilterModalOpen(true)}
-                className="px-3 py-1 border border-blue-500 text-blue-500 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors"
-              >
-                Filter
-              </button>
-            </div>
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="border-b border-gray-200">
+        <div>
           <SearchBar
             value={searchValue}
             onChange={setSearchValue}
@@ -123,7 +91,6 @@ export default function DirectMessage() {
           />
         </div>
 
-        {/* Chat List */}
         <ChatList
           chats={filteredChats}
           selectedChat={selectedChat}
@@ -131,22 +98,16 @@ export default function DirectMessage() {
         />
       </div>
 
-      {/* Chat Window - Right Panel */}
       <div className={`${selectedChat ? "flex" : "hidden md:flex"} flex-1`}>
-        <ChatWindow
-          chat={selectedChat}
-          onBack={() => setSelectedChat(null)} // ← TAMBAH INI
-        />
+        <ChatWindow chat={selectedChat} onBack={() => setSelectedChat(null)} />
       </div>
-      {/* Filter Modal */}
+
       <FilterModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
         selectedFilter={filters.category}
         onFilterChange={handleFilterChange}
       />
-
-      
     </div>
   );
 }
