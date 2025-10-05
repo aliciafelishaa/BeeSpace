@@ -1,6 +1,7 @@
 import { COLORS } from "@/constants/utils/colors";
 import { currentUser, getMockMessages } from "@/dummy/data";
 import { Chat, Message } from "@/types/directmessage/dm";
+import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Image,
@@ -188,6 +189,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
                   >
                     {message.text}
                   </Text>
+
                   <View className="flex-row items-center justify-end gap-1">
                     <Text
                       className="text-[10px]"
@@ -195,13 +197,52 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
                     >
                       {formatMessageTime(message.timestamp)}
                     </Text>
-                    {isOwnMessage && message.status === "read" && (
-                      <Text
-                        className="text-[10px] ml-1"
-                        style={{ color: COLORS.primary }}
-                      >
-                        ✓✓ Read
-                      </Text>
+                    {isOwnMessage && (
+                      <View className="ml-1 flex-row items-center">
+                        {message.status === "read" && (
+                          <>
+                            <Ionicons
+                              name="checkmark"
+                              size={12}
+                              color="#DC9010"
+                            />
+                            <Ionicons
+                              name="checkmark"
+                              size={12}
+                              color="#DC9010"
+                              style={{ marginLeft: -6 }}
+                            />
+                            <Text
+                              className="text-[10px] ml-1"
+                              style={{ color: "#DC9010" }}
+                            >
+                              Read
+                            </Text>
+                          </>
+                        )}
+                        {message.status === "delivered" && (
+                          <>
+                            <Ionicons
+                              name="checkmark"
+                              size={12}
+                              color={COLORS.black}
+                            />
+                            <Ionicons
+                              name="checkmark"
+                              size={12}
+                              color={COLORS.black}
+                              style={{ marginLeft: -6 }}
+                            />
+                          </>
+                        )}
+                        {message.status === "sent" && (
+                          <Ionicons
+                            name="checkmark"
+                            size={12}
+                            color={COLORS.black}
+                          />
+                        )}
+                      </View>
                     )}
                   </View>
                 </View>

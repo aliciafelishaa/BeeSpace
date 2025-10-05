@@ -2,6 +2,7 @@ import { ChatWindow } from "@/components/directmessage/chat";
 import { ChatList } from "@/components/directmessage/chat-list";
 import { FilterModal } from "@/components/directmessage/filter-bar";
 import { SearchBar } from "@/components/directmessage/search-bar";
+import { COLORS } from "@/constants/utils/colors";
 import { mockChats } from "@/dummy/data";
 import { Chat, FilterType, SearchFilters } from "@/types/directmessage/dm";
 import React, { useMemo, useState } from "react";
@@ -69,15 +70,27 @@ export default function DirectMessage() {
   };
 
   return (
-    <div className="flex h-screen bg-white">
+    <div className="flex h-screen" style={{ backgroundColor: COLORS.white }}>
       <div
-        className={`${selectedChat ? "hidden md:flex" : "flex"} w-full md:w-80 lg:w-96 flex-col bg-white border-r border-gray-200`}
+        className={`${selectedChat ? "hidden md:flex" : "flex"} w-full md:w-80 lg:w-96 flex-col border-r`}
+        style={{
+          backgroundColor: COLORS.white,
+          borderColor: COLORS.neutral300,
+        }}
       >
-
-        <div className="px-4 py-3 border-b border-gray-200">
+        <div
+          className="px-4 py-3 border-b"
+          style={{
+            backgroundColor: COLORS.white,
+            borderColor: COLORS.neutral300,
+          }}
+        >
           <div className="flex justify-between items-center">
-            <h1 className="text-lg font-semibold text-gray-900">
-              Direct Messageddd
+            <h1
+              className="text-lg font-semibold"
+              style={{ color: COLORS.neutral900 }}
+            >
+              Direct Message
             </h1>
           </div>
         </div>
