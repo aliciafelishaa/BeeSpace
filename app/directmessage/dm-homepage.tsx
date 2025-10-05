@@ -77,7 +77,7 @@ export default function DirectMessage() {
         <div className="px-4 py-3 border-b border-gray-200">
           <div className="flex justify-between items-center">
             <h1 className="text-lg font-semibold text-gray-900">
-              Direct Message
+              Direct Messageddd
             </h1>
           </div>
         </div>
