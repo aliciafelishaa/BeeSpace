@@ -72,27 +72,19 @@ export default function DirectMessage() {
   return (
     <div className="flex h-screen" style={{ backgroundColor: COLORS.white }}>
       <div
-        className={`${selectedChat ? "hidden md:flex" : "flex"} w-full md:w-80 lg:w-96 flex-col border-r`}
+        className={`${selectedChat ? "hidden md:flex" : "flex"} w-full md:w-80 lg:w-96 flex-col border-r relative`}
         style={{
           backgroundColor: COLORS.white,
           borderColor: COLORS.neutral300,
         }}
       >
-        <div
-          className="px-4 py-3 border-b"
-          style={{
-            backgroundColor: COLORS.white,
-            borderColor: COLORS.neutral300,
-          }}
-        >
-          <div className="flex justify-between items-center">
-            <h1
-              className="text-lg font-semibold"
-              style={{ color: COLORS.neutral900 }}
-            >
-              Direct Message
-            </h1>
-          </div>
+        <div className="flex justify-between items-center mt-8">
+          <h1
+            className="text-lg font-semibold px-4 py-3"
+            style={{ color: COLORS.neutral900 }}
+          >
+            Direct Message
+          </h1>
         </div>
 
         <div>
