@@ -53,7 +53,7 @@ export default function Register() {
     }
 
     return (
-        <ScrollView className="flex-1 justify-center bg-[#FAFAFA] px-12">
+        <View className="flex-1 justify-center bg-[#FAFAFA] px-12">
             <View className="w-full flex justify-center items-center mb-6">
                 <Text className="text-3xl font-bold text-center my-4">Create Account</Text>
                 <Text className="text-[#737373] font-semibold mb-4">
@@ -125,6 +125,6 @@ export default function Register() {
                     <Text className="text-[#DC9010] font-semibold">Sign in</Text>
                 </TouchableOpacity>
             </View>
-        </ScrollView>
+        </View>
     )
 }

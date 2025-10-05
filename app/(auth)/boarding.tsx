@@ -19,7 +19,7 @@ interface StudentProfile {
     studentCard: string | null;
 }
 
-export default function StudentBoarding(): JSX.Element {
+export default function StudentBoarding(): React.ReactNode {
     const [step, setStep] = useState<number>(1);
     const [profile, setProfile] = useState<StudentProfile>({
         fullName: "",
@@ -32,7 +32,7 @@ export default function StudentBoarding(): JSX.Element {
         studentCard: null,
     });
 
-    const universities: string[] = ["Harvard", "Stanford", "MIT", "UC Berkeley"];
+    const universities: string[] = ["Universitas Bina Nusantara", "Universitas Indonesia", "Intitut Teknologi Bandung", "Universitas Gajah Mada"];
     const majors: string[] = ["Computer Science", "Business", "Biology", "Engineering"];
     const years: string[] = ["2018", "2019", "2020", "2021", "2022", "2023"];
 
@@ -49,7 +49,7 @@ export default function StudentBoarding(): JSX.Element {
     const nextStep = (): void => setStep((prev) => Math.min(prev + 1, 3));
     const prevStep = (): void => setStep((prev) => Math.max(prev - 1, 1));
 
-    const renderProgress = (): JSX.Element => (
+    const renderProgress = (): React.ReactNode => (
         <View className="flex-row justify-center mb-4">
             {[1, 2, 3].map((i) => (
                 <View
