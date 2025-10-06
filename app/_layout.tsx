@@ -1,0 +1,74 @@
+import BottomNavbar from "@/components/utils/BottomNavbar";
+import { Fonts } from "@/constants/utils/fonts";
+import { NAV_ITEMS } from "@/constants/utils/navbarItems";
+import { AuthContext } from "@/context/AuthContext";
+import { FamilyViewProvider } from "@/context/FamilyViewContext";
+import { useAuthState } from "@/hooks/useAuthState";
+import { useFonts } from "expo-font";
+import { Slot, SplashScreen, usePathname, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+
+SplashScreen.preventAutoHideAsync();
+
+function shouldShowBottomNav(user: any, pathname: string): boolean {
+  // if (!user) return false;
+
+  const hiddenPatterns = [/^\/auth/, /^\/myroom\/detailroom/];
+
+  return !hiddenPatterns.some((regex) => regex.test(pathname));
+}
+
+function RootContent() {
+  const { user, initializing } = useAuthState();
+  const router = useRouter();
+  const pathname = usePathname();
+  const [activeTab, setActiveTab] = useState("home");
+  const [fontsLoaded] = useFonts({ ...Fonts });
+
+  useEffect(() => {
+    if (fontsLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  useEffect(() => {
+    const current = NAV_ITEMS.find((item) => item.route === pathname);
+    if (current) setActiveTab(current.id);
+  }, [pathname]);
+
+  const handleSelect = (id: string, route: string) => {
+    setActiveTab(id);
+    router.push(route as any);
+  };
+
+  if (initializing || !fontsLoaded) {
+    return <View style={{ flex: 1, backgroundColor: "white" }} />;
+  }
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Slot />
+      {shouldShowBottomNav(user, pathname) && (
+        <BottomNavbar
+          items={NAV_ITEMS}
+          activeId={activeTab}
+          onSelect={handleSelect}
+        />
+      )}
+    </View>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AuthContext>
+        <FamilyViewProvider>
+          <RootContent />
+        </FamilyViewProvider>
+      </AuthContext>
+    </GestureHandlerRootView>
+  );
+}
