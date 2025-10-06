@@ -10,7 +10,7 @@ export default function BottomNavbar({
 }: BottomNavProps) {
   return (
     <View
-      className="absolute left-0 right-0 bottom-0 w-full flex-row justify-around items-center border-t border-gray-200 bg-white z-10 rounded-t-3xl px-5 py-6"
+      className="absolute left-0 right-0 bottom-0 w-full flex-row justify-around items-center border-t border-gray-200 bg-white z-10 rounded-t-3xl px-5 pt-4"
       style={{ height: 110, backgroundColor: COLORS.white }}
     >
       {items.map((item) => (
