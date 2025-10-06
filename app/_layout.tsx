@@ -8,6 +8,7 @@ import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import React from "react";
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -19,10 +20,15 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack>
-        {/* Halaman utama dengan tab */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
-        {/* Halaman modal opsional */}
+        <Stack.Screen 
+          name="directmessage" 
+          options={{ 
+            headerShown: false  
+          }} 
+        />
+
         <Stack.Screen
           name="modal"
           options={{
@@ -32,7 +38,6 @@ export default function RootLayout() {
         />
       </Stack>
 
-      {/* Status bar mengikuti tema */}
       <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
     </ThemeProvider>
   );
