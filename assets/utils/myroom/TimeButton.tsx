@@ -10,7 +10,7 @@ export default function TimeButton({
   return (
     <TouchableOpacity
       onPress={onPress}
-      className={` h-8 rounded-[8px] border border-neutral-300 flex items-center justify-center gap-1 p-2
+      className={` h-[40px] w-[100px] rounded-[8px] border border-neutral-300 flex items-center justify-center gap-1 p-2
         ${active ? "bg-primary border-primary" : "bg-neutral-100 border-neutral-300"}`}
       style={{
         backgroundColor: active ? COLORS.primary4th : COLORS.white,

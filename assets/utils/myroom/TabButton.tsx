@@ -12,7 +12,7 @@ export default function TabButton({
   return (
     <TouchableOpacity
       onPress={onPress}
-      className={`w-[80px] h-8 rounded-[8px] border border-neutral-300 flex items-center justify-center gap-1  p-2
+      className={`w-[72px] h-[64px] rounded-[8px] border border-neutral-300 flex items-center justify-center gap-1  p-2
       ${active ? "bg-primary border-primary" : "bg-neutral-100 border-neutral-300"}`}
       style={{
         backgroundColor: active ? COLORS.primary4th : COLORS.white,
@@ -26,7 +26,7 @@ export default function TabButton({
         style={{ tintColor: active ? COLORS.primary : COLORS.neutral500 }}
       />
       <Text
-        className="text-[12px] font-medium"
+        className="text-[12px] font-medium font-inter"
         style={{ color: active ? COLORS.primary : COLORS.neutral500 }}
       >
         {title}
