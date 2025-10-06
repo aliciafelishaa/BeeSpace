@@ -6,6 +6,7 @@ import { COLORS } from "@/constants/utils/colors";
 import { mockChats } from "@/dummy/data";
 import { Chat, FilterType, SearchFilters } from "@/types/directmessage/dm";
 import React, { useMemo, useState } from "react";
+import { Text, View } from "react-native";
 
 export default function DirectMessage() {
   const [searchValue, setSearchValue] = useState("");
@@ -55,7 +56,7 @@ export default function DirectMessage() {
     }
 
     return result;
-  }, [mockChats, filters]);
+  }, [filters]);
 
   const handleSelectChat = (chat: Chat) => {
     setSelectedChat(chat);
@@ -70,42 +71,40 @@ export default function DirectMessage() {
   };
 
   return (
-    <div className="flex h-screen" style={{ backgroundColor: COLORS.white }}>
-      <div
-        className={`${selectedChat ? "hidden md:flex" : "flex"} w-full md:w-80 lg:w-96 flex-col border-r relative`}
-        style={{
-          backgroundColor: COLORS.white,
-          borderColor: COLORS.neutral300,
-        }}
+    <View className="flex-1 bg-white flex-row">
+      <View
+        className={`
+          ${selectedChat ? "hidden md:flex" : "flex"} 
+          w-full md:w-80 lg:w-96 
+          flex-col border-r border-neutral-300
+        `}
+        style={{ backgroundColor: COLORS.white }}
       >
-        <div className="flex justify-between items-center mt-8">
-          <h1
-            className="text-lg font-semibold px-4 py-3"
-            style={{ color: COLORS.neutral900 }}
-          >
+        <View className="justify-between items-start mt-8 px-4">
+          <Text className="text-lg font-semibold py-3 text-neutral-900">
             Direct Message
-          </h1>
-        </div>
+          </Text>
+        </View>
 
-        <div>
+        <View>
           <SearchBar
             value={searchValue}
-            onChange={setSearchValue}
+            onChange={handleSearchChange}
             onFilterPress={() => setIsFilterModalOpen(true)}
             selectedFilter={filters.category}
           />
-        </div>
+        </View>
 
         <ChatList
           chats={filteredChats}
           selectedChat={selectedChat}
           onSelectChat={handleSelectChat}
         />
-      </div>
+      </View>
 
-      <div className={`${selectedChat ? "flex" : "hidden md:flex"} flex-1`}>
+      <View className={`${selectedChat ? "flex" : "hidden md:flex"} flex-1`}>
         <ChatWindow chat={selectedChat} onBack={() => setSelectedChat(null)} />
-      </div>
+      </View>
 
       <FilterModal
         isOpen={isFilterModalOpen}
@@ -113,6 +112,6 @@ export default function DirectMessage() {
         selectedFilter={filters.category}
         onFilterChange={handleFilterChange}
       />
-    </div>
+    </View>
   );
 }
