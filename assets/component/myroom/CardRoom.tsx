@@ -1,6 +1,7 @@
 import { CardRoomProps } from "@/types/myroom/cardroom";
+import { router } from "expo-router";
 import React from "react";
-import { Image, Text, View } from "react-native";
+import { Image, Text, TouchableOpacity, View } from "react-native";
 
 export default function CardRoom({
   title,
@@ -13,7 +14,10 @@ export default function CardRoom({
   imageSource,
 }: CardRoomProps) {
   return (
-    <View className="bg-white rounded-[8px]  py-5 px-4">
+    <TouchableOpacity
+      className="bg-white rounded-[8px]  py-5 px-4"
+      onPress={() => router.push("/myroom/detailroom/detailRoom")}
+    >
       <View className="flex-row gap-4">
         {/* Gambar */}
         {imageSource ? (
@@ -68,6 +72,6 @@ export default function CardRoom({
           </View>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }

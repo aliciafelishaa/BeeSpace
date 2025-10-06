@@ -15,7 +15,7 @@ SplashScreen.preventAutoHideAsync();
 function shouldShowBottomNav(user: any, pathname: string): boolean {
   // if (!user) return false;
 
-  const hiddenPatterns = [/^\/auth/];
+  const hiddenPatterns = [/^\/auth/, /^\/myroom\/detailroom/];
 
   return !hiddenPatterns.some((regex) => regex.test(pathname));
 }

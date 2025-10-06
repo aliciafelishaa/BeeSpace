@@ -1,9 +1,11 @@
 import CardRoom from "@/assets/component/myroom/CardRoom";
-import ModalFiltering from "@/assets/component/myroom/ModalFiltering";
+import ModalFilteringDynamic from "@/assets/component/myroom/ModalFiltering";
 import TabButton from "@/assets/utils/myroom/TabButton";
 import TimeButton from "@/assets/utils/myroom/TimeButton";
+import SearchBar from "@/components/utils/SearchBar";
 import { COLORS } from "@/constants/utils/colors";
 import { RoomCategory, TimeCategory } from "@/types/myroom/myroom";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
@@ -145,8 +147,8 @@ export default function MyRoomDash() {
           <View className="bg-white">
             {/* Header */}
             <View className="flex-row items-center justify-between">
-              <View className="gap-[8px]">
-                <Text className="text-neutral-500 text-[10px] font-inter">
+              <View className="gap-[10px]">
+                <Text className="text-neutral-500 text-[12px] font-inter">
                   Activities Near
                 </Text>
                 <View className="flex-row gap-2 items-center">
@@ -154,7 +156,7 @@ export default function MyRoomDash() {
                     source={require("@/assets/utils/map.png")}
                     className="w-16 h-16"
                   ></Image>
-                  <Text className="text-neutral-700 font-semibold  text-[12px] font-inter">
+                  <Text className="text-neutral-700 font-semibold  text-[14px] font-inter">
                     Binus Kemanggisan{" "}
                   </Text>
                   <Image
@@ -171,20 +173,23 @@ export default function MyRoomDash() {
               </View>
             </View>
 
-            {/* Search */}
+            {/* Search and Filter*/}
             <View className="flex-row items-center mt-4 gap-2 justify-between">
-              <View className="border border-neutral-300 p-3 flex-1 h-[40px] justify-between flex-row items-center rounded-[8px]">
-                <Text className="text-[12px] text-neutral-500 font-inter">
-                  Search Activity
-                </Text>
-                <Image
-                  source={require("@/assets/utils/search-icon.png")}
-                  className="w-16 h-16"
-                ></Image>
+              {/* SearchBar */}
+              <View className="flex-1">
+                <TouchableOpacity
+                  onPress={() => router.push("/myroom/detailroom/searchRoom")}
+                >
+                  <SearchBar
+                    placeholder="Search Activity"
+                    onChangeText={(text) => console.log(text)}
+                  />
+                </TouchableOpacity>
               </View>
+              {/* Filtering */}
               <TouchableOpacity
                 onPress={() => setModalVisible(true)}
-                className="border border-neutral-300 p-2 w-[80px] h-[40px] items-center justify-center rounded-[8px]"
+                className="border border-neutral-300 p-2 w-[80px] h-[44px] items-center justify-center rounded-[8px]"
               >
                 <Image
                   source={require("@/assets/utils/setting-icon.png")}
@@ -290,9 +295,22 @@ export default function MyRoomDash() {
           </View>
         </View>
       </ScrollView>
-      <ModalFiltering
+      <ModalFilteringDynamic
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
+        filters={[
+          {
+            title: "Sort By",
+            options: [
+              "Earliest Time",
+              "Nearest Location",
+              "Most Popular",
+              "Recently Added",
+            ],
+          },
+          { title: "Price", options: ["Free", "Paid"] },
+          { title: "Event Type", options: ["Online", "Onsite"] },
+        ]}
       />
     </SafeAreaView>
   );
