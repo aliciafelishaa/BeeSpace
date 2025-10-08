@@ -71,7 +71,7 @@ export default function DirectMessage() {
   };
 
   return (
-    <View className="flex-1 bg-white flex-row">
+    <View className="flex-1 bg-white flex-row rounded-2xl overflow-hidden">
       <View
         className={`
           ${selectedChat ? "hidden md:flex" : "flex"} 
