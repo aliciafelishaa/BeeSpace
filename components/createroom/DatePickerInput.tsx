@@ -31,8 +31,9 @@ export default function DatePickerInput({
     }, [error])
 
     const today = new Date()
-    const startOfYear = new Date(today.getFullYear(), 0, 1)
-    const endOfNextYear = new Date(today.getFullYear() + 1, 11, 31)
+    const minimumDate = new Date()
+    const maximumDate = new Date()
+    maximumDate.setDate(maximumDate.getDate() + 365)
 
     const handleChangePicker = (event: any, date?: Date) => {
         if (event.type === "dismissed") return setShow(false)
@@ -44,7 +45,7 @@ export default function DatePickerInput({
             setInternalError("Please select a date")
             return
         }
-        setInternalError("")
+
         const formatted = selectedDate.toISOString().split("T")[0]
         onChange(formatted)
         setShow(false)
@@ -79,9 +80,7 @@ export default function DatePickerInput({
                 <Calendar size={20} />
             </TouchableOpacity>
 
-            {internalError !== "" && (
-                <Text className="text-[#EF4444] text-sm mt-1">{internalError}</Text>
-            )}
+            {internalError !== "" && (<Text className="text-[#EF4444] text-sm mt-1">{internalError}</Text>)}
 
             {show && (
                 <Modal transparent animationType="fade">
@@ -92,17 +91,15 @@ export default function DatePickerInput({
                     >
                         <View className="bg-white rounded-2xl p-4 w-[90%]">
                             <DateTimePicker
-                                value={selectedDate || new Date()}
+                                value={selectedDate || today}
                                 mode="date"
                                 display={Platform.OS === "ios" ? "spinner" : "default"}
                                 onChange={handleChangePicker}
-                                minimumDate={startOfYear}
-                                maximumDate={endOfNextYear}
+                                minimumDate={minimumDate}
+                                maximumDate={maximumDate}
                             />
 
-                            {internalError !== "" && (
-                                <Text className="text-[#EF4444] text-md mt-2 text-center">{internalError}</Text>
-                            )}
+                            {internalError !== "" && (<Text className="text-[#EF4444] text-md mt-2 text-center">{internalError}</Text>)}
 
                             <View className="flex-row justify-between mt-4">
                                 <TouchableOpacity

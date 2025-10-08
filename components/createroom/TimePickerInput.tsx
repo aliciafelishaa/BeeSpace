@@ -183,7 +183,6 @@ export default function TimeRangePickerInput({
                                 }
                             />
 
-
                             {tempError !== "" && (
                                 <Text className="text-[#EF4444] text-md mt-2 text-center">
                                     {tempError}
