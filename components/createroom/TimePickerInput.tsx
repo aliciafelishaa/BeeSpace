@@ -47,13 +47,11 @@ export default function TimeRangePickerInput({
         setTempError("")
 
         if (showPicker === "start") {
-            // validasi start tidak lebih dari end
             if (endValue && parseTime(endValue).getTime() - time.getTime() < 5 * 60 * 1000) {
                 setTempError("Start time must be at least 5 minutes before end time")
                 return
             }
             onChangeStart(formatted)
-            // otomatis reset end jika end kurang dari 5 menit
             if (endValue && parseTime(endValue).getTime() - time.getTime() < 5 * 60 * 1000) {
                 onChangeEnd("")
             }
@@ -141,7 +139,7 @@ export default function TimeRangePickerInput({
 
                 <TouchableOpacity
                     onPress={() => openPicker("end")}
-                    disabled={!startValue} // disable kalau start belum dipilih
+                    disabled={!startValue}
                     className={`flex-1 flex-row justify-between items-center border rounded-xl px-4 py-3 bg-white ${!startValue
                         ? "bg-gray-100 border-gray-300"
                         : error
@@ -180,7 +178,7 @@ export default function TimeRangePickerInput({
                                 onChange={handleChange}
                                 minimumDate={
                                     showPicker === "end" && startValue
-                                        ? new Date(parseTime(startValue).getTime() + 5 * 60 * 1000) // start + 5 menit
+                                        ? new Date(parseTime(startValue).getTime() + 5 * 60 * 1000)
                                         : undefined
                                 }
                             />
