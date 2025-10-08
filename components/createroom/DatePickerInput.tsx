@@ -27,7 +27,6 @@ export default function DatePickerInput({
     const [internalError, setInternalError] = useState("")
 
     useEffect(() => {
-        // Sinkronisasi parent error ke internal state
         setInternalError(error || "")
     }, [error])
 
@@ -60,7 +59,7 @@ export default function DatePickerInput({
 
     const handleOpen = () => {
         setShow(true)
-        setInternalError("") // hapus error saat buka picker
+        setInternalError("")
         if (onOpen) onOpen()
     }
 
@@ -102,9 +101,7 @@ export default function DatePickerInput({
                             />
 
                             {internalError !== "" && (
-                                <Text className="text-[#EF4444] text-md mt-2 text-center">
-                                    {internalError}
-                                </Text>
+                                <Text className="text-[#EF4444] text-md mt-2 text-center">{internalError}</Text>
                             )}
 
                             <View className="flex-row justify-between mt-4">
@@ -113,18 +110,14 @@ export default function DatePickerInput({
                                     className="flex-1 flex-row justify-center items-center border border-[#FCBC03] py-3 rounded-xl mr-2"
                                 >
                                     <Trash2 size={18} color="#FCBC03" />
-                                    <Text className="text-[#FCBC03] text-base font-semibold ml-2">
-                                        Delete
-                                    </Text>
+                                    <Text className="text-[#FCBC03] text-base font-semibold ml-2">Delete</Text>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
                                     onPress={handleConfirm}
                                     className="flex-1 bg-[#FCBC03] py-3 rounded-xl ml-2"
                                 >
-                                    <Text className="text-center text-white text-lg font-semibold">
-                                        Done
-                                    </Text>
+                                    <Text className="text-center text-white text-lg font-semibold">Done</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
