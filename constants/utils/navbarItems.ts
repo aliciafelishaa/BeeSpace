@@ -17,7 +17,7 @@ export const NAV_ITEMS: NavItem[] = [
     id: "createroom",
     icon: require("@/assets/utils/passive-icon/create.png"),
     activeIcon: require("@/assets/utils/active-icon/create.png"),
-    route: "/createroom",
+    route: "/createroom/page",
   },
   {
     id: "directmessage",
@@ -29,6 +29,6 @@ export const NAV_ITEMS: NavItem[] = [
     id: "profile",
     icon: require("@/assets/utils/passive-icon/profile.png"),
     activeIcon: require("@/assets/utils/active-icon/profile.png"),
-    route: "/profile",
+    route: "/auth/login",
   },
 ] as const;

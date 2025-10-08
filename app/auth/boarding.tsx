@@ -159,7 +159,7 @@ export default function StudentBoarding(): React.ReactElement {
                             onPress={pickImage}
                             className="border-2 border-dashed border-gray-400 py-8 rounded-lg justify-center items-center mt-3"
                         >
-                            <Image source={require("@/assets/images/icon-boarding-step3.svg")} className="mb-4" />
+                            <Image source={require("@/assets/images/icon-boarding-step3.png")} className="mb-4" />
                             <Text className="text-center font-medium">
                                 {profile.studentCard
                                     ? "Change Student ID Card"
