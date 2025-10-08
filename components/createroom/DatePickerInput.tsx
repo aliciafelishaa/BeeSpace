@@ -41,12 +41,15 @@ export default function DatePickerInput({
     }
 
     const handleConfirm = () => {
-        if (!selectedDate) {
-            setInternalError("Please select a date")
-            return
-        }
+        if (!selectedDate) return
 
-        const formatted = selectedDate.toISOString().split("T")[0]
+        const formatted = selectedDate.toLocaleDateString("en-US", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+        })
+
         onChange(formatted)
         setShow(false)
     }
@@ -61,6 +64,11 @@ export default function DatePickerInput({
     const handleOpen = () => {
         setShow(true)
         setInternalError("")
+
+        if (!selectedDate) {
+            setSelectedDate(today)
+        }
+
         if (onOpen) onOpen()
     }
 
