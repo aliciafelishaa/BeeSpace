@@ -35,33 +35,23 @@ export default function RadioGroup({
                     return (
                         <TouchableOpacity
                             key={option.value}
-                            className={`flex-row items-center px-4 py-2 border rounded-xl ${error
-                                    ? "border-[#EF4444] bg-white"
-                                    : isSelected
-                                        ? "border-[#FFD661] bg-[#FDF9EB]"
-                                        : "border-gray-300 bg-white"
-                                }`}
+                            className={`flex-row items-center px-4 py-2 border rounded-xl
+                                ${error ? "border-[#EF4444] bg-white" : isSelected ? "border-[#FFD661] bg-[#FDF9EB]" : "border-gray-300 bg-white"}`}
                             onPress={() => onValueChange(option.value)}
                         >
-                            <View
-                                className={`w-6 h-6 rounded-full border flex items-center justify-center ${error
-                                        ? "border-[#EF4444]"
-                                        : isSelected
-                                            ? "border-[#FFD661]"
-                                            : "border-gray-400"
-                                    }`}
-                            >
+                            <View className={`w-6 h-6 rounded-full border flex items-center justify-center ${error
+                                ? "border-[#EF4444]"
+                                : isSelected
+                                    ? "border-[#FFD661]"
+                                    : "border-gray-400"
+                                }`}>
                                 {isSelected && !error && <View className="w-4 h-4 bg-[#FFD661] rounded-full" />}
                             </View>
 
-                            <Text
-                                className={`ml-2 text-base ${error ? "text-[#EF4444] font-semibold" : isSelected ? "text-[#FFD661] font-semibold" : "text-gray-700"
-                                    }`}
-                            >
+                            <Text className={`ml-2 text-base ${error ? "text-[#EF4444] font-semibold" : isSelected ? "text-[#FFD661] font-semibold" : "text-gray-700"}`}>
                                 {option.label}
                             </Text>
                         </TouchableOpacity>
-
                     )
                 })}
             </View>
