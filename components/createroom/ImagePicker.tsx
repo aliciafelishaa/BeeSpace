@@ -21,7 +21,6 @@ export default function ImagePicker({ label, value, onChange, required = false }
                 return
             }
 
-
             const result = await ExpoImagePicker.launchImageLibraryAsync({
                 mediaTypes: ExpoImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
@@ -54,18 +53,12 @@ export default function ImagePicker({ label, value, onChange, required = false }
                         className="w-full h-48 rounded-lg mb-2"
                         resizeMode="cover"
                     />
-                    <TouchableOpacity
-                        onPress={removeImage}
-                        className="absolute top-2 right-2 bg-black/50 px-2 py-1 rounded-md"
-                    >
+                    <TouchableOpacity onPress={removeImage} className="absolute top-2 right-2 bg-black/50 px-2 py-1 rounded-md">
                         <Text className="text-white text-sm">Remove</Text>
                     </TouchableOpacity>
                 </View>
             ) : (
-                <TouchableOpacity
-                    onPress={pickImage}
-                    className="border border-gray-300 rounded-lg py-6 flex items-center justify-center"
-                >
+                <TouchableOpacity onPress={pickImage} className="border border-gray-300 rounded-lg py-6 flex items-center justify-center">
                     <IconUpload/>
                     <Text className="text-[#737373] mt-3">Add photo of your plan</Text>
                 </TouchableOpacity>
