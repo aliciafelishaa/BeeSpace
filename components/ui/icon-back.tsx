@@ -1,0 +1,10 @@
+import React from 'react'
+import Svg, { Path } from 'react-native-svg'
+
+export default function IconBack() {
+    return (
+        <Svg width={9} height={17} viewBox="0 0 9 17" fill="none">
+            <Path fill-rule="evenodd" clip-rule="evenodd" d="M9.00014 15.938L7.95514 17L0.28914 9.21C0.104641 9.0197 0.00146484 8.76505 0.00146484 8.5C0.00146484 8.23495 0.104641 7.9803 0.28914 7.79L7.95514 0L9.00014 1.063L1.68214 8.5L9.00014 15.938Z" fill="black" />
+        </Svg>
+    )
+}
