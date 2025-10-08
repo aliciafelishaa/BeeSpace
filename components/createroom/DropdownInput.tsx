@@ -41,9 +41,7 @@ export default function DropdownInput({
                 className={`flex-row justify-between items-center border rounded-xl px-4 py-3 bg-white ${error ? "border-[#EF4444]" : "border-gray-300"}`}
                 onPress={() => setIsOpen(true)}
             >
-                <Text className={`text-base ${selectedValue ? "text-gray-900" : "text-gray-400"}`}>
-                    {selectedLabel}
-                </Text>
+                <Text className={`text-base ${selectedValue ? "text-gray-900" : "text-gray-400"}`}>{selectedLabel}</Text>
                 <ChevronDown size={20} color="#555" />
             </TouchableOpacity>
 
