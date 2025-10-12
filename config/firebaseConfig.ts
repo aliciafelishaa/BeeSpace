@@ -25,3 +25,6 @@ const firestore = getFirestore(app);
 
 export { auth, firestore };
 export const db = firestore;
+
+
+

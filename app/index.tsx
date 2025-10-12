@@ -5,3 +5,4 @@ import MyRoomDash from "./myroom/roomDashboard";
 export default function Index() {
   return <MyRoomDash />;
 }
+
