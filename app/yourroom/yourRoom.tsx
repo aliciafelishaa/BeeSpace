@@ -63,12 +63,6 @@ const Segmented = ({
     </View>
   );
 };
-
-// const SvgBySection = {
-//   upcoming: Globe,
-//   hosted: Hobby,
-//   history: Events,
-// } as const; 
   
 export default function MyRoomDash({
   initialSection = "upcoming",
