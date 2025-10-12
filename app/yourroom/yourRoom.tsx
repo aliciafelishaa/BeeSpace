@@ -1,6 +1,5 @@
 import CardRoom from "@/assets/component/myroom/CardRoom";
 import EmptyState from "@/assets/component/myroom/EmptyState";
-import ModalFilteringDynamic from "@/assets/component/myroom/ModalFiltering";
 import { usePathname, useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -230,25 +229,6 @@ export default function MyRoomDash({
         </View>
       )}
     </ScrollView>
-
-    {/* Filter Modal */}
-    <ModalFilteringDynamic
-      visible={modalVisible}
-      onClose={() => setModalVisible(false)}
-      filters={[
-        {
-          title: "Sort By",
-          options: [
-            "Earliest Time",
-            "Nearest Location",
-            "Most Popular",
-            "Recently Added",
-          ],
-        },
-        { title: "Price", options: ["Free", "Paid"] },
-        { title: "Event Type", options: ["Online", "Onsite"] },
-      ]}
-    />
   </SafeAreaView>
 );
 }
