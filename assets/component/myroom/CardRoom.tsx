@@ -39,7 +39,7 @@ export default function CardRoom({
 
             <View className="flex-row items-center gap-2 mt-1">
               <Image
-                source={require("@/assets/page/myroom/calendar.svg")}
+                source={require("@/assets/page/myroom/calendar.png")}
                 className="w-3 h-3"
               />
               <Text className="text-[12px] font-inter text-neutral-700">
@@ -49,7 +49,7 @@ export default function CardRoom({
 
             <View className="flex-row items-center gap-2 mt-1">
               <Image
-                source={require("@/assets/page/myroom/map.svg")}
+                source={require("@/assets/page/myroom/map.png")}
                 className="w-3 h-3"
               />
               <Text className="text-[12px] text-neutral-700 font-inter">

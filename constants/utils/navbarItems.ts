@@ -11,7 +11,7 @@ export const NAV_ITEMS: NavItem[] = [
     id: "myroom",
     icon: require("@/assets/utils/passive-icon/myroom.png"),
     activeIcon: require("@/assets/utils/active-icon/myroom.png"),
-    route: "/yourroom", 
+    route: "/yourroom/yourRoom",
   },
   {
     id: "createroom",

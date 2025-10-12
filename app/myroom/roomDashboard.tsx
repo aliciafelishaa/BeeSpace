@@ -154,21 +154,21 @@ export default function MyRoomDash() {
                 <View className="flex-row gap-2 items-center">
                   <Image
                     source={require("@/assets/utils/map.png")}
-                    className="w-16 h-16"
+                    className="w-[16px] h-[16px]"
                   ></Image>
                   <Text className="text-neutral-700 font-semibold  text-[14px] font-inter">
                     Binus Kemanggisan{" "}
                   </Text>
                   <Image
                     source={require("@/assets/utils/arrow-down.png")}
-                    className="w-16 h-16"
+                    className="w-[16px] h-[16px]"
                   ></Image>
                 </View>
               </View>
               <View>
                 <Image
                   source={require("@/assets/utils/notifications.png")}
-                  className="w-40 h-40"
+                  className="w-[40px] h-[40px]"
                 ></Image>
               </View>
             </View>
@@ -193,7 +193,7 @@ export default function MyRoomDash() {
               >
                 <Image
                   source={require("@/assets/utils/setting-icon.png")}
-                  className="w-16 h-16"
+                  className="w-[16px] h-[16px]"
                 />
               </TouchableOpacity>
             </View>
@@ -207,43 +207,43 @@ export default function MyRoomDash() {
               >
                 <TabButton
                   title="All"
-                  icon={require("@/assets/utils/passive-icon/globe.svg")}
-                  activeIcon={require("@/assets/utils/active-icon/globe.svg")}
+                  icon={require("@/assets/utils/passive-icon/globe.png")}
+                  activeIcon={require("@/assets/utils/active-icon/globe.png")}
                   active={activeTab === "all"}
                   onPress={() => setActiveTab("all")}
                 />
                 <TabButton
                   title="Sport"
-                  icon={require("@/assets/utils/passive-icon/running.svg")}
-                  activeIcon={require("@/assets/utils/active-icon/running.svg")}
+                  icon={require("@/assets/utils/passive-icon/running.png")}
+                  activeIcon={require("@/assets/utils/active-icon/running.png")}
                   active={activeTab === "sport"}
                   onPress={() => setActiveTab("sport")}
                 />
                 <TabButton
                   title="Hangout"
-                  icon={require("@/assets/utils/passive-icon/hangout.svg")}
-                  activeIcon={require("@/assets/utils/active-icon/hangout.svg")}
+                  icon={require("@/assets/utils/passive-icon/hangout.png")}
+                  activeIcon={require("@/assets/utils/active-icon/hangout.png")}
                   active={activeTab === "hangout"}
                   onPress={() => setActiveTab("hangout")}
                 />
                 <TabButton
                   title="Learning"
-                  icon={require("@/assets/utils/passive-icon/learning.svg")}
-                  activeIcon={require("@/assets/utils/active-icon/learning.svg")}
+                  icon={require("@/assets/utils/passive-icon/learning.png")}
+                  activeIcon={require("@/assets/utils/active-icon/learning.png")}
                   active={activeTab === "learning"}
                   onPress={() => setActiveTab("learning")}
                 />
                 <TabButton
                   title="Events"
-                  icon={require("@/assets/utils/passive-icon/events.svg")}
-                  activeIcon={require("@/assets/utils/active-icon/events.svg")}
+                  icon={require("@/assets/utils/passive-icon/events.png")}
+                  activeIcon={require("@/assets/utils/active-icon/events.png")}
                   active={activeTab === "events"}
                   onPress={() => setActiveTab("events")}
                 />
                 <TabButton
                   title="Hobby"
-                  icon={require("@/assets/utils/passive-icon/hobby.svg")}
-                  activeIcon={require("@/assets/utils/active-icon/hobby.svg")}
+                  icon={require("@/assets/utils/passive-icon/hobby.png")}
+                  activeIcon={require("@/assets/utils/active-icon/hobby.png")}
                   active={activeTab === "hobby"}
                   onPress={() => setActiveTab("hobby")}
                 />

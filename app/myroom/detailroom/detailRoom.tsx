@@ -220,7 +220,7 @@ export default function DetailRoom() {
         </View>
       </ScrollView>
       <View
-        className="items-center w-full h-30 bg-white shadow-slate-200 absolute bottom-0 left-0 right-0 py-4 px-2 gap-3 flex-row mb-6"
+        className="items-center w-full h-30 bg-white shadow-slate-200 absolute bottom-0 left-0 right-0 py-4 px-2 gap-3 flex-row"
         style={{
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -1 },

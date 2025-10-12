@@ -8,10 +8,14 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-;
-
-type RoomCategory = "all" | "sport" | "hangout" | "learning" | "events" | "hobby";
-type SectionTab = 'upcoming' | 'hosted' | 'history';
+type RoomCategory =
+  | "all"
+  | "sport"
+  | "hangout"
+  | "learning"
+  | "events"
+  | "hobby";
+type SectionTab = "upcoming" | "hosted" | "history";
 
 type EventItem = {
   id: number;
@@ -51,10 +55,14 @@ const Segmented = ({
           return (
             <TouchableOpacity key={opt.key} onPress={() => onChange(opt.key)}>
               <View className="items-center">
-                <Text className={`text-[14px] ${active ? "text-amber-700 font-semibold" : "text-neutral-400"}`}>
+                <Text
+                  className={`text-[14px] ${active ? "text-amber-700 font-semibold" : "text-neutral-400"}`}
+                >
                   {opt.label}
                 </Text>
-                <View className={`h-[2px] w-14 mt-2 rounded ${active ? "bg-amber-500" : "bg-transparent"}`} />
+                <View
+                  className={`h-[2px] w-14 mt-2 rounded ${active ? "bg-amber-500" : "bg-transparent"}`}
+                />
               </View>
             </TouchableOpacity>
           );
@@ -63,7 +71,7 @@ const Segmented = ({
     </View>
   );
 };
-  
+
 export default function MyRoomDash({
   initialSection = "upcoming",
 }: {
@@ -73,7 +81,9 @@ export default function MyRoomDash({
   const router = useRouter();
   const pathname = usePathname();
 
-  {/* Ini buat coba empty state*/}
+  {
+    /* Ini buat coba empty state*/
+  }
   const upcomingEvents: EventItem[] = [
     {
       id: 1,
@@ -144,14 +154,18 @@ export default function MyRoomDash({
     history: historyEvents,
   };
 
-  const initialFromPath: SectionTab | undefined = ((): SectionTab | undefined => {
+  const initialFromPath: SectionTab | undefined = (():
+    | SectionTab
+    | undefined => {
     if (pathname.endsWith("/upcoming")) return "upcoming";
     if (pathname.endsWith("/hosted")) return "hosted";
     if (pathname.endsWith("/history")) return "history";
     return undefined;
   })();
 
-  const [section, setSection] = useState<SectionTab>(initialFromPath ?? initialSection);
+  const [section, setSection] = useState<SectionTab>(
+    initialFromPath ?? initialSection
+  );
   const [modalVisible, setModalVisible] = useState(false);
 
   const handleChangeSection = (next: SectionTab) => {
@@ -164,66 +178,64 @@ export default function MyRoomDash({
   const visible = useMemo(() => dataBySection[section], [section]);
 
   return (
-  <SafeAreaView
-    className="bg-neutral-100"
-    style={{ flex: 1, paddingTop: insets.top }}
-  >
-    <ScrollView
-      contentContainerStyle={{
-        flexGrow: 1,
-        paddingBottom: insets.bottom + 100,
-      }}
-      showsVerticalScrollIndicator={false}
+    <SafeAreaView
+      className="bg-neutral-100"
+      style={{ flex: 1, paddingBottom: insets.top }}
     >
-      {/* Header */}
-      <View className="px-[16px] pt-6">
-        <Text className="text-[20px] font-semibold text-neutral-800 mb-3">
-          Your Room
-        </Text>
+      <ScrollView
+        className=" px-[13px] pt-[35px]"
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: insets.bottom + 100,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <View className="px-[16px]">
+          <Text
+            className="text-[20px] font-semibold py-3 text-neutral-900 font-inter
+          "
+          >
+            Your Room
+          </Text>
 
-        {/* Segmented tabs */}
-        <Segmented
-          value={section}
-          onChange={setSection}
-          options={[
-            { key: "upcoming", label: "Upcoming" },
-            { key: "hosted", label: "Hosted" },
-            { key: "history", label: "History" },
-          ]}
-        />
-      </View>
-
-      {/* Room list */}
-      {visible.length > 0 ? (
-        <View className="px-[13px] pt-[15px] pb-[15px]">
-          <View className="gap-4">
-            {visible.map((ev) => (
-              <CardRoom
-                key={ev.id}
-                title={ev.title}
-                date={ev.date}
-                location={ev.location}
-                slotRemaining={ev.slotRemaining ?? 0}
-                slotTotal={ev.slotTotal ?? 0}
-                hostName={ev.hostName}
-                imageSource={ev.imageSource}
-              />
-            ))}
-          </View>
-        </View>
-      ) : (
-
-        /*Empty state*/
-        <View className="flex-1 justify-center items-center mt-8">
-          <EmptyState
-            variant={section}
-            width={90}
-            height={60}
+          {/* Segmented tabs */}
+          <Segmented
+            value={section}
+            onChange={setSection}
+            options={[
+              { key: "upcoming", label: "Upcoming" },
+              { key: "hosted", label: "Hosted" },
+              { key: "history", label: "History" },
+            ]}
           />
         </View>
-      )}
-    </ScrollView>
-  </SafeAreaView>
-);
-}
 
+        {/* Room list */}
+        {visible.length > 0 ? (
+          <View className="px-[13px] pt-[15px] pb-[15px]">
+            <View className="gap-4">
+              {visible.map((ev) => (
+                <CardRoom
+                  key={ev.id}
+                  title={ev.title}
+                  date={ev.date}
+                  location={ev.location}
+                  slotRemaining={ev.slotRemaining ?? 0}
+                  slotTotal={ev.slotTotal ?? 0}
+                  hostName={ev.hostName}
+                  imageSource={ev.imageSource}
+                />
+              ))}
+            </View>
+          </View>
+        ) : (
+          /*Empty state*/
+          <View className="flex-1 justify-center items-center mt-8">
+            <EmptyState variant={section} width={90} height={60} />
+          </View>
+        )}
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
