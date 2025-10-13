@@ -29,7 +29,7 @@ export default function MyRoomDash() {
     const fetchRoom = async () => {
       setLoading(true);
       const res = await getRoom();
-      console.log("Test")
+      console.log("Test");
       console.log(res.data);
       if (res.success && res.data) {
         setRooms(res.data);
@@ -41,8 +41,6 @@ export default function MyRoomDash() {
     fetchRoom();
     console.log(rooms);
   }, []);
-
-  
 
   return (
     <SafeAreaView
@@ -218,6 +216,7 @@ export default function MyRoomDash() {
               rooms.map((room) => (
                 <CardRoom
                   key={room.fromUid}
+                  id={room.id}
                   title={room.planName}
                   // date={`${room.date} ${room.timeStart} - ${room.timeEnd}`}
                   date={new Date(room.date)}

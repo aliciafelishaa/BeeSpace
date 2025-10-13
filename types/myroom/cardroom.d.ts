@@ -1,4 +1,5 @@
 export type CardRoomProps = {
+  id?: string;
   title: string;
   date: Date;
   location: string;

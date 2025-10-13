@@ -1,9 +1,11 @@
 import { CardRoomProps } from "@/types/myroom/cardroom";
+import { RoomEntry } from "@/types/myroom/room";
 import { router } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 
 export default function CardRoom({
+  id,
   title,
   date,
   location,
@@ -17,11 +19,12 @@ export default function CardRoom({
     month: "long",
     year: "numeric",
   });
+  const [rooms, setRooms] = useState<RoomEntry[]>([]);
 
   return (
     <TouchableOpacity
+      onPress={() => router.push(`/myroom/detailroom/detailRoom?id=${id}`)}
       className="bg-white rounded-[8px] py-5 px-4"
-      onPress={() => router.push("/myroom/detailroom/detailRoom")}
     >
       <View className="flex-row gap-4">
         {/* Gambar */}

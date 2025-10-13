@@ -24,6 +24,7 @@ export function useRoom() {
   const getRoom = async () => {
     setLoading(true);
     try {
+
       const room = await getAllRoom();
       return { success: true, data: room };
     } catch (err: any) {

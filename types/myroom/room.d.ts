@@ -1,5 +1,6 @@
 export interface RoomEntry {
   fromUid?: string | "null";
+  id?: string;
   cover?: string;
   category: string;
   date: Date;

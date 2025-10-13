@@ -8,7 +8,7 @@ export const createRoom = async (payload: RoomEntry) => {
   //   }
   try {
     const roomData = {
-      // fromUid: payload.fromUid,
+      // fromUid: payload.fromUid
       cover: payload.cover,
       category: payload.category,
       date: payload.date,
