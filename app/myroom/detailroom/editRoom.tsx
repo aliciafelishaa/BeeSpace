@@ -9,9 +9,15 @@ import IconBack from "@/components/ui/icon-back";
 import { COLORS } from "@/constants/utils/colors";
 import { useRoom } from "@/hooks/useRoom";
 import { useRoomCover } from "@/hooks/useRoomCover";
-import { router } from "expo-router";
-import React, { useState } from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import {
   SafeAreaView,
@@ -19,14 +25,14 @@ import {
 } from "react-native-safe-area-context";
 
 export default function EditRoom() {
+  const { id } = useLocalSearchParams();
   const [step, setStep] = useState(1);
   const insets = useSafeAreaInsets();
-  const { addRoom } = useRoom();
+  const { addRoom, updateRoom, getRoomId } = useRoom();
   const handleBack = () => router.back();
   const { image, uploading, pickPhoto } = useRoomCover(undefined, (url) => {
     handleChange("cover", url);
   });
-
   const [formData, setFormData] = useState({
     cover: "",
     planName: "",
@@ -42,14 +48,15 @@ export default function EditRoom() {
     openPublic: false,
     enableChat: false,
   });
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+  const [rooms, setRooms] = useState<any>(null);
 
   const handleChange = (key: string, value: any) => {
     setFormData({ ...formData, [key]: value });
   };
-
-  const [showError, setShowError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const handleFocus = (key: string) => {
     if (formErrors[key]) {
       setFormErrors((prev) => {
@@ -59,7 +66,7 @@ export default function EditRoom() {
       });
     }
   };
-  const handleSubmit = async () => {
+  const handleEdit = async () => {
     // if (!user?.uid) {
     //   setErrorMessage("You must be logged in to save a diary");
     //   setShowError(true);
@@ -72,9 +79,10 @@ export default function EditRoom() {
       date: new Date(formData.date),
     };
 
-    const result = await addRoom(inputRoom);
+    const result = await updateRoom(id, inputRoom);
     if (result.success) {
       console.log("✅ Form Submitted:", result);
+      router.back();
     } else {
       setErrorMessage(result.message || "Failed to create room");
       setShowError(true);
@@ -104,6 +112,50 @@ export default function EditRoom() {
     }
   };
 
+  useEffect(() => {
+    const fetchRoom = async () => {
+      if (!id) return;
+      setLoading(true);
+      const res = await getRoomId(id);
+      if (res.success && res.data) {
+        console.log(res.data);
+        setRooms(res.data);
+      } else {
+        setErrorMessage(res.message || "Failed to load room data");
+      }
+
+      setLoading(false);
+    };
+    fetchRoom();
+  }, [id]);
+
+  useEffect(() => {
+    if (rooms) {
+      setFormData({
+        cover: rooms.cover || "",
+        planName: rooms.planName || "",
+        description: rooms.description || "",
+        category: rooms.category || "",
+        place: rooms.place || "",
+        date: rooms.date ? new Date(rooms.date) : new Date(),
+        timeStart: rooms.timeStart || "",
+        timeEnd: rooms.timeEnd || "",
+        minMember: rooms.minMember ? String(rooms.minMember) : "",
+        maxMember: rooms.maxMember ? String(rooms.maxMember) : "",
+        locationDetail: rooms.locationDetail || "",
+        openPublic: rooms.openPublic || false,
+        enableChat: rooms.enableChat || false,
+      });
+    }
+  }, [rooms]);
+
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 justify-center items-center bg-white">
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </SafeAreaView>
+    );
+  }
   return (
     <SafeAreaView
       className="bg-neutral-100"
@@ -350,7 +402,7 @@ export default function EditRoom() {
           <View className="w-full flex-row mt-6 gap-4">
             {step === 1 && (
               <TouchableOpacity
-                onPress={step === 1 ? handleSubmit : handleNext}
+                onPress={step === 1 ? handleEdit : handleNext}
                 className="flex-1 bg-[#FCBC03] py-3 rounded-xl items-center justify-center"
               >
                 <Text className="text-white font-bold text-xl">

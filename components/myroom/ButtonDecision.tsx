@@ -1,5 +1,5 @@
 import { ButtonDecisionProps } from "@/types/myroom/buttondecision";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import ModalEditDelete from "../utils/ModalEditDelete";
@@ -8,8 +8,10 @@ export default function ButtonDecision({
   isOwner = false,
   hasJoined = false,
   isEnded = false,
+  onDeleteRoom,
 }: ButtonDecisionProps) {
   const [modalVisible, setModalVisible] = useState(false);
+  const { id } = useLocalSearchParams();
 
   useEffect(() => {
     console.log("🧠 [ButtonDecision Rendered]");
@@ -32,7 +34,7 @@ export default function ButtonDecision({
       >
         <TouchableOpacity
           className="rounded-[8px] h-[45px] bg-primary4th items-center justify-center py-4 flex-1 border-primary2nd border"
-          onPress={() => router.push("/myroom/detailroom/editRoom")}
+          onPress={() => router.push(`/myroom/detailroom/editRoom?id=${id}`)}
         >
           <Text className="text-primary font-interSemiBold text-[14px]">
             Edit Room
@@ -59,6 +61,9 @@ export default function ButtonDecision({
           visible={modalVisible}
           onClose={() => setModalVisible(false)}
           isJoin={true}
+          isReport={false}
+          isEdit={true}
+          onDelete={onDeleteRoom}
         />
       </View>
     );
@@ -79,7 +84,7 @@ export default function ButtonDecision({
       >
         <TouchableOpacity className="rounded-[8px] h-[45px] bg-primary2nd items-center justify-center py-4 flex-1">
           <Text className="text-neutral-50 font-semibold text-[14px]">
-            Edit Room
+            Join Room
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -95,6 +100,9 @@ export default function ButtonDecision({
           visible={modalVisible}
           onClose={() => setModalVisible(false)}
           isJoin={true}
+          isReport={true}
+          isEdit={false}
+          onDelete={onDeleteRoom}
         />
       </View>
     );
