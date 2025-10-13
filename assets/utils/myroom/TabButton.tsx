@@ -26,7 +26,7 @@ export default function TabButton({
         style={{ tintColor: active ? COLORS.primary : COLORS.neutral500 }}
       />
       <Text
-        className="text-[12px] font-medium font-inter"
+        className="text-[12px] font-medium font-interMedium"
         style={{ color: active ? COLORS.primary : COLORS.neutral500 }}
       >
         {title}

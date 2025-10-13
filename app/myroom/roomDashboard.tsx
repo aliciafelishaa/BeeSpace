@@ -1,12 +1,14 @@
-import CardRoom from "@/assets/component/myroom/CardRoom";
-import ModalFilteringDynamic from "@/assets/component/myroom/ModalFiltering";
 import TabButton from "@/assets/utils/myroom/TabButton";
 import TimeButton from "@/assets/utils/myroom/TimeButton";
+import CardRoom from "@/components/myroom/CardRoom";
+import ModalFilteringDynamic from "@/components/utils/ModalFiltering";
 import SearchBar from "@/components/utils/SearchBar";
 import { COLORS } from "@/constants/utils/colors";
+import { useRoom } from "@/hooks/useRoom";
 import { RoomCategory, TimeCategory } from "@/types/myroom/myroom";
+import { RoomEntry } from "@/types/myroom/room";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 import {
@@ -19,109 +21,26 @@ export default function MyRoomDash() {
   const [activeFilter, setActiveFilter] = useState<TimeCategory>("today");
   const insets = useSafeAreaInsets();
   const [modalVisible, setModalVisible] = useState(false);
+  const [rooms, setRooms] = useState<RoomEntry[]>([]);
+  const { getRoom } = useRoom();
+  const [loading, setLoading] = useState(false);
 
-  const events = [
-    {
-      id: 1,
-      title: "Morning Run 5K",
-      date: "22 Sept 2025, 18.00 - 20.00 WIB",
-      location: "Gelora Bung Karno",
-      slotRemaining: 5,
-      slotTotal: 10,
-      hostName: "Balqis",
-      imageSource: false,
-    },
-    {
-      id: 2,
-      title: "Yoga Class",
-      date: "25 Sept 2025, 07.00 - 09.00 WIB",
-      location: "Taman Suropati",
-      slotRemaining: 8,
-      slotTotal: 12,
-      hostName: "Alicia",
-      imageSource: false,
-    },
-    {
-      id: 3,
-      title: "Tech Meetup",
-      date: "28 Sept 2025, 13.00 - 16.00 WIB",
-      location: "Binus Anggrek",
-      slotRemaining: 3,
-      slotTotal: 20,
-      hostName: "Bryan",
-      imageSource: false,
-    },
-    {
-      id: 4,
-      title: "Photography Walk",
-      date: "30 Sept 2025, 09.00 - 11.00 WIB",
-      location: "Kota Tua Jakarta",
-      slotRemaining: 7,
-      slotTotal: 15,
-      hostName: "Tasya",
-      imageSource: false,
-    },
-    {
-      id: 5,
-      title: "Community Cleanup",
-      date: "2 Okt 2025, 08.00 - 10.30 WIB",
-      location: "Pantai Indah Kapuk",
-      slotRemaining: 2,
-      slotTotal: 10,
-      hostName: "Akbar",
-      imageSource: false,
-    },
-    {
-      id: 6,
-      title: "Cooking Workshop",
-      date: "4 Okt 2025, 10.00 - 12.00 WIB",
-      location: "Mall Kelapa Gading",
-      slotRemaining: 6,
-      slotTotal: 12,
-      hostName: "Putri",
-      imageSource: false,
-    },
-    {
-      id: 7,
-      title: "Coding Bootcamp",
-      date: "6 Okt 2025, 09.00 - 17.00 WIB",
-      location: "Jakarta Digital Valley",
-      slotRemaining: 10,
-      slotTotal: 25,
-      hostName: "Cornelius",
-      imageSource: false,
-    },
-    {
-      id: 8,
-      title: "Charity Concert",
-      date: "10 Okt 2025, 18.00 - 22.00 WIB",
-      location: "Senayan City Hall",
-      slotRemaining: 12,
-      slotTotal: 30,
-      hostName: "Tasya",
-      imageSource: false,
-    },
-    {
-      id: 9,
-      title: "Art Exhibition",
-      date: "12 Okt 2025, 11.00 - 14.00 WIB",
-      location: "Museum MACAN",
-      slotRemaining: 9,
-      slotTotal: 20,
-      hostName: "Balqis",
-      imageSource: false,
-    },
-    {
-      id: 10,
-      title: "Startup Pitch Night",
-      date: "15 Okt 2025, 17.00 - 20.00 WIB",
-      location: "GoWork Plaza Indonesia",
-      slotRemaining: 4,
-      slotTotal: 15,
-      hostName: "Alicia",
-      imageSource: false,
-    },
-  ];
+  useEffect(() => {
+    const fetchRoom = async () => {
+      setLoading(true);
+      const res = await getRoom();
+      console.log("Test");
+      console.log(res.data);
+      if (res.success && res.data) {
+        setRooms(res.data);
+      } else {
+        setRooms([]);
+      }
+      setLoading(false);
+    };
+    fetchRoom();
+    console.log(rooms);
+  }, []);
 
   return (
     <SafeAreaView
@@ -148,27 +67,27 @@ export default function MyRoomDash() {
             {/* Header */}
             <View className="flex-row items-center justify-between">
               <View className="gap-[10px]">
-                <Text className="text-neutral-500 text-[12px] font-inter">
+                <Text className="text-neutral-500 text-[12px] font-interRegular">
                   Activities Near
                 </Text>
                 <View className="flex-row gap-2 items-center">
                   <Image
                     source={require("@/assets/utils/map.png")}
-                    className="w-16 h-16"
+                    className="w-[16px] h-[16px]"
                   ></Image>
-                  <Text className="text-neutral-700 font-semibold  text-[14px] font-inter">
+                  <Text className="text-neutral-700  text-[14px] font-interSemiBold">
                     Binus Kemanggisan{" "}
                   </Text>
                   <Image
                     source={require("@/assets/utils/arrow-down.png")}
-                    className="w-16 h-16"
+                    className="w-[16px] h-[16px]"
                   ></Image>
                 </View>
               </View>
               <View>
                 <Image
                   source={require("@/assets/utils/notifications.png")}
-                  className="w-40 h-40"
+                  className="w-[40px] h-[40px]"
                 ></Image>
               </View>
             </View>
@@ -193,7 +112,7 @@ export default function MyRoomDash() {
               >
                 <Image
                   source={require("@/assets/utils/setting-icon.png")}
-                  className="w-16 h-16"
+                  className="w-[16px] h-[16px]"
                 />
               </TouchableOpacity>
             </View>
@@ -207,43 +126,43 @@ export default function MyRoomDash() {
               >
                 <TabButton
                   title="All"
-                  icon={require("@/assets/utils/passive-icon/globe.svg")}
-                  activeIcon={require("@/assets/utils/active-icon/globe.svg")}
+                  icon={require("@/assets/utils/passive-icon/globe.png")}
+                  activeIcon={require("@/assets/utils/active-icon/globe.png")}
                   active={activeTab === "all"}
                   onPress={() => setActiveTab("all")}
                 />
                 <TabButton
                   title="Sport"
-                  icon={require("@/assets/utils/passive-icon/running.svg")}
-                  activeIcon={require("@/assets/utils/active-icon/running.svg")}
+                  icon={require("@/assets/utils/passive-icon/running.png")}
+                  activeIcon={require("@/assets/utils/active-icon/running.png")}
                   active={activeTab === "sport"}
                   onPress={() => setActiveTab("sport")}
                 />
                 <TabButton
                   title="Hangout"
-                  icon={require("@/assets/utils/passive-icon/hangout.svg")}
-                  activeIcon={require("@/assets/utils/active-icon/hangout.svg")}
+                  icon={require("@/assets/utils/passive-icon/hangout.png")}
+                  activeIcon={require("@/assets/utils/active-icon/hangout.png")}
                   active={activeTab === "hangout"}
                   onPress={() => setActiveTab("hangout")}
                 />
                 <TabButton
                   title="Learning"
-                  icon={require("@/assets/utils/passive-icon/learning.svg")}
-                  activeIcon={require("@/assets/utils/active-icon/learning.svg")}
+                  icon={require("@/assets/utils/passive-icon/learning.png")}
+                  activeIcon={require("@/assets/utils/active-icon/learning.png")}
                   active={activeTab === "learning"}
                   onPress={() => setActiveTab("learning")}
                 />
                 <TabButton
                   title="Events"
-                  icon={require("@/assets/utils/passive-icon/events.svg")}
-                  activeIcon={require("@/assets/utils/active-icon/events.svg")}
+                  icon={require("@/assets/utils/passive-icon/events.png")}
+                  activeIcon={require("@/assets/utils/active-icon/events.png")}
                   active={activeTab === "events"}
                   onPress={() => setActiveTab("events")}
                 />
                 <TabButton
                   title="Hobby"
-                  icon={require("@/assets/utils/passive-icon/hobby.svg")}
-                  activeIcon={require("@/assets/utils/active-icon/hobby.svg")}
+                  icon={require("@/assets/utils/passive-icon/hobby.png")}
+                  activeIcon={require("@/assets/utils/active-icon/hobby.png")}
                   active={activeTab === "hobby"}
                   onPress={() => setActiveTab("hobby")}
                 />
@@ -289,9 +208,31 @@ export default function MyRoomDash() {
         >
           {/* Card */}
           <View className="gap-4">
-            {events.map((event) => (
-              <CardRoom key={event.id} {...event} />
-            ))}
+            {loading ? (
+              <Text className="text-center text-neutral-500">
+                Loading rooms...
+              </Text>
+            ) : rooms.length > 0 ? (
+              rooms.map((room) => (
+                <CardRoom
+                  key={room.fromUid}
+                  id={room.id}
+                  title={room.planName}
+                  // date={`${room.date} ${room.timeStart} - ${room.timeEnd}`}
+                  date={new Date(room.date)}
+                  location={room.place}
+                  slotRemaining={room.minMember}
+                  slotTotal={room.maxMember}
+                  hostName={room.fromUid ? room.fromUid : "Ano"}
+                  imageSource={room.cover ? { uri: room.cover } : false}
+                  isEdit={false}
+                />
+              ))
+            ) : (
+              <Text className="text-center text-neutral-500">
+                No rooms found
+              </Text>
+            )}
           </View>
         </View>
       </ScrollView>
