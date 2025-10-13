@@ -8,6 +8,8 @@ import ToggleSwitch from "@/components/createroom/ToggleSwitch";
 import IconBack from "@/components/ui/icon-back";
 import Text from "@/components/ui/Text";
 import { COLORS } from "@/constants/utils/colors";
+import { useAuthState } from "@/hooks/useAuthState";
+import { useRoom } from "@/hooks/useRoom";
 import React, { useState } from "react";
 import { ScrollView, TouchableOpacity, View } from "react-native";
 import {
@@ -18,9 +20,14 @@ import {
 export default function CreateRoomPage() {
   const [step, setStep] = useState(1);
   const insets = useSafeAreaInsets();
+  const { user } = useAuthState();
+  const { addRoom } = useRoom();
+
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const [formData, setFormData] = useState({
-    cover: null,
+    cover: "",
     planName: "",
     description: "",
     category: "",
@@ -77,8 +84,26 @@ export default function CreateRoomPage() {
 
   const handleBack = () => setStep((prev) => Math.max(prev - 1, 1));
 
-  const handleSubmit = () => {
-    console.log("✅ Form Submitted:", formData);
+  const handleSubmit = async () => {
+    // if (!user?.uid) {
+    //   setErrorMessage("You must be logged in to save a diary");
+    //   setShowError(true);
+    //   return;
+    // }
+    console.log("testing2");
+    const inputRoom = {
+      // fromUid: user?.uid,
+      ...formData,
+      date: new Date(formData.date),
+    };
+
+    const result = await addRoom(inputRoom);
+    if (result.success) {
+      console.log("✅ Form Submitted:", formData);
+    } else {
+      setErrorMessage(result.message || "Failed to create room");
+      setShowError(true);
+    }
   };
 
   return (
@@ -102,15 +127,15 @@ export default function CreateRoomPage() {
         showsVerticalScrollIndicator={false}
         className="bg-[#FAFAFA]"
       >
-        <View className="relative mt-12 mb-6">
+        <View className="mt-12 mb-6 items-center justify-center">
           <TouchableOpacity
             onPress={handleBack}
-            className="w-12 h-12 p-2 rounded-full bg-[#FFFFFF] border border-[#F5F5F5] absolute left-5 top-0 justify-center items-center"
+            className="w-12 h-12 pb-2 rounded-full bg-[#FFFFFF] border border-[#F5F5F5] absolute left-5 top-0 justify-center items-center"
           >
             <IconBack />
           </TouchableOpacity>
 
-          <Text className="text-center font-black text-xl">
+          <Text className="text-center font-interMedium text-[20px]">
             Let’s Create a Plan!
           </Text>
         </View>
@@ -230,7 +255,6 @@ export default function CreateRoomPage() {
                   required
                   error={formErrors.place}
                 />
-
                 {formData.place !== "" && (
                   <FormInput
                     value={formData.locationDetail}
@@ -247,7 +271,7 @@ export default function CreateRoomPage() {
                         : "Enter onsite location..."
                     }
                     required
-                    error={formErrors.locationDetail}
+                    // error={formErrors.locationDetail}
                   />
                 )}
               </View>
