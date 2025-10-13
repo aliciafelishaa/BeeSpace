@@ -1,7 +1,7 @@
-import CardRoom from "@/assets/component/myroom/CardRoom";
-import ModalFilteringDynamic from "@/assets/component/myroom/ModalFiltering";
 import TabButton from "@/assets/utils/myroom/TabButton";
 import TimeButton from "@/assets/utils/myroom/TimeButton";
+import CardRoom from "@/components/myroom/CardRoom";
+import ModalFilteringDynamic from "@/components/utils/ModalFiltering";
 import SearchBar from "@/components/utils/SearchBar";
 import { COLORS } from "@/constants/utils/colors";
 import { useRoom } from "@/hooks/useRoom";

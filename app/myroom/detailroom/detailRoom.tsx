@@ -1,4 +1,5 @@
 import HeaderBack from "@/components/utils/HeaderBack";
+import ModalEditDelete from "@/components/utils/ModalEditDelete";
 import { COLORS } from "@/constants/utils/colors";
 import { useRoom } from "@/hooks/useRoom";
 import { RoomEntry } from "@/types/myroom/room";
@@ -264,14 +265,17 @@ export default function DetailRoom() {
             Join Room
           </Text>
         </View>
-        <View className="rounded-[8px] w-[80px] h-[45px] bg-primary2nd items-center justify-center py-4">
+        <TouchableOpacity
+          className="rounded-[8px] w-[80px] h-[45px] bg-primary2nd items-center justify-center py-4"
+          onPress={() => setModalVisible(true)}
+        >
           <Text className="text-neutral-50 font-semibold text-[14px]py-">
             ...
           </Text>
-        </View>
+        </TouchableOpacity>
       </View>
 
-      {/* <ModalFilteringDynamic
+      <ModalEditDelete
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         filters={[
@@ -284,8 +288,10 @@ export default function DetailRoom() {
               "Recently Added",
             ],
           },
+          { title: "Price", options: ["Free", "Paid"] },
+          { title: "Event Type", options: ["Online", "Onsite"] },
         ]}
-      /> */}
+      />
     </SafeAreaView>
   );
 }

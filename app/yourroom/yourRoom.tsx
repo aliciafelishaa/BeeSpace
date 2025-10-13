@@ -1,5 +1,6 @@
-import CardRoom from "@/assets/component/myroom/CardRoom";
-import EmptyState from "@/assets/component/myroom/EmptyState";
+import CardRoom from "@/components/myroom/CardRoom";
+import EmptyState from "@/components/myroom/EmptyState";
+import { RoomEntry } from "@/types/myroom/room";
 import { usePathname, useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -176,6 +177,8 @@ export default function MyRoomDash({
   };
 
   const visible = useMemo(() => dataBySection[section], [section]);
+  const [rooms, setRooms] = useState<RoomEntry[]>([]);
+  const [loading, setLoading] = useState(false);
 
   return (
     <SafeAreaView
@@ -215,18 +218,30 @@ export default function MyRoomDash({
         {visible.length > 0 ? (
           <View className="px-[13px] pt-[15px] pb-[15px]">
             <View className="gap-4">
-              {visible.map((ev) => (
-                <CardRoom
-                  key={ev.id}
-                  title={ev.title}
-                  date={ev.date}
-                  location={ev.location}
-                  slotRemaining={ev.slotRemaining ?? 0}
-                  slotTotal={ev.slotTotal ?? 0}
-                  hostName={ev.hostName}
-                  imageSource={ev.imageSource}
-                />
-              ))}
+              {loading ? (
+                <Text className="text-center text-neutral-500">
+                  Loading rooms...
+                </Text>
+              ) : rooms.length > 0 ? (
+                rooms.map((room) => (
+                  <CardRoom
+                    key={room.fromUid}
+                    id={room.id}
+                    title={room.planName}
+                    // date={`${room.date} ${room.timeStart} - ${room.timeEnd}`}
+                    date={new Date(room.date)}
+                    location={room.place}
+                    slotRemaining={room.minMember}
+                    slotTotal={room.maxMember}
+                    hostName={room.fromUid ? room.fromUid : "Ano"}
+                    imageSource={room.cover ? { uri: room.cover } : false}
+                  />
+                ))
+              ) : (
+                <Text className="text-center text-neutral-500">
+                  No rooms found
+                </Text>
+              )}
             </View>
           </View>
         ) : (
