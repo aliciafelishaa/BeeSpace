@@ -10,6 +10,7 @@ import Text from "@/components/ui/Text";
 import { COLORS } from "@/constants/utils/colors";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useRoom } from "@/hooks/useRoom";
+import { useRoomCover } from "@/hooks/useRoomCover";
 import React, { useState } from "react";
 import { ScrollView, TouchableOpacity, View } from "react-native";
 import {
@@ -22,6 +23,10 @@ export default function CreateRoomPage() {
   const insets = useSafeAreaInsets();
   const { user } = useAuthState();
   const { addRoom } = useRoom();
+  const { image, uploading, pickPhoto } = useRoomCover(undefined, (url) => {
+    handleChange("cover", url);
+  });
+  // const { data, setField } = useSignupContext();
 
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -179,10 +184,21 @@ export default function CreateRoomPage() {
         <View className="bg-white mx-5 rounded-2xl p-5">
           {step === 1 && (
             <View>
-              <ImagePicker
+              {/* <ImagePicker
                 label="Cover"
                 value={formData.cover}
                 onChange={(v) => handleChange("cover", v)}
+                imageUrl={image || formData.cover || undefined}
+                onChangeImage={() => pickPhoto("gallery")}
+                size={120}
+                onEdit={false}
+              /> */}
+              <ImagePicker
+                label="Cover"
+                imageUrl={image || formData.cover || undefined}
+                onChangeImage={() => pickPhoto("gallery")}
+                size={120}
+                onEdit={false}
               />
 
               <FormInput

@@ -1,5 +1,5 @@
 import { db } from "@/config/firebaseConfig";
-import { RoomEntry } from "@/types/room";
+import { RoomEntry } from "@/types/myroom/room";
 import { addDoc, collection } from "firebase/firestore";
 
 export const createRoom = async (payload: RoomEntry) => {

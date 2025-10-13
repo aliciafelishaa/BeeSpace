@@ -1,5 +1,5 @@
 import { createRoom } from "@/services/room.service";
-import { RoomEntry } from "@/types/room";
+import { RoomEntry } from "@/types/myroom/room";
 import { useState } from "react";
 
 export function useRoom() {

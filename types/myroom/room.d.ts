@@ -14,3 +14,4 @@ export interface RoomEntry {
   timeEnd: string;
   timeStart: string;
 }
+
