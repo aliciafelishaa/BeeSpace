@@ -1,24 +1,27 @@
-import React, { useState, useEffect } from "react";
-import { View, ScrollView, TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { InputField } from "@/components/auth/InputField";
-import SearchableDropdown from "@/components/auth/Dropdown";
-import Text from "@/components/ui/Text";
-import IconBoarding from "@/components/ui/IconBoarding";
-import { useForm, Controller } from "react-hook-form";
-import { useAuth } from "@/hooks/useAuth";
-import { updateUserProfile, StudentProfile } from "@/services/userService";
-import handleUpData from "@/hooks/useCloudinary";
-import { universityMajors } from "@/hooks/useuniversityMajors";
+import React, { useState, useEffect } from "react"
+import { View, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native"
+import { Ionicons } from "@expo/vector-icons"
+import { InputField } from "@/components/auth/InputField"
+import { SearchableDropdown } from "@/components/auth/Dropdown"
+import Text from "@/components/ui/Text"
+import IconBoarding from "@/components/ui/IconBoarding"
+import { useForm, Controller } from "react-hook-form"
+import { useAuth } from "@/hooks/useAuth"
+import { updateUserProfile, StudentProfile } from "@/services/userService"
+import handleUpData from "@/hooks/useCloudinary"
+import { universityMajors, years } from "@/components/utils/useA"
+import StudentCardPicker from "@/components/auth/StudentCardPicker"
+import { useRouter } from "expo-router"
 
 export default function StudentBoarding() {
-    const { user } = useAuth();
-    const [step, setStep] = useState<number>(1);
-    const [loading, setLoading] = useState(false);
-    const [studentCard, setStudentCard] = useState<string | null>(null);
-    const [majorsOptions, setMajorsOptions] = useState<string[]>([]);
+    const { user } = useAuth()
+    const router = useRouter()
+    const [step, setStep] = useState<number>(1)
+    const [loading, setLoading] = useState(false)
+    const [studentCard, setStudentCard] = useState<string | null>(null)
+    const [majorsOptions, setMajorsOptions] = useState<string[]>([])
 
-    const { control, handleSubmit, watch, setValue } = useForm<StudentProfile>({
+    const { control, handleSubmit, watch, setValue, trigger, formState: { errors }, clearErrors } = useForm<StudentProfile>({
         defaultValues: {
             fullName: "",
             username: "",
@@ -29,65 +32,69 @@ export default function StudentBoarding() {
             studentID: "",
             studentCard: null,
         },
-    });
+    })
 
-    // Watch universitas agar bisa update jurusan
-    const selectedUniversity = watch("university");
+    const selectedUniversity = watch("university")
 
     useEffect(() => {
-        if (selectedUniversity && universityMajors[selectedUniversity as string]) {
-            setMajorsOptions(universityMajors[selectedUniversity as string]);
-            setValue("major", "");
+        if (selectedUniversity && universityMajors[selectedUniversity]) {
+            setMajorsOptions(universityMajors[selectedUniversity])
+            setValue("major", "")
         } else {
-            setMajorsOptions([]);
-            setValue("major", "");
+            setMajorsOptions([])
+            setValue("major", "")
         }
-    }, [selectedUniversity]);
-
+    }, [selectedUniversity])
 
     if (!user) {
         return (
             <View className="flex-1 justify-center items-center">
                 <Text>Loading user...</Text>
             </View>
-        );
+        )
     }
 
-    const years = ["2018", "2019", "2020", "2021", "2022", "2023"];
+    const nextStep = async () => {
+        let fieldsToValidate: (keyof StudentProfile)[] = []
+        if (step === 1) fieldsToValidate = ["fullName", "username", "university", "major"]
+        if (step === 2) fieldsToValidate = ["enrollYear", "gradYear"]
+        if (step === 3) fieldsToValidate = ["studentID"]
 
-    const nextStep = () => setStep((prev) => Math.min(prev + 1, 3));
-    const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
+        const isValid = await trigger(fieldsToValidate)
+        if (isValid) setStep(prev => Math.min(prev + 1, 3))
+    }
+
+    const prevStep = () => setStep(prev => Math.max(prev - 1, 1))
 
     const renderProgress = () => (
         <View className="flex-row justify-center mb-4">
-            {[1, 2, 3].map((i) => (
+            {[1, 2, 3].map(i => (
                 <View
                     key={i}
                     className={`h-2 flex-1 mx-1 rounded-full ${i <= step ? "bg-[#FFD661]" : "bg-[#ECA609]"}`}
                 />
             ))}
         </View>
-    );
+    )
 
     const onSubmit = async (data: StudentProfile) => {
-        setLoading(true);
+        setLoading(true)
         try {
-            let studentCardUrl: string | null = null;
-
+            let studentCardUrl: string | null = null
             if (studentCard) {
-                const fileObj = { uri: studentCard, name: "student-card.jpg", type: "image/jpeg" };
-                studentCardUrl = await handleUpData(fileObj);
+                const fileObj = { uri: studentCard, name: "student-card.jpg", type: "image/jpeg" }
+                studentCardUrl = await handleUpData(fileObj)
             }
-
-            await updateUserProfile(user.uid, { ...data, studentCard: studentCardUrl });
-            alert("Profile submitted successfully!");
+            await updateUserProfile(user.uid, { ...data, studentCard: studentCardUrl })
+            alert("Profile submitted successfully!")
+            router.push({pathname: "/"})
         } catch (err: any) {
-            console.error("Upload/Submit Error:", err);
-            alert("Failed to submit profile. Check console for details.");
+            console.error("Upload/Submit Error:", err)
+            alert("Failed to submit profile. Check console for details.")
         } finally {
-            setLoading(false);
+            setLoading(false)
         }
-    };
+    }
 
     return (
         <ScrollView className="w-full bg-[#FAFAFA]" keyboardShouldPersistTaps="handled">
@@ -112,34 +119,59 @@ export default function StudentBoarding() {
             <View className="p-6 space-y-4">
                 {step === 1 && (
                     <>
-                        <InputField label="Full Name" control={control} name="fullName" placeholder="Input Text Here" />
-                        <InputField label="Username" control={control} name="username" placeholder="Input Text Here" />
+                        <InputField
+                            label="Full Name"
+                            control={control}
+                            name="fullName"
+                            placeholder="Input Text Here"
+                            rules={{ required: "Full Name is required" }}
+                            error={errors.fullName?.message as string}
+                            onClearError={() => clearErrors("fullName")}
+                        />
+                        <InputField
+                            label="Username"
+                            control={control}
+                            name="username"
+                            placeholder="Input Text Here"
+                            rules={{ required: "Username is required" }}
+                            error={errors.username?.message as string}
+                            onClearError={() => clearErrors("username")}
+                        />
+
                         <Controller
                             control={control}
                             name="university"
+                            rules={{ required: "University is required" }}
                             render={({ field: { onChange, value } }) => (
                                 <SearchableDropdown
                                     label="University"
                                     placeholder="Select University"
                                     value={value}
-                                    onValueChange={onChange}
+                                    onValueChange={(val) => { onChange(val); clearErrors("university") }}
                                     options={Object.keys(universityMajors)}
+                                    error={errors.university?.message as string}
+                                    onClearError={() => clearErrors("university")}
                                 />
                             )}
                         />
+
                         <Controller
                             control={control}
                             name="major"
+                            rules={{ required: "Major is required" }}
                             render={({ field: { onChange, value } }) => (
                                 <SearchableDropdown
                                     label="Major"
                                     placeholder="Select Major"
                                     value={value}
-                                    onValueChange={onChange}
+                                    onValueChange={(val) => { onChange(val); clearErrors("major") }}
                                     options={majorsOptions}
+                                    error={errors.major?.message as string}
+                                    onClearError={() => clearErrors("major")}
                                 />
                             )}
                         />
+
                         <View className="flex-row justify-end mt-4">
                             <TouchableOpacity
                                 onPress={nextStep}
@@ -151,8 +183,79 @@ export default function StudentBoarding() {
                     </>
                 )}
 
-                {/* step 2 & 3 tetap sama */}
+                {step === 2 && (
+                    <>
+                        <Controller
+                            control={control}
+                            name="enrollYear"
+                            rules={{ required: "Enrollment Year is required" }}
+                            render={({ field: { onChange, value } }) => (
+                                <SearchableDropdown
+                                    label="Enrollment Year"
+                                    placeholder="Select Enrollment Year"
+                                    value={value}
+                                    onValueChange={(val) => { onChange(val); clearErrors("enrollYear") }}
+                                    options={years}
+                                    error={errors.enrollYear?.message as string}
+                                    onClearError={() => clearErrors("enrollYear")}
+                                />
+                            )}
+                        />
+
+                        <Controller
+                            control={control}
+                            name="gradYear"
+                            rules={{ required: "Graduation Year is required" }}
+                            render={({ field: { onChange, value } }) => (
+                                <SearchableDropdown
+                                    label="Graduation Year"
+                                    placeholder="Select Graduation Year"
+                                    value={value}
+                                    onValueChange={(val) => { onChange(val); clearErrors("gradYear") }}
+                                    options={years}
+                                    error={errors.gradYear?.message as string}
+                                    onClearError={() => clearErrors("gradYear")}
+                                />
+                            )}
+                        />
+
+                        <View className="flex-row justify-end mt-4">
+                            <TouchableOpacity
+                                onPress={nextStep}
+                                className="w-1/3 bg-yellow-400 h-12 rounded-lg flex justify-center items-center"
+                            >
+                                <Text className="text-white font-bold">Next</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </>
+                )}
+
+                {step === 3 && (
+                    <>
+                        <InputField
+                            label="Student ID"
+                            control={control}
+                            name="studentID"
+                            placeholder="Student ID"
+                            rules={{ required: "Student ID is required" }}
+                            error={errors.studentID?.message as string}
+                            onClearError={() => clearErrors("studentID")}
+                        />
+                        <Text className="text-[#404040] mb-1 font-semibold text-base">Student ID Card</Text>
+                        <StudentCardPicker value={studentCard} onChange={setStudentCard} />
+
+                        <View className="flex-row justify-end mt-4">
+                            <TouchableOpacity
+                                onPress={handleSubmit(onSubmit)}
+                                disabled={loading}
+                                className={`w-1/3 h-12 rounded-lg flex justify-center items-center ${loading ? "bg-yellow-200" : "bg-yellow-400"}`}
+                            >
+                                {loading ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold">Submit</Text>}
+                            </TouchableOpacity>
+                        </View>
+                    </>
+                )}
             </View>
         </ScrollView>
-    );
+    )
 }

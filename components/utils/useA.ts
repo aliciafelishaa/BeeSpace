@@ -1610,10 +1610,10 @@ export const universityMajors: Record<string, string[]> = {
     "Akademi Manajemen Bumi Sebalo Bengkayang": [
         "Manajemen Perusahaan"
     ],
-    "Akademi Manajemen Informatika &amp; Komputer Jaya Nusa": [
+    "Akademi Manajemen Informatika &amp Komputer Jaya Nusa": [
         "Manajemen Informatika"
     ],
-    "Akademi Manajemen Informatika &amp; Komputer Universal": [
+    "Akademi Manajemen Informatika &amp Komputer Universal": [
         "Manajemen Informatika"
     ],
     "Akademi Manajemen Informatika Dan Komputer Al-Muslim": [
@@ -2276,7 +2276,7 @@ export const universityMajors: Record<string, string[]> = {
     "Akademik Teknik Biak": [
         "Teknik Sipil"
     ],
-    "AKTEK RADIODIAGNOSTIK &amp; RADIOTERAPI MUHAMMADIYAH": [
+    "AKTEK RADIODIAGNOSTIK &amp RADIOTERAPI MUHAMMADIYAH": [
         "RADIODIAGNOSTIK DAN RADIOTERAPI"
     ],
     "AMIK AKMI": [
@@ -5960,7 +5960,7 @@ export const universityMajors: Record<string, string[]> = {
     "Politeknik Islam Syekh Salman Al-Farisi Rantau": [
         "Teknologi Pertanian"
     ],
-    "Politeknik IT&amp;B Medan": [
+    "Politeknik IT&ampB Medan": [
         "Manajemen Keuangan",
         "Administrasi Bisnis",
         "Perhotelan",
@@ -7724,7 +7724,7 @@ export const universityMajors: Record<string, string[]> = {
         "Usaha Perjalanan Wisata",
         "Pengelolaan Perhotelan"
     ],
-    "Politeknik Sains &amp; Teknologi Wiratama Maluku Utara": [
+    "Politeknik Sains &amp Teknologi Wiratama Maluku Utara": [
         "Manajemen Informatika",
         "Teknik Komputer"
     ],
@@ -8743,7 +8743,7 @@ export const universityMajors: Record<string, string[]> = {
     "Sekolah Tinggi Arsitektur YKPN Yogyakarta": [
         "Gambar Arsitektur"
     ],
-    "Sekolah Tinggi Bahasa Asing &quot;IEC&quot;": [
+    "Sekolah Tinggi Bahasa Asing &quotIEC&quot": [
         "Bahasa Dan Sastra Inggris"
     ],
     "Sekolah Tinggi Bahasa Asing Bina Dinamika Cianjur": [
@@ -8960,7 +8960,7 @@ export const universityMajors: Record<string, string[]> = {
         "Perbankan Syariah",
         "Ekonomi Syariah"
     ],
-    "Sekolah Tinggi Elektronika &amp; Komputer (STEKOM)": [
+    "Sekolah Tinggi Elektronika &amp Komputer (STEKOM)": [
         "Teknik Komputer",
         "Komputerisasi Akuntansi",
         "Komputer Grafis",
@@ -10035,7 +10035,7 @@ export const universityMajors: Record<string, string[]> = {
         "Manajemen",
         "Akuntansi"
     ],
-    "Sekolah Tinggi Ilmu Ekonomi Ottow &amp; Geissler Serui": [
+    "Sekolah Tinggi Ilmu Ekonomi Ottow &amp Geissler Serui": [
         "Ekonomi Pembangunan",
         "Manajemen"
     ],
@@ -12485,7 +12485,7 @@ export const universityMajors: Record<string, string[]> = {
     "Sekolah Tinggi Ilmu Manajemen Indonesia YAPMI": [
         "Manajemen"
     ],
-    "Sekolah Tinggi Ilmu Manajemen Informatika &amp; Teknik Komputer Agamua Wamena Papua": [
+    "Sekolah Tinggi Ilmu Manajemen Informatika &amp Teknik Komputer Agamua Wamena Papua": [
         "Teknik Komputer"
     ],
     "Sekolah Tinggi Ilmu Manajemen Informatika Dan Komputer Sepuluh Nopember Jayapura": [
@@ -13665,7 +13665,7 @@ export const universityMajors: Record<string, string[]> = {
         "Komputerisasi Akuntansi",
         "Sistem Informasi Akuntansi"
     ],
-    "Sekolah Tinggi Manajemen Informatika Dan Komputer Jakarta STI&amp;K": [
+    "Sekolah Tinggi Manajemen Informatika Dan Komputer Jakarta STI&ampK": [
         "Teknologi Informasi",
         "Sistem Komputer",
         "Sistem Informasi"
@@ -13859,7 +13859,7 @@ export const universityMajors: Record<string, string[]> = {
         "Permesinan Kapal",
         "Transportasi"
     ],
-    "Sekolah Tinggi Matematika &amp; Ilmu Pengetahuan Alam": [
+    "Sekolah Tinggi Matematika &amp Ilmu Pengetahuan Alam": [
         "Kimia"
     ],
     "Sekolah Tinggi Media Komunikasi Trisakti": [
@@ -13871,7 +13871,7 @@ export const universityMajors: Record<string, string[]> = {
         "Instrumentasi Meteorologi Klimatologi Dan Geofisika",
         "Meteorologi"
     ],
-    "Sekolah Tinggi Multi Media &quot;MMTC&quot; Yogyakarta": [
+    "Sekolah Tinggi Multi Media &quotMMTC&quot Yogyakarta": [
         "Manajemen Informasi Dan Komunikasi"
     ],
     "Sekolah Tinggi Multi Media 'MMTC' Yogyakarta": [
@@ -14183,7 +14183,7 @@ export const universityMajors: Record<string, string[]> = {
         "Teknik Industri",
         "Teknik Elektro"
     ],
-    "Sekolah Tinggi Teknologi &quot;Warga&quot; Surakarta": [
+    "Sekolah Tinggi Teknologi &quotWarga&quot Surakarta": [
         "Teknik Kimia Tekstil",
         "Teknik Elektronika",
         "Teknik Mesin"
@@ -16325,7 +16325,7 @@ export const universityMajors: Record<string, string[]> = {
     "STI Ekonomi Syari`ah Baktiya Aceh Utara": [
         "Ekonomi Syari`ah"
     ],
-    "STIA &amp; Pemerintahan Annisa Dwi Salfarizi": [
+    "STIA &amp Pemerintahan Annisa Dwi Salfarizi": [
         "Ilmu Administrasi Negara",
         "Ilmu Pemerintahan"
     ],
@@ -16449,7 +16449,7 @@ export const universityMajors: Record<string, string[]> = {
     "STIE Nobel Indonesia Makassar": [
         "Manajemen"
     ],
-    "STIE Ottow &amp; Geissler Fak-fak": [
+    "STIE Ottow &amp Geissler Fak-fak": [
         "Manajemen",
         "Akuntansi",
         "Ekonomi Pembangunan"
@@ -17814,7 +17814,7 @@ export const universityMajors: Record<string, string[]> = {
     "STMIK Jabar": [
         "Sistem Informasi"
     ],
-    "STMIK Jakarta Sti&amp;k": [
+    "STMIK Jakarta Sti&ampk": [
         "Manajemen Informatika"
     ],
     "STMIK Jaya Nusa": [
@@ -29335,7 +29335,7 @@ export const universityMajors: Record<string, string[]> = {
         "Desain Komunikasi Visual",
         "Desain Produk"
     ],
-    "Universitas Pembangunan Nasional &quot;Veteran&quot; Jawa Timur": [
+    "Universitas Pembangunan Nasional &quotVeteran&quot Jawa Timur": [
         "Hukum",
         "Administrasi Bisnis",
         "Informatika",
@@ -33098,6 +33098,6 @@ export const universityMajors: Record<string, string[]> = {
         "Konstruksi Pondasi",
         "Teknologi Konstruksi Jalan"
     ]
-};
+}
 
-export const years = Array.from({ length: 20 }, (_, i) => `${2005 + i}`);
+export const years = Array.from({ length: 50 }, (_, i) => `${2005 + i}`)

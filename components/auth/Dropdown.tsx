@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react"
 import {
     View,
     TouchableOpacity,
@@ -7,21 +7,23 @@ import {
     TextInput,
     TouchableWithoutFeedback,
     Platform,
-} from "react-native";
-import Text from "@/components/ui/Text";
+    KeyboardAvoidingView,
+} from "react-native"
+import Text from "@/components/ui/Text"
 
 type DropdownProps = {
-    label?: string;
-    placeholder?: string;
-    icon?: React.ReactNode;
-    value: string;
-    onValueChange: (v: string) => void;
-    options: string[];
-    error?: string;
-    required?: boolean;
-};
+    label?: string
+    placeholder?: string
+    icon?: React.ReactNode
+    value: string
+    onValueChange: (v: string) => void
+    options: string[]
+    error?: string
+    required?: boolean
+    onClearError?: () => void
+}
 
-export default function SearchableDropdown({
+export const SearchableDropdown = ({
     label,
     placeholder,
     icon,
@@ -30,23 +32,33 @@ export default function SearchableDropdown({
     options,
     error,
     required,
-}: DropdownProps) {
-    const [isFocus, setIsFocus] = useState(false);
-    const [search, setSearch] = useState("");
+    onClearError,
+}: DropdownProps) => {
+    const [isFocus, setIsFocus] = useState(false)
+    const [search, setSearch] = useState("")
 
-    const borderColor = isFocus
-        ? "#FCBC03"
-        : error
-            ? "#EF4444"
-            : "#D1D5DB";
+    useEffect(() => {
+        if (!isFocus) setSearch("")
+    }, [isFocus])
+
+    const borderColor = isFocus ? "#FCBC03" : error ? "#EF4444" : "#D1D5DB"
 
     const filteredOptions = useMemo(
-        () =>
-            options.filter((opt) =>
-                opt.toLowerCase().includes(search.toLowerCase())
-            ),
+        () => options.filter((opt) => opt.toLowerCase().includes(search.toLowerCase())),
         [options, search]
-    );
+    )
+
+    const handleSelect = (item: string) => {
+        onValueChange(item)
+        setIsFocus(false)
+        setSearch("")
+        onClearError?.()
+    }
+
+    const handleSearchChange = (text: string) => {
+        setSearch(text)
+        if (onClearError) onClearError()
+    }
 
     return (
         <View className="mb-4">
@@ -76,35 +88,42 @@ export default function SearchableDropdown({
                 {icon}
             </TouchableOpacity>
 
-            <Modal visible={isFocus} transparent animationType="fade">
-                <View className="flex-1 justify-center px-6">
-                    {/* Background overlay */}
+            <Modal visible={isFocus} transparent animationType="slide">
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === "ios" ? "padding" : undefined}
+                    style={{ flex: 1 }}
+                >
                     <TouchableWithoutFeedback onPress={() => setIsFocus(false)}>
-                        <View className="absolute inset-0 bg-black/30" />
+                        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} />
                     </TouchableWithoutFeedback>
 
-                    {/* Modal content */}
                     <View
                         style={{
                             backgroundColor: "#FFFFFF",
-                            borderRadius: 12,
-                            padding: 12,
+                            borderTopLeftRadius: 20,
+                            borderTopRightRadius: 20,
+                            padding: 16,
                             maxHeight: "70%",
-                            zIndex: 10,
+                            position: "absolute",
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
                         }}
                     >
                         <TextInput
                             placeholder="Search..."
                             placeholderTextColor="#9CA3AF"
                             value={search}
-                            onChangeText={setSearch}
+                            onChangeText={handleSearchChange}
                             style={{
-                                borderWidth: 1,
+                                borderWidth: 1.5,
                                 borderColor: "#D1D5DB",
                                 borderRadius: 12,
-                                paddingHorizontal: 12,
-                                height: 40,
-                                marginBottom: 8,
+                                paddingHorizontal: 15,
+                                paddingVertical: 20,
+                                height: 50,
+                                marginBottom: 12,
+                                fontSize: 16,
                                 color: "#0F172A",
                                 ...(Platform.OS === "android" && { includeFontPadding: false }),
                                 ...(Platform.OS === "web" && { outlineStyle: "none" } as any),
@@ -117,24 +136,26 @@ export default function SearchableDropdown({
                             keyExtractor={(item, index) => item + index}
                             renderItem={({ item }) => (
                                 <TouchableOpacity
-                                    onPress={() => {
-                                        onValueChange(item);
-                                        setIsFocus(false);
-                                        setSearch("");
+                                    onPress={() => handleSelect(item)}
+                                    style={{
+                                        paddingVertical: 12,
+                                        paddingHorizontal: 8,
+                                        borderBottomWidth: 1,
+                                        borderBottomColor: "#E5E7EB",
+                                        borderRadius: 8,
                                     }}
-                                    style={{ paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#E5E7EB" }}
                                 >
-                                    <Text className="text-black">{item}</Text>
+                                    <Text style={{ color: "#0F172A", fontSize: 16 }}>{item}</Text>
                                 </TouchableOpacity>
                             )}
                         />
                     </View>
-                </View>
+                </KeyboardAvoidingView>
             </Modal>
 
             {error && !isFocus && (
                 <Text className="text-red-500 text-sm mt-1">{error}</Text>
             )}
         </View>
-    );
+    )
 }
