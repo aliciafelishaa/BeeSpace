@@ -19,6 +19,7 @@
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.18",
     "date-fns": "^4.1.0",
+    "datetimepicker": "^0.1.39",
     "expo": "~54.0.12",
     "expo-app-loading": "^1.1.2",
     "expo-constants": "~18.0.9",

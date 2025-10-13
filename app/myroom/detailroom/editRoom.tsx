@@ -3,36 +3,36 @@ import DropdownInput from "@/components/createroom/DropdownInput";
 import FormInput from "@/components/createroom/FormInput";
 import ImagePicker from "@/components/createroom/ImagePicker";
 import RadioGroup from "@/components/createroom/RadioGroup";
-import TimePickerInput from "@/components/createroom/TimePickerInput";
+import TimeRangePickerInput from "@/components/createroom/TimePickerInput";
 import ToggleSwitch from "@/components/createroom/ToggleSwitch";
 import IconBack from "@/components/ui/icon-back";
-import Text from "@/components/ui/Text";
 import { COLORS } from "@/constants/utils/colors";
-import { useAuthState } from "@/hooks/useAuthState";
 import { useRoom } from "@/hooks/useRoom";
 import { useRoomCover } from "@/hooks/useRoomCover";
-import { router } from "expo-router";
-import React, { useState } from "react";
-import { ScrollView, TouchableOpacity, View } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
-export default function CreateRoomPage() {
+export default function EditRoom() {
+  const { id } = useLocalSearchParams();
   const [step, setStep] = useState(1);
-  const handleBack = () => router.back();
   const insets = useSafeAreaInsets();
-  const { user } = useAuthState();
-  const { addRoom } = useRoom();
+  const { addRoom, updateRoom, getRoomId } = useRoom();
+  const handleBack = () => router.back();
   const { image, uploading, pickPhoto } = useRoomCover(undefined, (url) => {
     handleChange("cover", url);
   });
-  // const { data, setField } = useSignupContext();
-
-  const [showError, setShowError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-
   const [formData, setFormData] = useState({
     cover: "",
     planName: "",
@@ -48,13 +48,46 @@ export default function CreateRoomPage() {
     openPublic: false,
     enableChat: false,
   });
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+  const [rooms, setRooms] = useState<any>(null);
 
   const handleChange = (key: string, value: any) => {
     setFormData({ ...formData, [key]: value });
   };
+  const handleFocus = (key: string) => {
+    if (formErrors[key]) {
+      setFormErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[key];
+        return newErrors;
+      });
+    }
+  };
+  const handleEdit = async () => {
+    // if (!user?.uid) {
+    //   setErrorMessage("You must be logged in to save a diary");
+    //   setShowError(true);
+    //   return;
+    // }
+    console.log("testing2");
+    const inputRoom = {
+      // fromUid: user?.uid,
+      ...formData,
+      date: new Date(formData.date),
+    };
 
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-
+    const result = await updateRoom(id, inputRoom);
+    if (result.success) {
+      console.log("✅ Form Submitted:", result);
+      router.back();
+    } else {
+      setErrorMessage(result.message || "Failed to create room");
+      setShowError(true);
+    }
+  };
   const handleNext = () => {
     let errors: Record<string, string> = {};
 
@@ -79,42 +112,53 @@ export default function CreateRoomPage() {
     }
   };
 
-  const handleFocus = (key: string) => {
-    if (formErrors[key]) {
-      setFormErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[key];
-        return newErrors;
+  useEffect(() => {
+    const fetchRoom = async () => {
+      if (!id) return;
+      setLoading(true);
+      const res = await getRoomId(id);
+      if (res.success && res.data) {
+        console.log(res.data);
+        setRooms(res.data);
+      } else {
+        setErrorMessage(res.message || "Failed to load room data");
+      }
+
+      setLoading(false);
+    };
+    fetchRoom();
+  }, [id]);
+
+  useEffect(() => {
+    if (rooms) {
+      setFormData({
+        cover: rooms.cover || "",
+        planName: rooms.planName || "",
+        description: rooms.description || "",
+        category: rooms.category || "",
+        place: rooms.place || "",
+        date: rooms.date ? new Date(rooms.date) : new Date(),
+        timeStart: rooms.timeStart || "",
+        timeEnd: rooms.timeEnd || "",
+        minMember: rooms.minMember ? String(rooms.minMember) : "",
+        maxMember: rooms.maxMember ? String(rooms.maxMember) : "",
+        locationDetail: rooms.locationDetail || "",
+        openPublic: rooms.openPublic || false,
+        enableChat: rooms.enableChat || false,
       });
     }
-  };
+  }, [rooms]);
 
-  const handleSubmit = async () => {
-    // if (!user?.uid) {
-    //   setErrorMessage("You must be logged in to save a diary");
-    //   setShowError(true);
-    //   return;
-    // }
-    console.log("testing2");
-    const inputRoom = {
-      // fromUid: user?.uid,
-      ...formData,
-      date: new Date(formData.date),
-    };
-
-    const result = await addRoom(inputRoom);
-    if (result.success) {
-      console.log("✅ Form Submitted:", result);
-      router.back();
-    } else {
-      setErrorMessage(result.message || "Failed to create room");
-      setShowError(true);
-    }
-  };
-
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 justify-center items-center bg-white">
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </SafeAreaView>
+    );
+  }
   return (
     <SafeAreaView
-      className="bg-[#FAFAFA]"
+      className="bg-neutral-100"
       style={{
         backgroundColor: COLORS.white,
         flex: 1,
@@ -140,51 +184,24 @@ export default function CreateRoomPage() {
           >
             <IconBack />
           </TouchableOpacity>
-
-          <Text className="text-center font-interMedium text-[20px]">
-            Let’s Create a Plan!
+          <Text className="text-center font-interSemiBold text-[20px]">
+            Edit Plan
           </Text>
-        </View>
-
-        <View className="flex-row items-center justify-between mb-8 mx-12">
-          {[1, 2, 3].map((num, index) => (
-            <React.Fragment key={num}>
-              <View className="items-center">
-                <View
-                  className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                    step >= num ? "bg-[#FFD661]" : "bg-[#FFF6D5]"
-                  }`}
-                >
-                  <Text
-                    className={`font-medium text-lg ${
-                      step >= num ? "text-black" : "text-[#737373]"
-                    }`}
-                  >
-                    {num}
-                  </Text>
-                </View>
-                <Text
-                  className={`mt-2 ${step >= num ? "text-[#404040]" : "text-[#737373]"}`}
-                >
-                  {num === 1 ? "Detail" : num === 2 ? "Member" : "Setting"}
-                </Text>
-              </View>
-
-              {index < 2 && (
-                <View
-                  className={`flex-1 h-[2px] ${
-                    step > num ? "bg-[#FFD661]" : "bg-[#FFF6D5]"
-                  }`}
-                />
-              )}
-            </React.Fragment>
-          ))}
         </View>
 
         {/* Form Container */}
         <View className="bg-white mx-5 rounded-2xl p-5">
           {step === 1 && (
             <View>
+              {/* <ImagePicker
+                  label="Cover"
+                  value={formData.cover}
+                  onChange={(v) => handleChange("cover", v)}
+                  imageUrl={image || formData.cover || undefined}
+                  onChangeImage={() => pickPhoto("gallery")}
+                  size={120}
+                  onEdit={false}
+                /> */}
               <ImagePicker
                 label="Cover"
                 imageUrl={image || formData.cover || undefined}
@@ -201,7 +218,7 @@ export default function CreateRoomPage() {
                 required
                 error={formErrors.planName}
                 onFocus={() => handleFocus("planName")}
-                onEdit={false}
+                onEdit={true}
               />
 
               <FormInput
@@ -218,7 +235,7 @@ export default function CreateRoomPage() {
                 }}
                 error={formErrors.description}
                 onFocus={() => handleFocus("description")}
-                onEdit={false}
+                onEdit={true}
               />
 
               <DropdownInput
@@ -251,7 +268,7 @@ export default function CreateRoomPage() {
                 ]}
                 required
                 error={formErrors.category}
-                onEdit={false}
+                onEdit={true}
               />
 
               <View>
@@ -265,7 +282,7 @@ export default function CreateRoomPage() {
                   onValueChange={(v) => handleChange("place", v)}
                   required
                   error={formErrors.place}
-                  onEdit={false}
+                  onEdit={true}
                 />
                 {formData.place !== "" && (
                   <FormInput
@@ -284,7 +301,7 @@ export default function CreateRoomPage() {
                     }
                     required
                     // error={formErrors.locationDetail}
-                    onEdit={false}
+                    onEdit={true}
                   />
                 )}
               </View>
@@ -297,7 +314,7 @@ export default function CreateRoomPage() {
                 error={formErrors.date}
               />
 
-              <TimePickerInput
+              <TimeRangePickerInput
                 label="Time"
                 startValue={formData.timeStart}
                 endValue={formData.timeEnd}
@@ -305,13 +322,8 @@ export default function CreateRoomPage() {
                 onChangeEnd={(v) => handleChange("timeEnd", v)}
                 required
               />
-            </View>
-          )}
-
-          {step === 2 && (
-            <View>
               <FormInput
-                label="Minimum Member"
+                label="Minimum Member (optional)"
                 placeholder="-"
                 value={formData.minMember}
                 onChangeText={(v) => {
@@ -330,7 +342,7 @@ export default function CreateRoomPage() {
               />
 
               <FormInput
-                label="Maximum Member"
+                label="Maximum Member (optional)"
                 placeholder="-"
                 value={formData.maxMember}
                 onChangeText={(v) => {
@@ -354,10 +366,22 @@ export default function CreateRoomPage() {
                 isNumeric
                 onEdit={false}
               />
+
+              <View className="justify-between items-center flex-row mt-4">
+                <Text className="text-neutral-900 text-[16px] font-interMedium">
+                  Advanced Settings{" "}
+                </Text>
+                <TouchableOpacity onPress={() => setStep(2)}>
+                  <Image
+                    source={require("@/assets/utils/arrow-right.png")}
+                    className="w-[12px] h-[24px]"
+                    resizeMode="cover"
+                  ></Image>
+                </TouchableOpacity>
+              </View>
             </View>
           )}
-
-          {step === 3 && (
+          {step === 2 && (
             <View>
               <ToggleSwitch
                 label="Open for Public"
@@ -376,36 +400,13 @@ export default function CreateRoomPage() {
           )}
 
           <View className="w-full flex-row mt-6 gap-4">
-            {step > 1 ? (
-              <>
-                <TouchableOpacity
-                  onPress={handleBack}
-                  className="flex-1 border border-[#FCBC03] py-3 rounded-xl items-center justify-center"
-                >
-                  <Text className="text-[#FCBC03] font-medium text-lg">
-                    Back
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={step === 3 ? handleSubmit : handleNext}
-                  className="flex-1 bg-[#FCBC03] py-3 rounded-xl items-center justify-center"
-                >
-                  <Text className="text-white font-bold text-xl">
-                    {step === 3 ? "Submit" : "Next"}
-                  </Text>
-                </TouchableOpacity>
-              </>
-            ) : (
+            {step === 1 && (
               <TouchableOpacity
-                onPress={handleNext}
+                onPress={step === 1 ? handleEdit : handleNext}
                 className="flex-1 bg-[#FCBC03] py-3 rounded-xl items-center justify-center"
               >
-                <Text
-                  className="text-white font-bold text-lg"
-                  style={{ fontWeight: "bold" }}
-                >
-                  Next
+                <Text className="text-white font-bold text-xl">
+                  {step === 1 ? "Submit" : "Next"}
                 </Text>
               </TouchableOpacity>
             )}
