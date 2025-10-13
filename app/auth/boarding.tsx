@@ -1,54 +1,52 @@
 import React, { useState } from "react"
-import { View, TouchableOpacity, ScrollView, Image } from "react-native"
+import { View, ScrollView, TouchableOpacity, Image, ActivityIndicator } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
 import * as ImagePicker from "expo-image-picker"
-import IconBoarding from "@/components/ui/IconBoarding"
-import Text from "@/components/ui/Text"
-import TextInput from "@/components/auth/TextInput"
+import { InputField } from "@/components/auth/InputField"
 import SearchableDropdown from "@/components/auth/Dropdown"
+import Text from "@/components/ui/Text"
+import IconBoarding from "@/components/ui/IconBoarding"
+import { useForm, Controller } from "react-hook-form"
+import { useAuth } from "@/hooks/useAuth"
+import { updateUserProfile, StudentProfile } from "@/services/userService"
+import { storage } from "@/config/firebaseConfig"
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 
-interface StudentProfile {
-    fullName: string
-    username: string
-    university: string
-    major: string
-    enrollYear: string
-    gradYear: string
-    studentID: string
-    studentCard: string | null
-}
-
-export default function StudentBoarding(): React.ReactElement {
+export default function StudentBoarding() {
+    const { user } = useAuth()
     const [step, setStep] = useState<number>(1)
-    const [profile, setProfile] = useState<StudentProfile>({
-        fullName: "",
-        username: "",
-        university: "",
-        major: "",
-        enrollYear: "",
-        gradYear: "",
-        studentID: "",
-        studentCard: null,
+    const [loading, setLoading] = useState(false)
+    const [studentCard, setStudentCard] = useState<string | null>(null)
+
+    const { control, handleSubmit, watch } = useForm<StudentProfile>({
+        defaultValues: {
+            fullName: "",
+            username: "",
+            university: "",
+            major: "",
+            enrollYear: "",
+            gradYear: "",
+            studentID: "",
+            studentCard: null,
+        },
     })
 
-    const universities: string[] = ["Harvard", "Stanford", "MIT", "UC Berkeley"]
-    const majors: string[] = ["Computer Science", "Business", "Biology", "Engineering"]
-    const years: string[] = ["2018", "2019", "2020", "2021", "2022", "2023"]
-
-    const pickImage = async (): Promise<void> => {
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            quality: 1,
-        })
-        if (!result.canceled) {
-            setProfile((prev) => ({ ...prev, studentCard: result.assets[0].uri }))
-        }
+    if (!user) {
+        return (
+            <View className="flex-1 justify-center items-center">
+                <Text>Loading user...</Text>
+            </View>
+        )
     }
 
-    const nextStep = (): void => setStep((prev) => Math.min(prev + 1, 3))
-    const prevStep = (): void => setStep((prev) => Math.max(prev - 1, 1))
+    const universities = ["Harvard", "Stanford", "MIT", "UC Berkeley"]
+    const majors = ["Computer Science", "Business", "Biology", "Engineering"]
+    const years = ["2018", "2019", "2020", "2021", "2022", "2023"]
 
-    const renderProgress = (): React.ReactElement => (
+    const nextStep = () => setStep((prev) => Math.min(prev + 1, 3))
+    const prevStep = () => setStep((prev) => Math.max(prev - 1, 1))
+
+    const renderProgress = () => (
         <View className="flex-row justify-center mb-4">
             {[1, 2, 3].map((i) => (
                 <View
@@ -58,6 +56,40 @@ export default function StudentBoarding(): React.ReactElement {
             ))}
         </View>
     )
+
+    const pickImage = async () => {
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            quality: 1,
+        })
+        if (!result.canceled) {
+            setStudentCard(result.assets[0].uri)
+        }
+    }
+
+    const onSubmit = async (data: StudentProfile) => {
+        setLoading(true)
+        try {
+            let studentCardUrl = studentCard
+
+            if (studentCard) {
+                const response = await fetch(studentCard)
+                const blob = await response.blob()
+                const storageRef = ref(storage, `studentCards/${user.uid}`)
+                await uploadBytes(storageRef, blob)
+                studentCardUrl = await getDownloadURL(storageRef)
+            }
+
+            await updateUserProfile(user.uid, { ...data, studentCard: studentCardUrl })
+            alert("Profile submitted successfully!")
+            // redirect jika perlu
+        } catch (err) {
+            console.error(err)
+            alert("Failed to submit profile. Try again.")
+        } finally {
+            setLoading(false)
+        }
+    }
 
     return (
         <ScrollView className="w-full bg-[#FAFAFA]">
@@ -80,33 +112,36 @@ export default function StudentBoarding(): React.ReactElement {
             </View>
 
             <View className="p-6 space-y-4">
+                {/* Step 1 */}
                 {step === 1 && (
                     <>
-                        <TextInput
-                            label="Full Name"
-                            placeholder="Full Name"
-                            value={profile.fullName}
-                            onChangeText={(v) => setProfile((prev) => ({ ...prev, fullName: v }))}
+                        <InputField control={control} name="fullName" placeholder="Full Name" />
+                        <InputField control={control} name="username" placeholder="Username" />
+                        <Controller
+                            control={control}
+                            name="university"
+                            render={({ field: { onChange, value } }) => (
+                                <SearchableDropdown
+                                    label="University"
+                                    placeholder="Select University"
+                                    value={value}
+                                    onValueChange={onChange}
+                                    options={universities}
+                                />
+                            )}
                         />
-                        <TextInput
-                            label="Username"
-                            placeholder="Username"
-                            value={profile.username}
-                            onChangeText={(v) => setProfile((prev) => ({ ...prev, username: v }))}
-                        />
-                        <SearchableDropdown
-                            label="University’s Name"
-                            placeholder="Select University"
-                            value={profile.university}
-                            onValueChange={(v) => setProfile((prev) => ({ ...prev, university: v }))}
-                            options={universities}
-                        />
-                        <SearchableDropdown
-                            label="Major"
-                            placeholder="Select Major"
-                            value={profile.major}
-                            onValueChange={(v) => setProfile((prev) => ({ ...prev, major: v }))}
-                            options={majors}
+                        <Controller
+                            control={control}
+                            name="major"
+                            render={({ field: { onChange, value } }) => (
+                                <SearchableDropdown
+                                    label="Major"
+                                    placeholder="Select Major"
+                                    value={value}
+                                    onValueChange={onChange}
+                                    options={majors}
+                                />
+                            )}
                         />
                         <View className="flex-row justify-end mt-4">
                             <TouchableOpacity
@@ -119,21 +154,34 @@ export default function StudentBoarding(): React.ReactElement {
                     </>
                 )}
 
+                {/* Step 2 */}
                 {step === 2 && (
                     <>
-                        <SearchableDropdown
-                            label="Enrollment Year"
-                            placeholder="Select Enrollment Year"
-                            value={profile.enrollYear}
-                            onValueChange={(v: string) => setProfile((prev) => ({ ...prev, enrollYear: v }))}
-                            options={years}
+                        <Controller
+                            control={control}
+                            name="enrollYear"
+                            render={({ field: { onChange, value } }) => (
+                                <SearchableDropdown
+                                    label="Enrollment Year"
+                                    placeholder="Select Enrollment Year"
+                                    value={value}
+                                    onValueChange={onChange}
+                                    options={years}
+                                />
+                            )}
                         />
-                        <SearchableDropdown
-                            label="Graduation Year"
-                            placeholder="Select Graduation Year"
-                            value={profile.gradYear}
-                            onValueChange={(v: string) => setProfile((prev) => ({ ...prev, gradYear: v }))}
-                            options={years}
+                        <Controller
+                            control={control}
+                            name="gradYear"
+                            render={({ field: { onChange, value } }) => (
+                                <SearchableDropdown
+                                    label="Graduation Year"
+                                    placeholder="Select Graduation Year"
+                                    value={value}
+                                    onValueChange={onChange}
+                                    options={years}
+                                />
+                            )}
                         />
                         <View className="flex-row justify-end mt-4">
                             <TouchableOpacity
@@ -146,14 +194,10 @@ export default function StudentBoarding(): React.ReactElement {
                     </>
                 )}
 
+                {/* Step 3 */}
                 {step === 3 && (
                     <>
-                        <TextInput
-                            label="Student ID"
-                            placeholder="Student ID"
-                            value={profile.studentID}
-                            onChangeText={(v) => setProfile((prev) => ({ ...prev, studentID: v }))}
-                        />
+                        <InputField control={control} name="studentID" placeholder="Student ID" />
                         <Text className="text-[#404040] mb-1 font-semibold text-base">Student ID Card</Text>
                         <TouchableOpacity
                             onPress={pickImage}
@@ -161,25 +205,26 @@ export default function StudentBoarding(): React.ReactElement {
                         >
                             <Image source={require("@/assets/images/icon-boarding-step3.png")} className="mb-4" />
                             <Text className="text-center font-medium">
-                                {profile.studentCard
-                                    ? "Change Student ID Card"
-                                    : "Upload the picture of your Student ID Card"}
+                                {studentCard ? "Change Student ID Card" : "Upload the picture of your Student ID Card"}
                             </Text>
                             <Text className="text-sm text-gray-500 mt-1">Format: JPG, PNG (Max 5MB)</Text>
                             <Text className="bg-[#FCBC03] px-3 py-2 rounded text-[#FAFAFA] mt-2">Select files</Text>
                         </TouchableOpacity>
-                        {profile.studentCard && (
+                        {studentCard && (
                             <Image
-                                source={{ uri: profile.studentCard }}
+                                source={{ uri: studentCard }}
                                 className="w-full h-40 mt-2 rounded-lg"
                                 resizeMode="contain"
                             />
                         )}
                         <View className="flex-row justify-end mt-4">
                             <TouchableOpacity
-                                className="w-1/3 bg-yellow-400 h-12 rounded-lg flex justify-center items-center"
+                                onPress={handleSubmit(onSubmit)}
+                                disabled={loading}
+                                className={`w-1/3 h-12 rounded-lg flex justify-center items-center ${loading ? "bg-yellow-200" : "bg-yellow-400"
+                                    }`}
                             >
-                                <Text className="text-white font-bold">Submit</Text>
+                                {loading ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold">Submit</Text>}
                             </TouchableOpacity>
                         </View>
                     </>

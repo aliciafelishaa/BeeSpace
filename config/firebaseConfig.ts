@@ -1,7 +1,7 @@
-// Import the functions you need from the SDKs you need
 import { FirebaseApp, getApp, getApps, initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -13,15 +13,16 @@ const firebaseConfig = {
   measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase
 let app: FirebaseApp;
 if (getApps().length === 0) {
   app = initializeApp(firebaseConfig);
 } else {
   app = getApp();
 }
+
 const auth = getAuth(app);
 const firestore = getFirestore(app);
+const storage = getStorage(app)
 
-export { auth, firestore };
+export { auth, firestore, storage };
 export const db = firestore;
