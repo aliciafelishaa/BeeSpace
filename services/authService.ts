@@ -1,5 +1,5 @@
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth"
-import { doc, setDoc } from "firebase/firestore"
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth"
+import { collection, getDocs, query, where, setDoc, doc } from "firebase/firestore"
 import { auth, db } from "@/config/firebaseConfig"
 import { getNextUserId } from "./userService"
 
@@ -12,12 +12,10 @@ export interface User {
 
 export const registerWithEmail = async (email: string, password: string): Promise<User> => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password)
-    const firebaseUid = userCredential.user.uid
-
     const sequentialUid = await getNextUserId()
     const now = new Date()
 
-    await setDoc(doc(db, "users", firebaseUid), {
+    await setDoc(doc(db, "users", userCredential.user.uid), {
         uid: sequentialUid,
         email,
         fullName: "",
@@ -41,13 +39,21 @@ export const registerWithEmail = async (email: string, password: string): Promis
     }
 }
 
-
 export const loginWithEmail = async (email: string, password: string) => {
+
+    const q = query(collection(db, "users"), where("email", "==", email))
+    const querySnap = await getDocs(q)
+
+    if (querySnap.empty) {
+        throw new Error("EMAIL_NOT_REGISTERED")
+    }
+
+    const userData = querySnap.docs[0].data()
+
     try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password)
-        const { uid } = userCredential.user
-        return { uid, email }
+        await signInWithEmailAndPassword(auth, email, password)
+        return { uid: userData.uid, email }
     } catch (error: any) {
-        throw error
+        throw new Error("PASSWORD_INCORRECT")
     }
 }

@@ -6,6 +6,7 @@ import { InputField } from "@/components/auth/InputField"
 import Text from "@/components/ui/Text"
 import IconGoogle from "@/components/ui/IconGoogle"
 import LogoBeeSpace from "@/components/ui/LogoBeeSpace"
+import { loginWithEmail } from "@/services/authService"
 
 type LoginForm = {
     email: string
@@ -28,21 +29,29 @@ export default function Login() {
     const onSubmit = async (data: LoginForm) => {
         setError("")
         setSuccess("")
-
-        if (!data.email || !data.password) {
-            return setError("All fields are required")
-        }
+        setLoading(true)
 
         try {
-            setLoading(true)
-
-            setTimeout(() => {
-                setSuccess("Login successful!")
-                setLoading(false)
-                reset()
-            }, 1000)
-        } catch {
-            setError("Login failed, please try again")
+            const user = await loginWithEmail(data.email, data.password)
+            setSuccess("Login successful!")
+            reset()
+            router.push("/")
+        } catch (err: any) {
+            console.error("Login error:", err)
+            switch (err.message) {
+                case "EMAIL_NOT_REGISTERED":
+                    setError("Email is not registered.")
+                    break
+                case "PASSWORD_INCORRECT":
+                    setError("Password is incorrect.")
+                    break
+                case "INVALID_EMAIL":
+                    setError("Invalid email address.")
+                    break
+                default:
+                    setError("Login failed. Please try again.")
+            }
+        } finally {
             setLoading(false)
         }
     }
@@ -57,18 +66,13 @@ export default function Login() {
             }}
             showsVerticalScrollIndicator={false}
         >
-            <View className="w-full items-center mb-10">
+            <View className="w-full items-center mb-10 mt-12">
                 <LogoBeeSpace />
-                <Text className="text-3xl font-bold text-center my-4">
-                    Welcome back, Beeps!
-                </Text>
+                <Text className="text-3xl font-bold text-center my-4">Welcome back, Beeps!</Text>
                 <Text className="text-lg text-[#737373] font-medium mb-10">
                     Select your method to log in
                 </Text>
             </View>
-
-            {error ? <Text className="text-red-500 mb-2">{error}</Text> : null}
-            {success ? <Text className="text-green-500 mb-2">{success}</Text> : null}
 
             <InputField
                 control={control}
@@ -101,18 +105,17 @@ export default function Login() {
                 error={errors.password?.message}
             />
 
+            {error ? <Text className="text-red-500 mb-2">{error}</Text> : null}
+            {success ? <Text className="text-green-500 mb-2">{success}</Text> : null}
+
             <TouchableOpacity className="mb-6">
-                <Text className="text-[#DC9010] font-semibold">
-                    Forgot Password?
-                </Text>
+                <Text className="text-[#DC9010] font-semibold">Forgot Password?</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
                 onPress={handleSubmit(onSubmit)}
                 disabled={loading}
-                className={`bg-[#FCBC03] justify-center h-14 rounded-lg mb-4 mt-2 ${
-                    loading ? "opacity-60" : ""
-                }`}
+                className={`bg-[#FCBC03] justify-center h-14 rounded-lg mb-4 mt-2 ${loading ? "opacity-60" : ""}`}
             >
                 <Text className="text-white text-center text-lg font-bold">
                     {loading ? "Logging in..." : "Log In"}
@@ -121,9 +124,7 @@ export default function Login() {
 
             <View className="flex-row items-center my-4">
                 <View className="flex-1 h-px bg-gray-300" />
-                <Text className="mx-3 text-gray-400 font-semibold">
-                    or continue with
-                </Text>
+                <Text className="mx-3 text-gray-400 font-semibold">or continue with</Text>
                 <View className="flex-1 h-px bg-gray-300" />
             </View>
 
@@ -133,13 +134,9 @@ export default function Login() {
             </TouchableOpacity>
 
             <View className="flex-row justify-center mt-4 mb-12">
-                <Text className="text-[#404040] font-medium">
-                    Don’t have an account?{" "}
-                </Text>
+                <Text className="text-[#404040] font-medium">Don’t have an account? </Text>
                 <TouchableOpacity onPress={() => router.push("/auth/register")}>
-                    <Text className="text-[#DC9010] font-semibold">
-                        Create an account
-                    </Text>
+                    <Text className="text-[#DC9010] font-semibold">Create an account</Text>
                 </TouchableOpacity>
             </View>
         </ScrollView>
