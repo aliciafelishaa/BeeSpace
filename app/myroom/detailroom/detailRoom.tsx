@@ -19,6 +19,7 @@ export default function DetailRoom() {
   const [rooms, setRooms] = useState<RoomEntry[]>([]);
   const { getRoom } = useRoom();
   const [loading, setLoading] = useState(false);
+  const { deleteRoom } = useRoom();
   const isOwner = true;
   const hasJoined = false;
   const isEnded = false;
@@ -49,6 +50,24 @@ export default function DetailRoom() {
   }, [id]);
 
   const room = rooms[0];
+
+  const handleDeleteRoom = async () => {
+    console.log("Mau Delete");
+    console.log(room);
+    if (!room || !id) return;
+    try {
+      const res = await deleteRoom(id);
+      if (res.success) {
+        console.log("Success");
+        router.back();
+      } else {
+        console.log("Failed to delete rooms");
+      }
+    } catch (err: any) {
+      console.error(err);
+      console.log("Something went wrong");
+    }
+  };
 
   // Tentukan kondisi tombol
   // const currentUser = auth().currentUser;
@@ -269,6 +288,7 @@ export default function DetailRoom() {
         isOwner={isOwner}
         hasJoined={hasJoined}
         isEnded={isEnded}
+        onDeleteRoom={handleDeleteRoom}
       />
     </SafeAreaView>
   );

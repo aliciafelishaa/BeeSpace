@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  Alert,
   Image,
   Modal,
   Pressable,
@@ -12,15 +13,26 @@ import {
 type ModalFilteringDynamicProps = {
   visible: boolean;
   onClose: () => void;
-
   isJoin: boolean;
+  isEdit: boolean;
+  isReport: boolean;
+  onDelete?: () => void;
 };
 
 export default function ModalEditDelete({
   visible,
   onClose,
   isJoin = false,
+  isEdit = false,
+  isReport = false,
+  onDelete,
 }: ModalFilteringDynamicProps) {
+  const handleDelete = () => {
+    Alert.alert("Delete Room", "Are you sure you want to delete this room?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Delete", style: "destructive", onPress: onDelete },
+    ]);
+  };
   return (
     <Modal
       transparent
@@ -61,16 +73,31 @@ export default function ModalEditDelete({
               ></Image>
               <Text className="font-interMedium font-[16px]">Share</Text>
             </TouchableOpacity>
-            <TouchableOpacity className="flex flex-col gap-2 items-center justify-center">
-              <Image
-                source={require("@/assets/images/report.png")}
-                className="w-[100px] h-[16px] "
-                resizeMode="cover"
-              ></Image>
-              <Text className="font-interMedium font-[16px] text-error">
-                Report
-              </Text>
-            </TouchableOpacity>
+            {isReport && (
+              <TouchableOpacity className="flex flex-col gap-2 items-center justify-center">
+                <Image
+                  source={require("@/assets/images/report.png")}
+                  className="w-[16px] h-[16px] "
+                  resizeMode="cover"
+                ></Image>
+                <Text className="font-interMedium font-[16px] text-error">
+                  Report
+                </Text>
+              </TouchableOpacity>
+            )}
+            {isEdit && (
+              <TouchableOpacity
+                className="flex flex-col gap-2 items-center justify-center"
+                onPress={onDelete}
+              >
+                <Image
+                  source={require("@/assets/images/delete.png")}
+                  className="w-[16px] h-[16px]"
+                  resizeMode="cover"
+                ></Image>
+                <Text className="font-interMedium font-[16px]">Delete</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </ScrollView>
       </View>

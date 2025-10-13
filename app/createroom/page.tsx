@@ -105,6 +105,7 @@ export default function CreateRoomPage() {
     const result = await addRoom(inputRoom);
     if (result.success) {
       console.log("✅ Form Submitted:", result);
+      router.back();
     } else {
       setErrorMessage(result.message || "Failed to create room");
       setShowError(true);
