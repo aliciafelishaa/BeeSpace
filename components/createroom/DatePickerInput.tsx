@@ -90,7 +90,7 @@ export default function DatePickerInput({
 
   return (
     <View className="mb-4">
-      <Text className="text-lg font-medium text-[#171717] mb-2">
+      <Text className="text-lg font-interMedium text-[#171717] mb-2">
         {label}
         {required && <Text className="text-[#EF4444]"> *</Text>}
       </Text>

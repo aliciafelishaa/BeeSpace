@@ -1,43 +1,16 @@
 import CardRoom from "@/components/myroom/CardRoom";
 import EmptyState from "@/components/myroom/EmptyState";
+import { useRoom } from "@/hooks/useRoom";
+import { SectionTab } from "@/types/myroom/myroom";
 import { RoomEntry } from "@/types/myroom/room";
-import { usePathname, useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import { usePathname } from "expo-router";
+import React, { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-type RoomCategory =
-  | "all"
-  | "sport"
-  | "hangout"
-  | "learning"
-  | "events"
-  | "hobby";
-type SectionTab = "upcoming" | "hosted" | "history";
-
-type EventItem = {
-  id: number;
-  title: string;
-  date: string;
-  location: string;
-  slotRemaining?: number;
-  slotTotal?: number;
-  hostName: string;
-  imageSource?: any | false;
-  category?: RoomCategory;
-};
-
-const roomCategories: RoomCategory[] = [
-  "all",
-  "sport",
-  "hangout",
-  "learning",
-  "events",
-  "hobby",
-];
 
 const Segmented = ({
   value,
@@ -79,81 +52,7 @@ export default function MyRoomDash({
   initialSection?: SectionTab;
 }) {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
   const pathname = usePathname();
-
-  {
-    /* Ini buat coba empty state*/
-  }
-  const upcomingEvents: EventItem[] = [
-    {
-      id: 1,
-      title: "Morning Run 5K",
-      date: "22 Sept 2025, 18.00 - 20.00 WIB",
-      location: "Gelora Bung Karno",
-      slotRemaining: 5,
-      slotTotal: 10,
-      hostName: "Balqis",
-      imageSource: false,
-      category: "sport",
-    },
-    {
-      id: 2,
-      title: "Menanam Mangrove",
-      date: "31 Oktober 2025, 06.00 - 10.00 WIB",
-      location: "Pantai Indah Kapuk",
-      slotRemaining: 3,
-      slotTotal: 15,
-      hostName: "Alicia",
-      imageSource: false,
-      category: "events",
-    },
-    {
-      id: 3,
-      title: "Sholat Jumat Bersama",
-      date: "17 Oktober 2025, 11.30 - 13.00 WIB",
-      location: "BINUS Syahdan",
-      slotRemaining: 10,
-      slotTotal: 15,
-      hostName: "Akbar",
-      imageSource: false,
-      category: "learning",
-    },
-  ];
-
-  const hostedEvents: EventItem[] = [
-    // {
-    //   id: 101,
-    //   title: "Tech Meetup with Timothy Ronald",
-    //   date: "28 Sept 2025, 13.00 - 16.00 WIB",
-    //   location: "BINUS Anggrek",
-    //   slotRemaining: 3,
-    //   slotTotal: 20,
-    //   hostName: "Bryan",
-    //   imageSource: false,
-    //   category: "learning",
-    // },
-  ];
-
-  const historyEvents: EventItem[] = [
-    // {
-    //   id: 201,
-    //   title: "Community Cleanup",
-    //   date: "12 Aug 2025, 08.00 - 10.00 WIB",
-    //   location: "Pantai Indah Kapuk",
-    //   slotRemaining: 0,
-    //   slotTotal: 10,
-    //   hostName: "Bryan",
-    //   imageSource: false,
-    //   category: "events",
-    // },
-  ];
-
-  const dataBySection: Record<SectionTab, EventItem[]> = {
-    upcoming: upcomingEvents,
-    hosted: hostedEvents,
-    history: historyEvents,
-  };
 
   const initialFromPath: SectionTab | undefined = (():
     | SectionTab
@@ -167,18 +66,26 @@ export default function MyRoomDash({
   const [section, setSection] = useState<SectionTab>(
     initialFromPath ?? initialSection
   );
-  const [modalVisible, setModalVisible] = useState(false);
 
-  const handleChangeSection = (next: SectionTab) => {
-    setSection(next);
-    if (pathname.startsWith("/yourroom")) {
-      router.replace(`/yourroom/${next}` as any);
-    }
-  };
-
-  const visible = useMemo(() => dataBySection[section], [section]);
   const [rooms, setRooms] = useState<RoomEntry[]>([]);
+  const { getRoom } = useRoom();
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchRoom = async () => {
+      setLoading(true);
+      const res = await getRoom();
+      console.log(res.data);
+      if (res.success && res.data) {
+        setRooms(res.data);
+      } else {
+        setRooms([]);
+      }
+      setLoading(false);
+    };
+    fetchRoom();
+    console.log(rooms);
+  }, []);
 
   return (
     <SafeAreaView
@@ -215,7 +122,7 @@ export default function MyRoomDash({
         </View>
 
         {/* Room list */}
-        {visible.length > 0 ? (
+        {rooms.length > 0 ? (
           <View className="px-[13px] pt-[15px] pb-[15px]">
             <View className="gap-4">
               {loading ? (
@@ -235,6 +142,7 @@ export default function MyRoomDash({
                     slotTotal={room.maxMember}
                     hostName={room.fromUid ? room.fromUid : "Ano"}
                     imageSource={room.cover ? { uri: room.cover } : false}
+                    isEdit={true}
                   />
                 ))
               ) : (

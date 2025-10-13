@@ -13,6 +13,7 @@ export default function CardRoom({
   slotTotal,
   hostName,
   imageSource,
+  isEdit
 }: CardRoomProps) {
   const formattedDate = date.toLocaleDateString("id-ID", {
     day: "2-digit",

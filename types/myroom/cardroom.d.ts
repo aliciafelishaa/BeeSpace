@@ -7,4 +7,5 @@ export type CardRoomProps = {
   slotTotal: string;
   hostName?: string;
   imageSource?: ImageSourcePropType;
+  isEdit: boolean;
 };

@@ -1,9 +1,15 @@
 import { COLORS } from "@/constants/utils/colors";
 import React from "react";
-import { Image, ImageSourcePropType, ScrollView, Text, View } from "react-native";
+import {
+  Image,
+  ImageSourcePropType,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-type Variant = "upcoming" | "hosted" | "history";
+type Variant = "all" | "upcoming" | "hosted" | "history";
 
 type EmptyStateProps = {
   variant: Variant;
@@ -15,6 +21,10 @@ type EmptyStateProps = {
 };
 
 const DEFAULT_COPY: Record<Variant, { title: string; subtitle: string }> = {
+  all: {
+    title: "You haven't create any room!",
+    subtitle: "Rooms you’ve joined will appear here.",
+  },
   upcoming: {
     title: "You’re all caught up!",
     subtitle: "Let’s explore the room.",
@@ -30,6 +40,7 @@ const DEFAULT_COPY: Record<Variant, { title: string; subtitle: string }> = {
 };
 
 const VARIANT_ICONS: Record<Variant, any> = {
+  all: require("@/assets/utils/active-icon/hobby.svg"),
   upcoming: require("@/assets/utils/active-icon/globe.svg"),
   hosted: require("@/assets/utils/active-icon/hobby.svg"),
   history: require("@/assets/utils/active-icon/events.svg"),
@@ -45,7 +56,7 @@ export default function EmptyState({
 }: EmptyStateProps) {
   const copy = DEFAULT_COPY[variant];
   const icon = VARIANT_ICONS[variant];
-  const insets = useSafeAreaInsets(); 
+  const insets = useSafeAreaInsets();
 
   return (
     <ScrollView
@@ -63,18 +74,18 @@ export default function EmptyState({
           style={{ width: width + 60, height: height + 40 }}
         >
           <Image
-          source={illustration ?? icon}
-          style={{
-            width,
-            height,
-            tintColor: COLORS.primary,
-          }}
-          resizeMode="contain"
+            source={illustration ?? icon}
+            style={{
+              width,
+              height,
+              tintColor: COLORS.primary,
+            }}
+            resizeMode="contain"
           />
         </View>
 
         <Text className="text-amber-700 text-[20px] font-semibold text-center">
-        {title ?? copy.title}
+          {title ?? copy.title}
         </Text>
 
         <Text className="text-neutral-500 text-[13px] mt-2 text-center">

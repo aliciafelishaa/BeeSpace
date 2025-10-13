@@ -225,6 +225,7 @@ export default function MyRoomDash() {
                   slotTotal={room.maxMember}
                   hostName={room.fromUid ? room.fromUid : "Ano"}
                   imageSource={room.cover ? { uri: room.cover } : false}
+                  isEdit={false}
                 />
               ))
             ) : (

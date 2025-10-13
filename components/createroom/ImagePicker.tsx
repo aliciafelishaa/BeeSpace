@@ -43,9 +43,13 @@ export default function ImagePicker({
 
   return (
     <View className="mb-5">
-      <Text className="text-lg font-medium text-[#171717] mb-2">
-        {label} <Text className="text-[#EF4444]">*</Text>
-      </Text>
+      {onEdit ? (
+        <Text className="text-lg font-interMedium text-[#171717] mb-2">{label}</Text>
+      ) : (
+        <Text className="text-lg font-medium text-[#171717] mb-2">
+          {label} <Text className="text-[#EF4444]">*</Text>
+        </Text>
+      )}
 
       {imageUrl ? (
         <View className="relative">

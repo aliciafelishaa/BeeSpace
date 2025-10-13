@@ -12,6 +12,7 @@ interface FormInputProps extends TextInputProps {
   required?: boolean;
   inputStyle?: object;
   isNumeric?: boolean;
+  onEdit: boolean;
 }
 
 export default function FormInput({
@@ -25,16 +26,15 @@ export default function FormInput({
   required = false,
   inputStyle = {},
   isNumeric = false,
+  onEdit = false,
   ...rest
 }: FormInputProps) {
   return (
     <View className="mb-4">
-      {label && (
-        <Text className="text-lg font-medium text-[#171717] mb-2">
-          {label}
-          {required && <Text className="text-[#EF4444]"> *</Text>}
-        </Text>
-      )}
+      <Text className="text-lg font-interMedium text-[#171717] mb-2">
+        {label}
+        {required && <Text className="text-[#EF4444]"> *</Text>}
+      </Text>
 
       <TextInput
         className={`border rounded-xl px-4 py-3 text-base bg-white ${error ? "border-[#EF4444]" : "border-gray-300"}`}

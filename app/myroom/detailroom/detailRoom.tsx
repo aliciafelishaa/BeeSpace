@@ -1,5 +1,5 @@
+import ButtonDecision from "@/components/myroom/ButtonDecision";
 import HeaderBack from "@/components/utils/HeaderBack";
-import ModalEditDelete from "@/components/utils/ModalEditDelete";
 import { COLORS } from "@/constants/utils/colors";
 import { useRoom } from "@/hooks/useRoom";
 import { RoomEntry } from "@/types/myroom/room";
@@ -19,6 +19,10 @@ export default function DetailRoom() {
   const [rooms, setRooms] = useState<RoomEntry[]>([]);
   const { getRoom } = useRoom();
   const [loading, setLoading] = useState(false);
+  const isOwner = true;
+  const hasJoined = false;
+  const isEnded = false;
+
   useEffect(() => {
     console.log("DetailRoom rendered, id =", id);
   }, [id]);
@@ -27,10 +31,8 @@ export default function DetailRoom() {
     const fetchRoom = async () => {
       setLoading(true);
       const res = await getRoom();
-      console.log("Response getRoom:", res);
       if (res.success && res.data) {
         const selectedRoom = res.data.find((r) => r.id.toString() === id);
-        console.log("Selected Room:", selectedRoom);
         if (selectedRoom) {
           setRooms([selectedRoom]);
         } else {
@@ -47,6 +49,18 @@ export default function DetailRoom() {
   }, [id]);
 
   const room = rooms[0];
+
+  // Tentukan kondisi tombol
+  // const currentUser = auth().currentUser;
+  // const userId = currentUser?.uid;
+
+  // 1️⃣ User adalah pembuat room
+  // const isOwner = room?.fromUid === userId;
+
+  // 2️⃣ Cek apakah sudah lewat waktunya
+  // const roomDateTime = new Date(`${room?.date}T${room?.timeEnd}`);
+  // const now = new Date();
+  // const isEnded = now > roomDateTime;
 
   return (
     <SafeAreaView
@@ -250,35 +264,11 @@ export default function DetailRoom() {
           )}
         </View>
       </ScrollView>
-      <View
-        className="items-center w-full h-30 bg-white shadow-slate-200 absolute bottom-0 left-0 right-0 py-4 px-2 gap-3 flex-row"
-        style={{
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: -1 },
-          shadowOpacity: 0.09,
-          shadowRadius: 4,
-          elevation: 8,
-        }}
-      >
-        <View className="rounded-[8px] h-[45px] bg-primary2nd items-center justify-center py-4 flex-1">
-          <Text className="text-neutral-50 font-semibold text-[14px]">
-            Join Room
-          </Text>
-        </View>
-        <TouchableOpacity
-          className="rounded-[8px] w-[80px] h-[45px] bg-primary2nd items-center justify-center py-4"
-          onPress={() => setModalVisible(true)}
-        >
-          <Text className="text-neutral-50 font-semibold text-[14px]py-">
-            ...
-          </Text>
-        </TouchableOpacity>
-      </View>
 
-      <ModalEditDelete
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        isJoin={false}
+      <ButtonDecision
+        isOwner={isOwner}
+        hasJoined={hasJoined}
+        isEnded={isEnded}
       />
     </SafeAreaView>
   );
