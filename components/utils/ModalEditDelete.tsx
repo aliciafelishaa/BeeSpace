@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Image,
   Modal,
@@ -9,44 +9,18 @@ import {
   View,
 } from "react-native";
 
-type FilterOption = {
-  title: string;
-  options: string[];
-};
-
 type ModalFilteringDynamicProps = {
   visible: boolean;
   onClose: () => void;
-  filters: FilterOption[];
-  initialValues?: Record<string, string>;
+
+  isJoin: boolean;
 };
 
 export default function ModalEditDelete({
   visible,
   onClose,
-  filters,
-  initialValues = {},
+  isJoin = false,
 }: ModalFilteringDynamicProps) {
-  const [selected, setSelected] = useState<Record<string, string>>(() => {
-    const init: Record<string, string> = {};
-    filters.forEach((f) => {
-      init[f.title] = initialValues[f.title] || f.options[0];
-    });
-    return init;
-  });
-
-  const resetFilter = () => {
-    const reset: Record<string, string> = {};
-    filters.forEach((f) => {
-      reset[f.title] = f.options[0];
-    });
-    setSelected(reset);
-  };
-
-  const handleSelect = (filterTitle: string, option: string) => {
-    setSelected((prev) => ({ ...prev, [filterTitle]: option }));
-  };
-
   return (
     <Modal
       transparent
@@ -69,7 +43,17 @@ export default function ModalEditDelete({
           contentContainerStyle={{ paddingBottom: 10 }}
         >
           <View className="flex-row items-center justify-center gap-8 mt-4">
-            <TouchableOpacity className="flex flex-col gap-2">
+            {isJoin && (
+              <TouchableOpacity className="flex flex-col gap-2 items-center justify-center">
+                <Image
+                  source={require("@/assets/images/copylink.png")}
+                  className="w-[16px] h-[16px]"
+                  resizeMode="cover"
+                ></Image>
+                <Text className="font-interMedium font-[16px]">Copy Link</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity className="flex flex-col gap-2 items-center justify-center">
               <Image
                 source={require("@/assets/images/share.png")}
                 className="w-[16px] h-[16px]"
@@ -77,7 +61,7 @@ export default function ModalEditDelete({
               ></Image>
               <Text className="font-interMedium font-[16px]">Share</Text>
             </TouchableOpacity>
-            <TouchableOpacity className="flex flex-col gap-2">
+            <TouchableOpacity className="flex flex-col gap-2 items-center justify-center">
               <Image
                 source={require("@/assets/images/report.png")}
                 className="w-[100px] h-[16px] "

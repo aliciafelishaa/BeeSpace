@@ -278,19 +278,7 @@ export default function DetailRoom() {
       <ModalEditDelete
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
-        filters={[
-          {
-            title: "Sort By",
-            options: [
-              "Earliest Time",
-              "Nearest Location",
-              "Most Popular",
-              "Recently Added",
-            ],
-          },
-          { title: "Price", options: ["Free", "Paid"] },
-          { title: "Event Type", options: ["Online", "Onsite"] },
-        ]}
+        isJoin={false}
       />
     </SafeAreaView>
   );
