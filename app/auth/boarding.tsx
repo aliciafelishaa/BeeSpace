@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons"
 import * as ImagePicker from "expo-image-picker"
 import { InputField } from "@/components/auth/InputField"
 import SearchableDropdown from "@/components/auth/Dropdown"
+import StudentCardPicker from "@/components/auth/StudentCardPicker"
 import Text from "@/components/ui/Text"
 import IconBoarding from "@/components/ui/IconBoarding"
 import { useForm, Controller } from "react-hook-form"
@@ -18,7 +19,7 @@ export default function StudentBoarding() {
     const [loading, setLoading] = useState(false)
     const [studentCard, setStudentCard] = useState<string | null>(null)
 
-    const { control, handleSubmit, watch } = useForm<StudentProfile>({
+    const { control, handleSubmit } = useForm<StudentProfile>({
         defaultValues: {
             fullName: "",
             username: "",
@@ -112,11 +113,20 @@ export default function StudentBoarding() {
             </View>
 
             <View className="p-6 space-y-4">
-                {/* Step 1 */}
                 {step === 1 && (
                     <>
-                        <InputField control={control} name="fullName" placeholder="Full Name" />
-                        <InputField control={control} name="username" placeholder="Username" />
+                        <InputField
+                            label="Full Name"
+                            control={control}
+                            name="fullName"
+                            placeholder="Input Text Here" />
+
+                        <InputField
+                            label="Username"
+                            control={control}
+                            name="username"
+                            placeholder="Input Text Here" />
+
                         <Controller
                             control={control}
                             name="university"
@@ -154,7 +164,6 @@ export default function StudentBoarding() {
                     </>
                 )}
 
-                {/* Step 2 */}
                 {step === 2 && (
                     <>
                         <Controller
@@ -194,29 +203,20 @@ export default function StudentBoarding() {
                     </>
                 )}
 
-                {/* Step 3 */}
                 {step === 3 && (
                     <>
-                        <InputField control={control} name="studentID" placeholder="Student ID" />
+                        <InputField 
+                            label="Student ID"
+                            control={control}
+                            name="studentID"
+                            placeholder="Student ID" />
+                            
                         <Text className="text-[#404040] mb-1 font-semibold text-base">Student ID Card</Text>
-                        <TouchableOpacity
-                            onPress={pickImage}
-                            className="border-2 border-dashed border-gray-400 py-8 rounded-lg justify-center items-center mt-3"
-                        >
-                            <Image source={require("@/assets/images/icon-boarding-step3.png")} className="mb-4" />
-                            <Text className="text-center font-medium">
-                                {studentCard ? "Change Student ID Card" : "Upload the picture of your Student ID Card"}
-                            </Text>
-                            <Text className="text-sm text-gray-500 mt-1">Format: JPG, PNG (Max 5MB)</Text>
-                            <Text className="bg-[#FCBC03] px-3 py-2 rounded text-[#FAFAFA] mt-2">Select files</Text>
-                        </TouchableOpacity>
-                        {studentCard && (
-                            <Image
-                                source={{ uri: studentCard }}
-                                className="w-full h-40 mt-2 rounded-lg"
-                                resizeMode="contain"
-                            />
-                        )}
+                        <StudentCardPicker
+                            value={studentCard}
+                            onChange={setStudentCard}
+                        />
+
                         <View className="flex-row justify-end mt-4">
                             <TouchableOpacity
                                 onPress={handleSubmit(onSubmit)}

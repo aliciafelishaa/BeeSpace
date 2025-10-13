@@ -21,7 +21,7 @@ export const InputField = ({
     name,
     placeholder,
     rules,
-    icon = "user",
+    icon,
     type = "text",
     error,
     required
