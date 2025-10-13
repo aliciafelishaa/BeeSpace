@@ -4,9 +4,11 @@ import TabButton from "@/assets/utils/myroom/TabButton";
 import TimeButton from "@/assets/utils/myroom/TimeButton";
 import SearchBar from "@/components/utils/SearchBar";
 import { COLORS } from "@/constants/utils/colors";
+import { useRoom } from "@/hooks/useRoom";
 import { RoomCategory, TimeCategory } from "@/types/myroom/myroom";
+import { RoomEntry } from "@/types/myroom/room";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 import {
@@ -19,109 +21,28 @@ export default function MyRoomDash() {
   const [activeFilter, setActiveFilter] = useState<TimeCategory>("today");
   const insets = useSafeAreaInsets();
   const [modalVisible, setModalVisible] = useState(false);
+  const [rooms, setRooms] = useState<RoomEntry[]>([]);
+  const { getRoom } = useRoom();
+  const [loading, setLoading] = useState(false);
 
-  const events = [
-    {
-      id: 1,
-      title: "Morning Run 5K",
-      date: "22 Sept 2025, 18.00 - 20.00 WIB",
-      location: "Gelora Bung Karno",
-      slotRemaining: 5,
-      slotTotal: 10,
-      hostName: "Balqis",
-      imageSource: false,
-    },
-    {
-      id: 2,
-      title: "Yoga Class",
-      date: "25 Sept 2025, 07.00 - 09.00 WIB",
-      location: "Taman Suropati",
-      slotRemaining: 8,
-      slotTotal: 12,
-      hostName: "Alicia",
-      imageSource: false,
-    },
-    {
-      id: 3,
-      title: "Tech Meetup",
-      date: "28 Sept 2025, 13.00 - 16.00 WIB",
-      location: "Binus Anggrek",
-      slotRemaining: 3,
-      slotTotal: 20,
-      hostName: "Bryan",
-      imageSource: false,
-    },
-    {
-      id: 4,
-      title: "Photography Walk",
-      date: "30 Sept 2025, 09.00 - 11.00 WIB",
-      location: "Kota Tua Jakarta",
-      slotRemaining: 7,
-      slotTotal: 15,
-      hostName: "Tasya",
-      imageSource: false,
-    },
-    {
-      id: 5,
-      title: "Community Cleanup",
-      date: "2 Okt 2025, 08.00 - 10.30 WIB",
-      location: "Pantai Indah Kapuk",
-      slotRemaining: 2,
-      slotTotal: 10,
-      hostName: "Akbar",
-      imageSource: false,
-    },
-    {
-      id: 6,
-      title: "Cooking Workshop",
-      date: "4 Okt 2025, 10.00 - 12.00 WIB",
-      location: "Mall Kelapa Gading",
-      slotRemaining: 6,
-      slotTotal: 12,
-      hostName: "Putri",
-      imageSource: false,
-    },
-    {
-      id: 7,
-      title: "Coding Bootcamp",
-      date: "6 Okt 2025, 09.00 - 17.00 WIB",
-      location: "Jakarta Digital Valley",
-      slotRemaining: 10,
-      slotTotal: 25,
-      hostName: "Cornelius",
-      imageSource: false,
-    },
-    {
-      id: 8,
-      title: "Charity Concert",
-      date: "10 Okt 2025, 18.00 - 22.00 WIB",
-      location: "Senayan City Hall",
-      slotRemaining: 12,
-      slotTotal: 30,
-      hostName: "Tasya",
-      imageSource: false,
-    },
-    {
-      id: 9,
-      title: "Art Exhibition",
-      date: "12 Okt 2025, 11.00 - 14.00 WIB",
-      location: "Museum MACAN",
-      slotRemaining: 9,
-      slotTotal: 20,
-      hostName: "Balqis",
-      imageSource: false,
-    },
-    {
-      id: 10,
-      title: "Startup Pitch Night",
-      date: "15 Okt 2025, 17.00 - 20.00 WIB",
-      location: "GoWork Plaza Indonesia",
-      slotRemaining: 4,
-      slotTotal: 15,
-      hostName: "Alicia",
-      imageSource: false,
-    },
-  ];
+  useEffect(() => {
+    const fetchRoom = async () => {
+      setLoading(true);
+      const res = await getRoom();
+      console.log("Test")
+      console.log(res.data);
+      if (res.success && res.data) {
+        setRooms(res.data);
+      } else {
+        setRooms([]);
+      }
+      setLoading(false);
+    };
+    fetchRoom();
+    console.log(rooms);
+  }, []);
+
+  
 
   return (
     <SafeAreaView
@@ -289,9 +210,29 @@ export default function MyRoomDash() {
         >
           {/* Card */}
           <View className="gap-4">
-            {events.map((event) => (
-              <CardRoom key={event.id} {...event} />
-            ))}
+            {loading ? (
+              <Text className="text-center text-neutral-500">
+                Loading rooms...
+              </Text>
+            ) : rooms.length > 0 ? (
+              rooms.map((room) => (
+                <CardRoom
+                  key={room.fromUid}
+                  title={room.planName}
+                  // date={`${room.date} ${room.timeStart} - ${room.timeEnd}`}
+                  date={new Date(room.date)}
+                  location={room.place}
+                  slotRemaining={room.minMember}
+                  slotTotal={room.maxMember}
+                  hostName={room.fromUid ? room.fromUid : "Ano"}
+                  imageSource={room.cover ? { uri: room.cover } : false}
+                />
+              ))
+            ) : (
+              <Text className="text-center text-neutral-500">
+                No rooms found
+              </Text>
+            )}
           </View>
         </View>
       </ScrollView>

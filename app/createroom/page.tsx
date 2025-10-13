@@ -37,7 +37,7 @@ export default function CreateRoomPage() {
     description: "",
     category: "",
     place: "",
-    date: "",
+    date: new Date(),
     timeStart: "",
     timeEnd: "",
     minMember: "",
@@ -104,7 +104,7 @@ export default function CreateRoomPage() {
 
     const result = await addRoom(inputRoom);
     if (result.success) {
-      console.log("✅ Form Submitted:", formData);
+      console.log("✅ Form Submitted:", result);
     } else {
       setErrorMessage(result.message || "Failed to create room");
       setShowError(true);

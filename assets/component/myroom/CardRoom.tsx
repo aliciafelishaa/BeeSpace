@@ -10,9 +10,14 @@ export default function CardRoom({
   slotRemaining,
   slotTotal,
   hostName,
-
   imageSource,
 }: CardRoomProps) {
+  const formattedDate = date.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+
   return (
     <TouchableOpacity
       className="bg-white rounded-[8px] py-5 px-4"
@@ -41,7 +46,7 @@ export default function CardRoom({
                 className="w-3 h-3"
               />
               <Text className="text-[12px] font-interRegular text-neutral-700">
-                {date}
+                {formattedDate}
               </Text>
             </View>
 

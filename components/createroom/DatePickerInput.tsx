@@ -5,8 +5,8 @@ import { Modal, Platform, Text, TouchableOpacity, View } from "react-native";
 
 interface DatePickerInputProps {
   label: string;
-  value: string;
-  onChange: (date: string) => void;
+  value: Date;
+  onChange: (date: Date) => void;
   error?: string;
   required?: boolean;
   onOpen?: () => void;
@@ -50,12 +50,12 @@ export default function DatePickerInput({
       year: "numeric",
     });
 
-    onChange(formatted);
+    onChange(new Date(formatted));
     setShow(false);
   };
 
   const handleDelete = () => {
-    onChange("");
+    onChange(new Date());
     setSelectedDate(null);
     setInternalError("");
     setShow(false);
@@ -85,7 +85,7 @@ export default function DatePickerInput({
       month: "long",
       year: "numeric",
     });
-    onChange(formatted);
+    onChange(new Date(formatted));
   };
 
   return (
@@ -111,7 +111,9 @@ export default function DatePickerInput({
             <Text
               className={`text-base ${value ? "text-gray-900" : "text-gray-400"}`}
             >
-              {value || "Select date"}
+              {value
+                ? value.toLocaleDateString()
+                : new Date().toLocaleDateString()}
             </Text>
             <Calendar size={20} />
           </TouchableOpacity>

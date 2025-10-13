@@ -1,10 +1,9 @@
 export type CardRoomProps = {
   title: string;
-  date: string;
+  date: Date;
   location: string;
-  slotRemaining: number;
-  slotTotal: number;
-  hostName: string;
-
+  slotRemaining: string;
+  slotTotal: string;
+  hostName?: string;
   imageSource?: ImageSourcePropType;
 };

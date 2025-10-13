@@ -1,5 +1,5 @@
 export interface RoomEntry {
-  // fromUid?: string;
+  fromUid?: string | "null";
   cover?: string;
   category: string;
   date: Date;
@@ -14,4 +14,3 @@ export interface RoomEntry {
   timeEnd: string;
   timeStart: string;
 }
-
