@@ -1,39 +1,86 @@
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
-import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import "react-native-reanimated";
+import BottomNavbar from "@/components/utils/BottomNavbar";
+import { Fonts } from "@/constants/utils/fonts";
+import { NAV_ITEMS } from "@/constants/utils/navbarItems";
+import { AuthContext } from "@/context/AuthContext";
+import { FamilyViewProvider } from "@/context/FamilyViewContext";
+import '@/global.css';
+import { useAuthState } from "@/hooks/useAuthState";
+import { useFonts } from "expo-font";
+import { Slot, SplashScreen, usePathname, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-import { useColorScheme } from "@/hooks/use-color-scheme";
+SplashScreen.preventAutoHideAsync();
 
-export const unstable_settings = {
-  anchor: "(tabs)",
-};
+function shouldShowBottomNav(user: any, pathname: string): boolean {
+  // if (!user) return false;
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const hiddenPatterns = [/^\/auth/, /^\/myroom\/detailroom/];
+
+  return !hiddenPatterns.some((regex) => regex.test(pathname));
+}
+
+function RootContent() {
+  const { user, initializing } = useAuthState();
+  const router = useRouter();
+  const pathname = usePathname();
+  const [activeTab, setActiveTab] = useState("home");
+  const [fontsLoaded] = useFonts({ ...Fonts });
+
+  useEffect(() => {
+    const yourroomAliases = ["/yourroom", "/yourroom/yourRoom", "/myroom/roomDashboard"];
+
+    const isMatch = (base: string, p: string) =>
+      p === base || p.startsWith(base + "/");
+
+    const current =
+      [...NAV_ITEMS]
+        .sort((a, b) => b.route.length - a.route.length)
+        .find((item) => isMatch(item.route, pathname))
+      || (yourroomAliases.some((a) => isMatch(a, pathname))
+          ? NAV_ITEMS.find((i) => i.id === "myroom")
+          : undefined);
+
+    if (current) setActiveTab(current.id);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (fontsLoaded) SplashScreen.hideAsync();
+  }, [fontsLoaded]);
+
+  const handleSelect = (id: string, route: string) => {
+    setActiveTab(id);
+    router.push(route as any);
+  };
+
+  if (initializing || !fontsLoaded) {
+    return <View style={{ flex: 1, backgroundColor: "white" }} />;
+  }
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
-        {/* Halaman utama dengan tab */}
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-
-        {/* Halaman modal opsional */}
-        <Stack.Screen
-          name="modal"
-          options={{
-            presentation: "modal",
-            title: "Modal",
-          }}
+    <View style={{ flex: 1 }}>
+      <Slot />
+      {shouldShowBottomNav(user, pathname) && (
+        <BottomNavbar
+          items={NAV_ITEMS}
+          activeId={activeTab}
+          onSelect={handleSelect}
         />
-      </Stack>
+      )}
+    </View>
+  );
+}   
 
-      {/* Status bar mengikuti tema */}
-      <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
-    </ThemeProvider>
+export default function RootLayout() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AuthContext>
+        <FamilyViewProvider>
+          <RootContent />
+        </FamilyViewProvider>
+      </AuthContext>
+    </GestureHandlerRootView>
   );
 }
+
