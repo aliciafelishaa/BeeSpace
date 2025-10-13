@@ -148,7 +148,7 @@ export default function MyRoomDash() {
             {/* Header */}
             <View className="flex-row items-center justify-between">
               <View className="gap-[10px]">
-                <Text className="text-neutral-500 text-[12px] font-inter">
+                <Text className="text-neutral-500 text-[12px] font-interRegular">
                   Activities Near
                 </Text>
                 <View className="flex-row gap-2 items-center">
@@ -156,7 +156,7 @@ export default function MyRoomDash() {
                     source={require("@/assets/utils/map.png")}
                     className="w-[16px] h-[16px]"
                   ></Image>
-                  <Text className="text-neutral-700 font-semibold  text-[14px] font-inter">
+                  <Text className="text-neutral-700  text-[14px] font-interSemiBold">
                     Binus Kemanggisan{" "}
                   </Text>
                   <Image

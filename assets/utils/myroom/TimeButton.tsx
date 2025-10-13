@@ -18,7 +18,7 @@ export default function TimeButton({
       activeOpacity={0.8}
     >
       <Text
-        className="text-[12px] font-medium"
+        className="text-[12px] font-interMedium"
         style={{
           color: active ? COLORS.primary : COLORS.neutral500,
         }}
