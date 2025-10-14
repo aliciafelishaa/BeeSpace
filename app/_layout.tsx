@@ -3,6 +3,7 @@ import { Fonts } from "@/constants/utils/fonts";
 import { NAV_ITEMS } from "@/constants/utils/navbarItems";
 import { AuthContext } from "@/context/AuthContext";
 import { FamilyViewProvider } from "@/context/FamilyViewContext";
+import '@/global.css';
 import { useAuthState } from "@/hooks/useAuthState";
 import { useFonts } from "expo-font";
 import { Slot, SplashScreen, usePathname, useRouter } from "expo-router";
@@ -14,9 +15,7 @@ SplashScreen.preventAutoHideAsync();
 
 function shouldShowBottomNav(user: any, pathname: string): boolean {
   // if (!user) return false;
-
   const hiddenPatterns = [/^\/auth/, /^\/myroom\/detailroom/];
-
   return !hiddenPatterns.some((regex) => regex.test(pathname));
 }
 
@@ -28,15 +27,25 @@ function RootContent() {
   const [fontsLoaded] = useFonts({ ...Fonts });
 
   useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
+    const yourroomAliases = ["/yourroom", "/yourroom/yourRoom", "/myroom/roomDashboard"];
 
-  useEffect(() => {
-    const current = NAV_ITEMS.find((item) => item.route === pathname);
+    const isMatch = (base: string, p: string) =>
+      p === base || p.startsWith(base + "/");
+
+    const current =
+      [...NAV_ITEMS]
+        .sort((a, b) => b.route.length - a.route.length)
+        .find((item) => isMatch(item.route, pathname))
+      || (yourroomAliases.some((a) => isMatch(a, pathname))
+          ? NAV_ITEMS.find((i) => i.id === "myroom")
+          : undefined);
+
     if (current) setActiveTab(current.id);
   }, [pathname]);
+
+  useEffect(() => {
+    if (fontsLoaded) SplashScreen.hideAsync();
+  }, [fontsLoaded]);
 
   const handleSelect = (id: string, route: string) => {
     setActiveTab(id);
@@ -59,7 +68,7 @@ function RootContent() {
       )}
     </View>
   );
-}
+}   
 
 export default function RootLayout() {
   return (
@@ -72,3 +81,4 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
+

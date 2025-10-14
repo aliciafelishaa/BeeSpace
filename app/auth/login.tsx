@@ -1,11 +1,12 @@
 import React, { useState } from "react"
-import { View, TouchableOpacity } from "react-native"
-import { Feather } from "@expo/vector-icons"
-import TextInput from "@/components/auth/TextInput"
+import { View, TouchableOpacity, ScrollView } from "react-native"
+import { useForm } from "react-hook-form"
+import { useRouter } from "expo-router"
+import { InputField } from "@/components/auth/InputField"
 import Text from "@/components/ui/Text"
 import IconGoogle from "@/components/ui/IconGoogle"
 import LogoBeeSpace from "@/components/ui/LogoBeeSpace"
-import { useRouter } from "expo-router"
+import { loginWithEmail } from "@/services/authService"
 
 type LoginForm = {
     email: string
@@ -14,73 +15,111 @@ type LoginForm = {
 
 export default function Login() {
     const router = useRouter()
-    const [form, setForm] = useState<LoginForm>({ email: "", password: "" })
-    const [showPassword, setShowPassword] = useState(false)
+    const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
     const [success, setSuccess] = useState("")
 
-    const handleChange = (name: keyof LoginForm, value: string) => {
-        setForm({ ...form, [name]: value })
-    }
+    const {
+        control,
+        handleSubmit,
+        reset,
+        formState: { errors },
+    } = useForm<LoginForm>()
 
-    const handleLogin = () => {
+    const onSubmit = async (data: LoginForm) => {
         setError("")
         setSuccess("")
+        setLoading(true)
 
-        if (!form.email || !form.password) {
-            return setError("All fields are required")
-        }
-
-        if (!form.email.includes("@")) {
-            return setError("Invalid email address")
-        }
-
-        setTimeout(() => {
+        try {
+            const user = await loginWithEmail(data.email, data.password)
             setSuccess("Login successful!")
-        }, 1000)
+            reset()
+            router.push("/")
+        } catch (err: any) {
+            console.error("Login error:", err)
+            switch (err.message) {
+                case "EMAIL_NOT_REGISTERED":
+                    setError("Email is not registered.")
+                    break
+                case "PASSWORD_INCORRECT":
+                    setError("Password is incorrect.")
+                    break
+                case "INVALID_EMAIL":
+                    setError("Invalid email address.")
+                    break
+                default:
+                    setError("Login failed. Please try again.")
+            }
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
-        <View className="w-full h-full justify-center bg-[#FAFAFA] px-12">
-            <View className="w-full flex justify-center items-center">
+        <ScrollView
+            contentContainerStyle={{
+                flex: 1,
+                justifyContent: "center",
+                paddingHorizontal: 40,
+                backgroundColor: "#FAFAFA",
+            }}
+            showsVerticalScrollIndicator={false}
+        >
+            <View className="w-full items-center mb-10 mt-12">
                 <LogoBeeSpace />
                 <Text className="text-3xl font-bold text-center my-4">Welcome back, Beeps!</Text>
-                <Text className="text-[#737373] font-semibold mb-8">
+                <Text className="text-lg text-[#737373] font-medium mb-10">
                     Select your method to log in
                 </Text>
             </View>
 
+            <InputField
+                control={control}
+                name="email"
+                placeholder="Email"
+                icon="mail"
+                rules={{
+                    required: "Email is required",
+                    pattern: {
+                        value: /^[\w.%+-]+@[\w.-]+\.[a-zA-Z]{1,}$/,
+                        message: "Invalid email format",
+                    },
+                }}
+                error={errors.email?.message}
+            />
+
+            <InputField
+                control={control}
+                name="password"
+                placeholder="Password"
+                icon="lock"
+                type="password"
+                rules={{
+                    required: "Password is required",
+                    minLength: {
+                        value: 6,
+                        message: "Minimum 6 characters",
+                    },
+                }}
+                error={errors.password?.message}
+            />
+
             {error ? <Text className="text-red-500 mb-2">{error}</Text> : null}
             {success ? <Text className="text-green-500 mb-2">{success}</Text> : null}
 
-            <TextInput
-                icon={<Feather name="mail" size={20} color="gray" />}
-                placeholder="Email"
-                value={form.email}
-                onChangeText={(v: string) => handleChange("email", v)}
-                keyboardType="email-address"
-            />
-
-            <TextInput
-                icon={<Feather name="lock" size={20} color="gray" />}
-                placeholder="Password"
-                value={form.password}
-                onChangeText={(v: string) => handleChange("password", v)}
-                secureTextEntry
-                showPasswordToggle
-                showPassword={showPassword}
-                setShowPassword={setShowPassword}
-            />
-
             <TouchableOpacity className="mb-6">
-                <Text className="text-[#DC9010] font-semibold">Forgot Password</Text>
+                <Text className="text-[#DC9010] font-semibold">Forgot Password?</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-                onPress={handleLogin}
-                className="bg-[#FCBC03] justify-center h-14 rounded-lg mb-4"
+                onPress={handleSubmit(onSubmit)}
+                disabled={loading}
+                className={`bg-[#FCBC03] justify-center h-14 rounded-lg mb-4 mt-2 ${loading ? "opacity-60" : ""}`}
             >
-                <Text className="text-white text-center text-lg font-bold">Log In</Text>
+                <Text className="text-white text-center text-lg font-bold">
+                    {loading ? "Logging in..." : "Log In"}
+                </Text>
             </TouchableOpacity>
 
             <View className="flex-row items-center my-4">
@@ -94,12 +133,12 @@ export default function Login() {
                 <Text className="text-[#171717] font-bold">Google</Text>
             </TouchableOpacity>
 
-            <View className="flex-row justify-center mt-4">
+            <View className="flex-row justify-center mt-4 mb-12">
                 <Text className="text-[#404040] font-medium">Don’t have an account? </Text>
-                <TouchableOpacity onPress={() => router.push("/register")}>
+                <TouchableOpacity onPress={() => router.push("/auth/register")}>
                     <Text className="text-[#DC9010] font-semibold">Create an account</Text>
                 </TouchableOpacity>
             </View>
-        </View>
+        </ScrollView>
     )
 }

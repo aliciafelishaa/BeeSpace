@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useMemo, useEffect } from "react"
 import {
     View,
     TouchableOpacity,
@@ -6,6 +6,8 @@ import {
     FlatList,
     TextInput,
     TouchableWithoutFeedback,
+    Platform,
+    KeyboardAvoidingView,
 } from "react-native"
 import Text from "@/components/ui/Text"
 
@@ -17,9 +19,11 @@ type DropdownProps = {
     onValueChange: (v: string) => void
     options: string[]
     error?: string
+    required?: boolean
+    onClearError?: () => void
 }
 
-export default function SearchableDropdown({
+export const SearchableDropdown = ({
     label,
     placeholder,
     icon,
@@ -27,75 +31,131 @@ export default function SearchableDropdown({
     onValueChange,
     options,
     error,
-}: DropdownProps) {
+    required,
+    onClearError,
+}: DropdownProps) => {
     const [isFocus, setIsFocus] = useState(false)
     const [search, setSearch] = useState("")
 
-    const filteredOptions = options.filter((opt) =>
-        opt.toLowerCase().includes(search.toLowerCase())
+    useEffect(() => {
+        if (!isFocus) setSearch("")
+    }, [isFocus])
+
+    const borderColor = isFocus ? "#FCBC03" : error ? "#EF4444" : "#D1D5DB"
+
+    const filteredOptions = useMemo(
+        () => options.filter((opt) => opt.toLowerCase().includes(search.toLowerCase())),
+        [options, search]
     )
 
+    const handleSelect = (item: string) => {
+        onValueChange(item)
+        setIsFocus(false)
+        setSearch("")
+        onClearError?.()
+    }
+
+    const handleSearchChange = (text: string) => {
+        setSearch(text)
+        if (onClearError) onClearError()
+    }
+
     return (
-        <View className="mb-2">
+        <View className="mb-4">
             {label && (
-                <Text className="text-[#404040] mb-1 font-semibold text-base">
-                    {label}
+                <Text className="text-lg font-medium text-[#171717] mb-2">
+                    {label} {required && <Text className="text-[#EF4444]">*</Text>}
                 </Text>
             )}
 
             <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => setIsFocus(true)}
-                className="flex-row justify-between items-center border rounded-lg px-3 h-14"
                 style={{
-                    borderColor: error ? "#F87171" : isFocus ? "#FFD661" : "#D1D5DB",
-                    borderWidth: 1,
+                    borderWidth: 1.5,
+                    borderColor,
+                    borderRadius: 12,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    backgroundColor: "#FFFFFF",
+                    paddingHorizontal: 12,
+                    height: 50,
                 }}
             >
-                <Text className={value ? "text-black" : "text-gray-400"}>
+                <Text style={{ flex: 1, color: value ? "#0F172A" : "#9CA3AF", fontSize: 16 }}>
                     {value || placeholder || "Select..."}
                 </Text>
                 {icon}
             </TouchableOpacity>
 
-            {/* Modal Dropdown */}
-            <Modal
-                visible={isFocus}
-                transparent
-                animationType="fade"
-                onRequestClose={() => setIsFocus(false)}
-            >
-                <TouchableWithoutFeedback onPress={() => setIsFocus(false)}>
-                    <View className="flex-1 bg-black/30 justify-center px-6">
-                        <View className="bg-white rounded-xl p-4 max-h-[70%]">
-                            <TextInput
-                                placeholder="Search..."
-                                value={search}
-                                onChangeText={setSearch}
-                                className="border border-gray-300 rounded-lg px-3 py-2 mb-3"
-                            />
-                            <FlatList
-                                data={filteredOptions}
-                                keyExtractor={(item) => item}
-                                renderItem={({ item }) => (
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            onValueChange(item)
-                                            setIsFocus(false)
-                                            setSearch("")
-                                        }}
-                                        className="py-3 border-b border-gray-200"
-                                    >
-                                        <Text className="text-black">{item}</Text>
-                                    </TouchableOpacity>
-                                )}
-                            />
-                        </View>
+            <Modal visible={isFocus} transparent animationType="slide">
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === "ios" ? "padding" : undefined}
+                    style={{ flex: 1 }}
+                >
+                    <TouchableWithoutFeedback onPress={() => setIsFocus(false)}>
+                        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} />
+                    </TouchableWithoutFeedback>
+
+                    <View
+                        style={{
+                            backgroundColor: "#FFFFFF",
+                            borderTopLeftRadius: 20,
+                            borderTopRightRadius: 20,
+                            padding: 16,
+                            maxHeight: "70%",
+                            position: "absolute",
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                        }}
+                    >
+                        <TextInput
+                            placeholder="Search..."
+                            placeholderTextColor="#9CA3AF"
+                            value={search}
+                            onChangeText={handleSearchChange}
+                            style={{
+                                borderWidth: 1.5,
+                                borderColor: "#D1D5DB",
+                                borderRadius: 12,
+                                paddingHorizontal: 15,
+                                paddingVertical: 20,
+                                height: 50,
+                                marginBottom: 12,
+                                fontSize: 16,
+                                color: "#0F172A",
+                                ...(Platform.OS === "android" && { includeFontPadding: false }),
+                                ...(Platform.OS === "web" && { outlineStyle: "none" } as any),
+                            }}
+                        />
+
+                        <FlatList
+                            keyboardShouldPersistTaps="handled"
+                            data={filteredOptions}
+                            keyExtractor={(item, index) => item + index}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity
+                                    onPress={() => handleSelect(item)}
+                                    style={{
+                                        paddingVertical: 12,
+                                        paddingHorizontal: 8,
+                                        borderBottomWidth: 1,
+                                        borderBottomColor: "#E5E7EB",
+                                        borderRadius: 8,
+                                    }}
+                                >
+                                    <Text style={{ color: "#0F172A", fontSize: 16 }}>{item}</Text>
+                                </TouchableOpacity>
+                            )}
+                        />
                     </View>
-                </TouchableWithoutFeedback>
+                </KeyboardAvoidingView>
             </Modal>
 
-            {error && <Text className="text-red-500 text-sm mt-1">{error}</Text>}
+            {error && !isFocus && (
+                <Text className="text-red-500 text-sm mt-1">{error}</Text>
+            )}
         </View>
     )
 }

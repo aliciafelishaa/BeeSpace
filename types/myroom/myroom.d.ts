@@ -21,3 +21,7 @@ export interface TimeCategoryProps {
   active: boolean;
   onPress: () => void;
 }
+
+export type SectionTab = "upcoming" | "hosted" | "history";
+
+

@@ -95,12 +95,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
   }
 
   return (
+    // WOI DI SCROLL VIEW
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ backgroundColor: COLORS.white, flex: 1 }}
     >
       <View
-        className="px-6 py-4 flex-row items-center"
+        className="px-6 py-4 flex-row items-center "
         style={{ backgroundColor: COLORS.white }}
       >
         <TouchableOpacity onPress={onBack} className="mr-8" activeOpacity={0.7}>
