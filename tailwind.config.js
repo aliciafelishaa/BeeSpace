@@ -13,11 +13,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-<<<<<<< HEAD
-        inter: ["Inter_400Regular"],
-=======
         interRegular: ["Inter_400Regular"],
->>>>>>> a083fd422cff033bdbb2fe3b3796a6c850288f39
         interMedium: ["Inter_500Medium"],
         interSemiBold: ["Inter_600SemiBold"],
         interBold: ["Inter_700Bold"],
