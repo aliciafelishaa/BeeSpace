@@ -3,9 +3,10 @@ import { ChatList } from "@/components/directmessage/chat-list";
 import { FilterModal } from "@/components/directmessage/filter-bar";
 import { SearchBar } from "@/components/directmessage/search-bar";
 import { COLORS } from "@/constants/utils/colors";
-import { mockChats } from "@/dummy/data";
+import { getCurrentUserData } from "@/services/authService";
+import { listenUserChats } from "@/services/chatListService";
 import { Chat, FilterType, SearchFilters } from "@/types/directmessage/dm";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Text, View } from "react-native";
 
 export default function DirectMessage() {
@@ -16,9 +17,33 @@ export default function DirectMessage() {
     category: "all",
   });
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
+  // Fetch User
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const userData = await getCurrentUserData();
+      setCurrentUser(userData);
+    };
+    fetchCurrentUser();
+  }, []);
+
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    console.log("User ID:", currentUser.id);
+
+    const unsubscribe = listenUserChats(currentUser.id, (updatedChats) => {
+      console.log("Chats updated:", updatedChats);
+      setChats(updatedChats);
+    });
+
+    return () => unsubscribe();
+  }, [currentUser?.id]);
+
+  // Disini masih dummy
   const filteredChats = useMemo(() => {
-    let result = [...mockChats];
+    let result = [...chats];
 
     if (filters.query) {
       const query = filters.query.toLowerCase();
@@ -34,11 +59,6 @@ export default function DirectMessage() {
         result = result.filter((chat) => chat.unreadCount > 0);
         break;
       case "newest":
-        result = result.sort(
-          (a, b) =>
-            new Date(b.lastMessage.timestamp).getTime() -
-            new Date(a.lastMessage.timestamp).getTime()
-        );
         break;
       case "oldest":
         result = result.sort(
@@ -48,15 +68,11 @@ export default function DirectMessage() {
         );
         break;
       default:
-        result = result.sort(
-          (a, b) =>
-            new Date(b.lastMessage.timestamp).getTime() -
-            new Date(a.lastMessage.timestamp).getTime()
-        );
+        break;
     }
 
     return result;
-  }, [filters]);
+  }, [chats, filters]);
 
   const handleSelectChat = (chat: Chat) => {
     setSelectedChat(chat);
@@ -69,6 +85,14 @@ export default function DirectMessage() {
   const handleFilterChange = (category: FilterType) => {
     setFilters((prev) => ({ ...prev, category }));
   };
+
+  if (!currentUser) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <Text>No user found...</Text>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-white flex-row">

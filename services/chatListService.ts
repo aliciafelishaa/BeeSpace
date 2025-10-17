@@ -1,0 +1,108 @@
+import { db } from "@/config/firebaseConfig";
+import { Chat, Message } from "@/types/directmessage/dm";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  onSnapshot,
+  orderBy,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+
+export const listenUserChats = (
+  userId: string,
+  onUpdate: (chats: Chat[]) => void
+) => {
+  // Search DB 
+  const q = query(
+    collection(db, "chats"),
+    where("participants", "array-contains", userId),
+    orderBy("lastUpdated", "desc")
+  );
+
+  const unsubscribe = onSnapshot(q, async (snapshot) => {
+    const chats: Chat[] = [];
+
+    for (const docSnap of snapshot.docs) {
+      const data = docSnap.data();
+      const participants = data.participants || [];
+      const otherUserId = participants.find((id: string) => id !== userId);
+
+      //  Dapetin user
+      if (otherUserId) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", otherUserId));
+          const userData = userDoc.exists() ? userDoc.data() : null;
+
+          chats.push({
+            id: docSnap.id,
+            userId: otherUserId,
+            user: userData
+              ? {
+                  id: otherUserId,
+                  name: userData.fullName || "Unknown User",
+                  avatar: userData.avatar || null,
+                }
+              : undefined,
+            lastMessage: data.lastMessage || {
+              id: "",
+              text: "Start a conversation",
+              timestamp: new Date(),
+              senderId: "",
+              read: true,
+              type: "text",
+            },
+            unreadCount: data.unreadCount?.[userId] || 0,
+          });
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      }
+    }
+    onUpdate(chats);
+  });
+
+  return unsubscribe;
+};
+
+// Chat
+export const createChat = async (
+  currentUserId: string,
+  otherUserId: string
+) => {
+  const chatsRef = collection(db, "chats");
+
+  const newChat = {
+    participants: [currentUserId, otherUserId],
+    lastMessage: {
+      text: "Start a conversation",
+      timestamp: new Date(),
+      senderId: currentUserId,
+      read: false,
+      type: "text",
+    },
+    lastUpdated: new Date(),
+    unreadCount: {
+      [currentUserId]: 0,
+      [otherUserId]: 0,
+    },
+  };
+
+  const docRef = await addDoc(chatsRef, newChat);
+  return docRef.id;
+};
+
+export const updateChatLastMessage = async (
+  chatId: string,
+  message: Partial<Message>
+) => {
+  const chatRef = doc(db, "chats", chatId);
+
+  await updateDoc(chatRef, {
+    lastMessage: message,
+    lastUpdated: new Date(),
+  });
+};

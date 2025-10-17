@@ -1,5 +1,7 @@
 import { COLORS } from "@/constants/utils/colors";
-import { currentUser, getMockMessages } from "@/dummy/data";
+import { getCurrentUserData } from "@/services/authService";
+import { listenMessages, sendMessage } from "@/services/dmService";
+import { getUserById } from "@/services/userService";
 import { Chat, Message } from "@/types/directmessage/dm";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useRef, useState } from "react";
@@ -22,40 +24,68 @@ interface ChatWindowProps {
 export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [chatUser, setChatUser] = useState<any>(null);
   const scrollViewRef = useRef<ScrollView>(null);
 
+  // Get User Dulu
   useEffect(() => {
-    if (chat) {
-      setMessages(getMockMessages(chat.id));
-    } else {
+    const fetchCurrentUser = async () => {
+      const userData = await getCurrentUserData();
+      setCurrentUser(userData);
+    };
+    fetchCurrentUser();
+  }, []);
+
+  // Get chat by user
+  useEffect(() => {
+    const fetchChatUser = async () => {
+      if (chat?.userId) {
+        const userData = await getUserById(chat.userId);
+        setChatUser(userData);
+      }
+    };
+    fetchChatUser();
+  }, [chat?.userId]);
+
+  useEffect(() => {
+    if (!chat) {
       setMessages([]);
+      return;
     }
+
+    const unsubscribe = listenMessages(
+      chat.id,
+      (msgs: React.SetStateAction<Message[]>) => {
+        setMessages(msgs);
+      }
+    );
+
+    return () => unsubscribe();
   }, [chat]);
 
-  const scrollToBottom = () => {
-    scrollViewRef.current?.scrollToEnd({ animated: true });
-  };
-
   useEffect(() => {
-    scrollToBottom();
+    scrollViewRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
 
-  const handleSendMessage = () => {
-    if (newMessage.trim() && chat) {
-      const newMsg: Message = {
-        id: Date.now().toString(),
-        text: newMessage.trim(),
-        timestamp: new Date(),
-        senderId: currentUser.id,
-        read: true,
-        type: "text",
-        status: "sent",
-      };
-
-      setMessages((prev) => [...prev, newMsg]);
+  const handleSendMessage = async () => {
+    if (chat && newMessage.trim() && currentUser) {
+      await sendMessage(chat.id, newMessage, currentUser.id);
       setNewMessage("");
     }
   };
+
+  // Kalau misal g ad -> blm design
+  if (!currentUser) {
+    return (
+      <View
+        className="flex-1 items-center justify-center"
+        style={{ backgroundColor: COLORS.neutral100 }}
+      >
+        <Text>No user found...</Text>
+      </View>
+    );
+  }
 
   const formatMessageTime = (date: Date) => {
     return date.toLocaleTimeString("id-ID", {
@@ -95,7 +125,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
   }
 
   return (
-    // WOI DI SCROLL VIEW
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ backgroundColor: COLORS.white, flex: 1 }}
@@ -112,9 +141,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
           />
         </TouchableOpacity>
 
-        {chat.user?.avatar ? (
+        {chatUser?.avatar ? (
           <Image
-            source={{ uri: chat.user.avatar }}
+            source={{ uri: chatUser.avatar }}
             className="w-12 h-12 rounded-full mr-3"
           />
         ) : (
@@ -126,7 +155,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
               className="font-semibold text-base"
               style={{ color: COLORS.white }}
             >
-              {chat.user?.name?.charAt(0).toUpperCase() || "U"}
+              {chatUser?.name?.charAt(0).toUpperCase() || "U"}
             </Text>
           </View>
         )}
@@ -136,7 +165,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
             className="font-bold text-lg"
             style={{ color: COLORS.neutral900 }}
           >
-            {chat.user?.name}
+            {chatUser?.name || "Loading..."}
           </Text>
           <Text
             className="text-xs font-medium"
