@@ -81,7 +81,7 @@ export default function DirectMessage() {
         style={{ backgroundColor: COLORS.white }}
       >
         <View className="justify-between items-start mt-8 px-4">
-          <Text className="text-lg font-semibold py-3 text-neutral-900">
+          <Text className="text-lg font-semibold py-3 text-neutral-900 ">
             Direct Message
           </Text>
         </View>
