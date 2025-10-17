@@ -55,6 +55,7 @@ export const ChatList: React.FC<ChatListProps> = ({
   };
 
   return (
+    // Check ScrollView alis
     <ScrollView className="flex-1" style={{ backgroundColor: COLORS.white }}>
       {chats.map((chat) => {
         const chatUser = chatUsers[chat.userId] || chat.user;

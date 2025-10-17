@@ -125,6 +125,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
   }
 
   return (
+    // ScrollView
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ backgroundColor: COLORS.white, flex: 1 }}
