@@ -1,6 +1,7 @@
 import { COLORS } from "@/constants/utils/colors";
 import { getUserById } from "@/services/userService";
 import { Chat } from "@/types/directmessage/dm";
+import { formatTime } from "@/utils/dateUtils";
 import React, { useEffect, useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
@@ -36,23 +37,6 @@ export const ChatList: React.FC<ChatListProps> = ({
       fetchChatUsers();
     }
   }, [chats]);
-
-  const formatTime = (date: Date) => {
-    const now = new Date();
-    const isToday = date.toDateString() === now.toDateString();
-
-    if (isToday) {
-      return date.toLocaleTimeString("id-ID", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    }
-
-    return date.toLocaleDateString("id-ID", {
-      day: "2-digit",
-      month: "2-digit",
-    });
-  };
 
   return (
     // Check ScrollView alis

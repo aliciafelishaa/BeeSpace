@@ -94,36 +94,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
     });
   };
 
-  if (!chat) {
-    return (
-      <View
-        className="flex-1 items-center justify-center"
-        style={{ backgroundColor: COLORS.neutral100 }}
-      >
-        <View className="items-center p-8">
-          <View
-            className="w-16 h-16 rounded-full items-center justify-center mb-4"
-            style={{ backgroundColor: COLORS.neutral300 }}
-          >
-            <Text className="text-4xl">💬</Text>
-          </View>
-          <Text
-            className="text-lg font-medium mb-2 text-center"
-            style={{ color: COLORS.neutral900 }}
-          >
-            Select a chat to start messaging...
-          </Text>
-          <Text
-            className="text-sm text-center"
-            style={{ color: COLORS.neutral500 }}
-          >
-            Choose a conversation from the list
-          </Text>
-        </View>
-      </View>
-    );
-  }
-
   return (
     // ScrollView
     <KeyboardAvoidingView
@@ -186,6 +156,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
           paddingHorizontal: 16,
         }}
       >
+        {/* Masih HardCoded Date */}
         <View className="items-center mb-6">
           <View
             className="px-5 py-2 rounded-full"
