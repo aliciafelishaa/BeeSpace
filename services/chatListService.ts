@@ -38,6 +38,10 @@ export const listenUserChats = (
           const userDoc = await getDoc(doc(db, "users", otherUserId));
           const userData = userDoc.exists() ? userDoc.data() : null;
 
+          const lastMessageText = data.lastMessage?.text
+            ? data.lastMessage.text
+            : "";
+
           chats.push({
             id: docSnap.id,
             userId: otherUserId,
@@ -48,18 +52,18 @@ export const listenUserChats = (
                   avatar: userData.avatar || null,
                 }
               : undefined,
-            lastMessage: data.lastMessage || {
-              id: "",
-              text: "Start a conversation",
-              timestamp: new Date(),
-              senderId: "",
-              read: true,
-              type: "text",
+            lastMessage: {
+              id: data.lastMessage?.id || "",
+              text: lastMessageText,
+              timestamp: data.lastMessage?.timestamp || new Date(),
+              senderId: data.lastMessage?.senderId || "",
+              read: data.lastMessage?.read || true,
+              type: data.lastMessage?.type || "text",
             },
             unreadCount: data.unreadCount?.[userId] || 0,
           });
-        } catch (error) {
-          console.error("Error fetching user data:", error);
+        } catch (err) {
+          console.error("Error:", err);
         }
       }
     }
@@ -79,7 +83,7 @@ export const createChat = async (
   const newChat = {
     participants: [currentUserId, otherUserId],
     lastMessage: {
-      text: "Start a conversation",
+      text: "",
       timestamp: new Date(),
       senderId: currentUserId,
       read: false,
@@ -103,7 +107,10 @@ export const updateChatLastMessage = async (
   const chatRef = doc(db, "chats", chatId);
 
   await updateDoc(chatRef, {
-    lastMessage: message,
+    lastMessage: {
+      ...message,
+      text: message.text || "",
+    },
     lastUpdated: new Date(),
   });
 };
