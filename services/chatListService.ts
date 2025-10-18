@@ -5,6 +5,7 @@ import {
   collection,
   doc,
   getDoc,
+  getDocs,
   onSnapshot,
   orderBy,
   query,
@@ -16,7 +17,7 @@ export const listenUserChats = (
   userId: string,
   onUpdate: (chats: Chat[]) => void
 ) => {
-  // Search DB 
+  // Search DB
   const q = query(
     collection(db, "chats"),
     where("participants", "array-contains", userId),
@@ -105,4 +106,44 @@ export const updateChatLastMessage = async (
     lastMessage: message,
     lastUpdated: new Date(),
   });
+};
+
+export const checkExistingChat = async (
+  user1Id: string,
+  user2Id: string
+): Promise<string | null> => {
+  try {
+    const q = query(
+      collection(db, "chats"),
+      where("participants", "array-contains", user1Id)
+    );
+
+    const snapshot = await getDocs(q);
+
+    for (const docSnap of snapshot.docs) {
+      const data = docSnap.data();
+      const participants = data.participants || [];
+
+      if (participants.includes(user2Id) && participants.includes(user1Id)) {
+        return docSnap.id;
+      }
+    }
+    return null;
+  } catch (err) {
+    console.error("Error:", err);
+    return null;
+  }
+};
+
+export const initiateChat = async (
+  currentUserId: string,
+  otherUserId: string
+): Promise<string> => {
+  const existingChatId = await checkExistingChat(currentUserId, otherUserId);
+
+  if (existingChatId) {
+    return existingChatId;
+  }
+
+  return await createChat(currentUserId, otherUserId);
 };

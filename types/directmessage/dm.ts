@@ -9,7 +9,7 @@ export interface User {
 export interface Message {
   id: string;
   text: string;
-  timestamp: Date;
+  timestamp: Date | any;
   senderId: string;
   read: boolean;
   type: "text" | "image";

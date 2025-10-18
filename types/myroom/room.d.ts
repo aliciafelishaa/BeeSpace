@@ -1,5 +1,5 @@
 export interface RoomEntry {
-  fromUid?: string | "null";
+  fromUid: string;
   id?: string;
   cover?: string;
   category: string;
