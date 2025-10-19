@@ -59,33 +59,25 @@ export const ProfileHeader: React.FC<Props> = memo(
 
         {/* Counts: Following | Followers */}
         <View className="flex-row items-center gap-8 mb-3">
-          <TouchableOpacity
-            onPress={
-              onPressFollowing ?? (() => router.push("/profile/following"))
-            }
-            accessibilityLabel="Following"
-            className="items-center"
-          >
-            <Text className="text-[16px] font-semibold" style={{ color: COLORS.neutral900 }}>
-              {user.followStats.following}
-            </Text>
-            <Text className="text-[12px]" style={{ color: COLORS.neutral500 }}>
-              Following
-            </Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+                onPress={() => router.push("/profile/following")}
+                className="items-center"
+                >
+                <Text className="text-[16px] font-semibold">
+                    {user.followStats.following}
+                </Text>
+                <Text className="text-[12px]">Following</Text>
+                </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={onPressFollowers ?? (() => router.push("/profile/followers"))}
-            accessibilityLabel="Followers"
-            className="items-center"
-          >
-            <Text className="text-[16px] font-semibold" style={{ color: COLORS.neutral900 }}>
-              {user.followStats.followers}
-            </Text>
-            <Text className="text-[12px]" style={{ color: COLORS.neutral500 }}>
-              Followers
-            </Text>
-          </TouchableOpacity>
+                <TouchableOpacity
+                onPress={() => router.push("/profile/followers")}
+                className="items-center"
+                >
+                <Text className="text-[16px] font-semibold">
+                    {user.followStats.followers}
+                </Text>
+                <Text className="text-[12px]">Followers</Text>
+            </TouchableOpacity>
         </View>
 
         {/* Bio / Tagline */}
@@ -151,7 +143,7 @@ export const ProfileHeader: React.FC<Props> = memo(
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={onPressMessage ?? (() => router.push("/messages/new"))}
+              onPress={onPressMessage ?? (() => router.push("/directmessage/dm-homepage"))}
               className="px-4 py-2 rounded-[10px] border"
               style={{ borderColor: COLORS.neutral300, backgroundColor: COLORS.white }}
             >
