@@ -1,4 +1,4 @@
-import { doc, updateDoc, runTransaction } from "firebase/firestore"
+import { collection, query, where, getDocs, doc, updateDoc, runTransaction } from "firebase/firestore"
 import { db } from "@/config/firebaseConfig"
 
 export interface StudentProfile {
@@ -10,6 +10,17 @@ export interface StudentProfile {
     gradYear: string
     studentID: string
     studentCard: string | null
+}
+
+export const checkUsernameExists = async (username: string): Promise<boolean> => {
+    try {
+        const q = query(collection(db, "users"), where("username", "==", username))
+        const querySnapshot = await getDocs(q)
+        return !querySnapshot.empty
+    } catch (error) {
+        console.error("Error checking username:", error)
+        return false
+    }
 }
 
 export const updateUserProfile = async (firebaseUid: string, profileData: StudentProfile) => {
