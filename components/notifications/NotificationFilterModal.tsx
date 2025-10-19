@@ -58,16 +58,17 @@ export const NotificationFilterModal: React.FC<FilterProps> = ({
           onPress={onClose}
         />
         <Animated.View
-          className="rounded-t-3xl"
+          className="rounded-t-3xl pb-6"
           style={{
             backgroundColor: COLORS.white,
-            paddingBottom: 24,
             transform: [{ translateY: slideY }],
             overflow: "hidden",
           }}
         >
           <View className="px-6 py-5">
-            <Text className="text-xl font-bold" style={{ color: COLORS.primary2nd }}>
+            <Text className="text-xl font-bold" 
+            style={{ color: COLORS.primary2nd }}
+            >
               Choose Filter
             </Text>
           </View>
@@ -98,7 +99,7 @@ export const NotificationFilterModal: React.FC<FilterProps> = ({
             ))}
           </View>
 
-          <View className="px-6 py-5 pb-8">
+          <View className="px-6 pt-5 pb-8">
             <TouchableOpacity
               className="py-3 rounded-xl active:opacity-80"
               style={{ backgroundColor: COLORS.primary2nd }}

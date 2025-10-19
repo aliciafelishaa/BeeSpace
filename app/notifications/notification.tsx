@@ -2,10 +2,10 @@ import { NotificationCard } from "@/components/notifications/NotificationCard";
 import { NotificationFilterModal } from "@/components/notifications/NotificationFilterModal";
 import SearchBar from "@/components/utils/SearchBar";
 import { COLORS } from "@/constants/utils/colors";
+import { mockNotifications } from "@/dummy/notificationData";
 import {
-    NotificationFilter,
-    NotificationItem,
-    NotificationType,
+  NotificationFilter,
+  NotificationItem
 } from "@/types/notifications/notification";
 import { router } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
@@ -15,12 +15,7 @@ export default function NotificationScreen() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<NotificationFilter>("all");
   const [open, setOpen] = useState(false);
-
-  const [items, setItems] = useState<NotificationItem[]>([
-    { id: "1", title: "Plan Created", body: "Invite your friends to join your plan.", timestamp: new Date(), read: false, type: "plan_created" as NotificationType },
-    { id: "2", title: "New Message", body: "From Alice. Check it out!", timestamp: new Date(), read: false, type: "new_message" as NotificationType, senderName: "Alice" },
-    { id: "3", title: "Plan starts soon", body: "Your plan will start in 30 minutes.", timestamp: new Date(), read: true, type: "plan_start" as NotificationType },
-  ]);
+  const [items, setItems] = useState<NotificationItem[]>(mockNotifications);
 
   const markAsRead = useCallback((id: string) => {
     setItems(prev => prev.map(it => (it.id === id ? { ...it, read: true } : it)));
@@ -42,97 +37,83 @@ export default function NotificationScreen() {
     return arr.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }, [items, filter, matchesSearch]);
 
-  return (
-    <View style={{ flex: 1, backgroundColor: COLORS.white }}>
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          paddingHorizontal: 16,
-          paddingTop: 8,
-          paddingBottom: 8,
-        }}
+return (
+  <View className="flex-1 bg-white">
+    {/* Header */}
+    <View className="flex-row items-center px-4 mt-8">
+      <TouchableOpacity
+        onPress={() => router.back()}
+        className="w-10 h-10 items-center justify-center"
       >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={{ width: 40, height: 40, alignItems: "center", justifyContent: "center" }}
+        <Image
+          source={require("@/assets/utils/arrow-left-back.png")}
+          className="w-6 h-6"
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
+
+      <View className="flex-1 items-center justify-center">
+        <Text 
+          className="text-xl font-bold py-3" 
+          style={{ color: COLORS.neutral900 }}
         >
-          <Image
-            source={require("@/assets/utils/arrow-left-back.png")}
-            style={{ width: 24, height: 24 }}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
-
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ fontSize: 20, fontWeight: "700", color: COLORS.neutral900 }}>
-            Notifications
-          </Text>
-        </View>
-        
-        <View style={{ width: 40 }} />
+          Notifications
+        </Text>
       </View>
-
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 8,
-          paddingHorizontal: 16,
-          marginBottom: 12,
-        }}
-      >
-        <View style={{ flex: 1 }}>
-          <SearchBar
-            placeholder="Search Notifications"
-            value={search}
-            onChangeText={setSearch}
-          />
-        </View>
-
-        <TouchableOpacity
-          onPress={() => setOpen(true)}
-          style={{
-            height: 44,
-            paddingHorizontal: 12,
-            borderRadius: 12,
-            borderWidth: 1,
-            borderColor: COLORS.neutral300,
-            backgroundColor: COLORS.white,
-            justifyContent: "center",
-          }}
-        >
-          <Text style={{ fontWeight: "600", color: COLORS.neutral900 }}>
-            {filter === "all" ? "All" : "Unread"} ▾
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      <FlatList
-        data={filtered}
-        keyExtractor={(it) => it.id}
-        renderItem={({ item }) => (
-          <NotificationCard
-            item={item}
-            onSelectItem={() => {}}
-            onMarkRead={markAsRead}
-          />
-        )}
-        ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
-        ListEmptyComponent={
-          <View style={{ alignItems: "center", justifyContent: "center", paddingVertical: 80 }}>
-            <Text style={{ color: COLORS.neutral500 }}>No notifications found</Text>
-          </View>
-        }
-      />
-
-      <NotificationFilterModal
-        isOpen={open}
-        onClose={() => setOpen(false)}
-        selectedFilter={filter}
-        onFilterChange={(f) => { setFilter(f); setOpen(false); }}
-      />
+      
+      <View className="w-10" />
     </View>
-  );
+
+    {/* Search and Filter */}
+    <View className="flex-row items-center gap-2 px-4 mb-2">
+      <View className="flex-1">
+        <SearchBar
+          placeholder="Search Notifications"
+          value={search}
+          onChangeText={setSearch}
+        />
+      </View>
+
+      <TouchableOpacity
+        onPress={() => setOpen(true)}
+        className="h-11 px-3 rounded-xl border justify-center"
+        style={{ 
+          borderColor: COLORS.neutral300,
+          backgroundColor: COLORS.white 
+        }}
+      >
+        <Text className="font-semibold" style={{ color: COLORS.neutral900 }}>
+          {filter === "all" ? "All" : "Unread"} ▾
+        </Text>
+      </TouchableOpacity>
+    </View>
+
+    {/* Notification List */}
+    <FlatList
+      data={filtered}
+      keyExtractor={(it) => it.id}
+      renderItem={({ item }) => (
+        <NotificationCard
+          item={item}
+          onSelectItem={() => {}}
+          onMarkRead={markAsRead}
+        />
+      )}
+      ItemSeparatorComponent={() => <View className="h-2.5" />}
+      contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
+      ListEmptyComponent={
+        <View className="items-center justify-center py-20">
+          <Text style={{ color: COLORS.neutral500 }}>No notifications found</Text>
+        </View>
+      }
+    />
+
+    <NotificationFilterModal
+      isOpen={open}
+      onClose={() => setOpen(false)}
+      selectedFilter={filter}
+      onFilterChange={(f) => { setFilter(f); setOpen(false); }}
+    />
+  </View>
+);
 }

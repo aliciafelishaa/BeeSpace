@@ -85,10 +85,12 @@ export default function MyRoomDash() {
                 </View>
               </View>
               <View>
-                <Image
-                  source={require("@/assets/utils/notifications.png")}
-                  className="w-[40px] h-[40px]"
-                ></Image>
+                <TouchableOpacity onPress={() => router.push("/notifications/notification")}>
+                  <Image
+                    source={require("@/assets/utils/notifications.png")}
+                    className="w-[40px] h-[40px]"
+                  />
+                </TouchableOpacity>
               </View>
             </View>
 

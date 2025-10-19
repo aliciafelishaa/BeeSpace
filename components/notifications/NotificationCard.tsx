@@ -18,49 +18,48 @@ interface NotificationCardProps {
   onMarkRead?: (id: string) => void;
 }
 
-// Ikon: pakai PNG (ubah ke .svg component kalau sudah setup transformer)
+
 const IconForType = ({ type, showDot }: { type: NotificationType; showDot: boolean }) => {
   let iconSource: any;
   switch (type) {
     case "new_message":
-      iconSource = require("@/assets/notifications/icon-message.svg");
+      iconSource = require("@/assets/notifications/icon-message.png");
       break;
     case "plan_created":
-      iconSource = require("@/assets/notifications/icon-inbox.svg");
+      iconSource = require("@/assets/notifications/icon-inbox.png");
       break;
     case "plan_start":
     case "plan_cancelled":
-      iconSource = require("@/assets/notifications/icon-time.svg");
+      iconSource = require("@/assets/notifications/icon-time.png");
       break;
     default:
-      iconSource = require("@/assets/notifications/icon-inbox.svg");
+      iconSource = require("@/assets/notifications/icon-inbox.png");
   }
 
-  // Warna badge: pakai primary2nd kalau ada; fallback ke primary; terakhir hex aman
+
   const PRIMARY_DOT =
     (COLORS as any).primary2nd || (COLORS as any).primary || "#FACC15"; // ~amber-400
 
   return (
-    <View style={{ width: 20, height: 20, position: "relative", alignItems: "center", justifyContent: "center" }}>
-      <Image source={iconSource} style={{ width: 20, height: 20, resizeMode: "contain" }} />
-      {showDot && (
-        <View
-          style={{
-            position: "absolute",
-            right: -2,
-            top: -2,
-            width: 8,
-            height: 8,
-            borderRadius: 4,
-            backgroundColor: PRIMARY_DOT,
-            borderWidth: 1,
-            borderColor: "#FFFFFF",
-          }}
-          accessibilityLabel="Unread badge"
-        />
-      )}
-    </View>
-  );
+  <View className="w-5 h-5 relative items-center justify-center">
+    <Image 
+      source={iconSource} 
+      className="w-1 h-1"
+      resizeMode="contain"
+    />
+    {showDot && (
+      <View 
+        className="absolute w-2 h-2 rounded-full border border-white"
+        style={{
+          right: -2,
+          top: -2,
+          backgroundColor: PRIMARY_DOT,
+        }}
+        accessibilityLabel="Unread badge"
+      />
+    )}
+  </View>
+);
 };
 
 export const NotificationCard: React.FC<NotificationCardProps> = ({
@@ -68,16 +67,14 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
   onSelectItem,
   onMarkRead,
 }) => {
-  const bgColor = item.read ? COLORS.neutral100 : COLORS.white; // ✅ beda background saat read
+  const bgColor = item.read ? COLORS.neutral100 : COLORS.white; 
   const formattedTime = formatTimeLabel(item.timestamp);
 
   return (
     <View
-      className="w-full rounded-lg"
+      className="w-full rounded-lg border border-gray-300"
       style={{
         backgroundColor: bgColor,
-        borderWidth: 1,
-        borderColor: "#D1D5DB", // samain dengan Search/Filter; kalau tim pakai token lain, ganti ke COLORS.neutral100
       }}
     >
       <TouchableOpacity
@@ -90,7 +87,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
         {/* Header */}
         <View className="flex-row items-start justify-between">
           <View className="flex-row items-center gap-2">
-            {/* ✅ Dot kuning muncul hanya saat UNREAD */}
+            
             <IconForType type={item.type} showDot={!item.read} />
             <Text
               className={`text-[15px] ${
@@ -101,7 +98,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
               {item.title}
             </Text>
           </View>
-          <Text className="text-[12px] text-neutral-500 ml-3">{formattedTime}</Text>
+          <Text className="text-xs text-neutral-500 ml-3">{formattedTime}</Text>
         </View>
 
         {/* Body */}
@@ -113,8 +110,15 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
 
         {/* Action */}
         {!item.read && onMarkRead && (
-          <TouchableOpacity onPress={() => onMarkRead(item.id)} className="mt-2" accessibilityRole="button">
-            <Text style={{ color: COLORS.error }} className="text-[13px] font-medium">
+          <TouchableOpacity 
+            onPress={() => onMarkRead(item.id)} 
+            className="mt-2" 
+            accessibilityRole="button"
+          >
+            <Text 
+              className="text-[13px] font-medium"
+              style={{ color: COLORS.error }}
+            >
               Mark as read
             </Text>
           </TouchableOpacity>
