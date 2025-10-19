@@ -15,7 +15,10 @@ SplashScreen.preventAutoHideAsync();
 
 function shouldShowBottomNav(user: any, pathname: string): boolean {
   // if (!user) return false;
-  const hiddenPatterns = [/^\/auth/, /^\/myroom\/detailroom/];
+  const hiddenPatterns = [
+    /^\/auth/, 
+    /^\/myroom\/detailroom/,
+    /^\/profile/];
   return !hiddenPatterns.some((regex) => regex.test(pathname));
 }
 
@@ -57,8 +60,11 @@ function RootContent() {
   }
 
   return (
-    <View style={{ flex: 1 }}>
-      <Slot />
+    <View style={{ flex: 1, minHeight: 0 }}>
+      <View style={{ flex: 1, minHeight: 0 }}>
+        <Slot />
+      </View>
+
       {shouldShowBottomNav(user, pathname) && (
         <BottomNavbar
           items={NAV_ITEMS}
