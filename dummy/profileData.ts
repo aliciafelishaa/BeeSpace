@@ -5,7 +5,6 @@ export const mockProfile: UserProfile = {
   name: "Tasya Jenner",
   username: "tasyajenner",
   avatarUrl: require("@/assets/profile/empty-profile.jpg"), // sesuai tipe any/Url
-  tagline: "I believe I can fly || B27 || Computer Science",
   bio: "I believe I can fly || B27 || Computer Science\nInstagram: tasyapndya",
 
   isMe: true,
@@ -30,7 +29,6 @@ export const mockProfiles: UserProfile[] = [
     name: "Alicia F",
     username: "aliciafl",
     avatarUrl: "https://randomuser.me/api/portraits/women/2.jpg",
-    tagline: "Designing spaces, one UI at a time",
     bio: "UI/UX enthusiast | Coffee over chaos ☕",
     isMe: false,
     relationship: { isFollowing: true },
@@ -50,7 +48,6 @@ export const mockProfiles: UserProfile[] = [
     name: "Akbar R",
     username: "akbarr",
     avatarUrl: "https://randomuser.me/api/portraits/men/3.jpg",
-    tagline: "Turning ideas into scalable systems",
     bio: "Backend developer & open source contributor",
     isMe: false,
     relationship: { isFollowing: false },
