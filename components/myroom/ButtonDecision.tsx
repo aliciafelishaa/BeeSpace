@@ -43,7 +43,7 @@ export default function ButtonDecision({
 
         <TouchableOpacity
           className="rounded-[8px] w-[80px] h-[45px] bg-primary4th border border-primary2nd items-center justify-center py-4"
-          onPress={() => router.push("/directmessage/dm-homepage")}
+          onPress={() => router.push("/directmessage/chatList")}
         >
           <Image source={require("@/assets/images/dm.png")}></Image>
         </TouchableOpacity>

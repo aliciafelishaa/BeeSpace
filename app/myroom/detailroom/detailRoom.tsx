@@ -2,6 +2,8 @@ import ButtonDecision from "@/components/myroom/ButtonDecision";
 import HeaderBack from "@/components/utils/HeaderBack";
 import { COLORS } from "@/constants/utils/colors";
 import { useRoom } from "@/hooks/useRoom";
+import { getCurrentUserData } from "@/services/authService";
+import { initiateChat } from "@/services/chatListService";
 import { RoomEntry } from "@/types/myroom/room";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -17,6 +19,7 @@ export default function DetailRoom() {
   const insets = useSafeAreaInsets();
   const [modalVisible, setModalVisible] = useState(false);
   const [rooms, setRooms] = useState<RoomEntry[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const { getRoom } = useRoom();
   const [loading, setLoading] = useState(false);
   const { deleteRoom } = useRoom();
@@ -29,6 +32,14 @@ export default function DetailRoom() {
   }, [id]);
 
   useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const userData = await getCurrentUserData();
+      setCurrentUser(userData);
+    };
+    fetchCurrentUser();
+  }, []);
+
+  useEffect(() => {
     const fetchRoom = async () => {
       setLoading(true);
       const res = await getRoom();
@@ -38,18 +49,42 @@ export default function DetailRoom() {
           setRooms([selectedRoom]);
         } else {
           setRooms([]);
-          console.log("❌ Room dengan ID ini tidak ada");
         }
       } else {
         setRooms([]);
-        console.log("❌ getRoom gagal atau data kosong");
       }
       setLoading(false);
     };
     fetchRoom();
-  }, [id]);
+  }, [id, getRoom]);
 
   const room = rooms[0];
+
+  // Perlu sync
+  const handleInitiateChat = async () => {
+    if (!currentUser?.id || !room) {
+      return;
+    }
+
+    try {
+      if (!room.fromUid || room.fromUid === "null") {
+        alert("Sync blm kelar..");
+        return;
+      }
+
+      if (room.fromUid === currentUser.id) {
+        alert("You are the host of this room.");
+        return;
+      }
+
+      const chatId = await initiateChat(currentUser.id, room.fromUid);
+      console.log("ChatID:", chatId);
+
+      router.push(`/directmessage/chat?id=${chatId}&hostId=${room.fromUid}`);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleDeleteRoom = async () => {
     console.log("Mau Delete");
@@ -255,9 +290,12 @@ export default function DetailRoom() {
                       </Text>
                     </View>
                     <View>
-                      <Image
-                        source={require("@/assets/page/detailroom/chat.svg")}
-                      ></Image>
+                      {/* INI YANG Private CHAT */}
+                      <TouchableOpacity onPress={handleInitiateChat}>
+                        <Image
+                          source={require("@/assets/page/detailroom/chat.svg")}
+                        />
+                      </TouchableOpacity>
                     </View>
                   </View>
                 </View>
