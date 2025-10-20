@@ -1,5 +1,5 @@
-import { db } from "@/config/firebaseConfig";
-import { doc, getDoc, runTransaction, updateDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, updateDoc, runTransaction } from "firebase/firestore"
+import { db } from "@/config/firebaseConfig"
 
 export interface StudentProfile {
   fullName: string;
@@ -12,28 +12,36 @@ export interface StudentProfile {
   studentCard: string | null;
 }
 
-export const updateUserProfile = async (
-  firebaseUid: string,
-  profileData: StudentProfile
-) => {
-  try {
-    const userRef = doc(db, "users", firebaseUid);
-    await updateDoc(userRef, {
-      fullName: profileData.fullName,
-      username: profileData.username,
-      university: profileData.university,
-      major: profileData.major,
-      enrollYear: profileData.enrollYear,
-      gradYear: profileData.gradYear,
-      studentID: profileData.studentID,
-      studentCard: profileData.studentCard,
-      profileCompleted: true,
-      updatedAt: new Date(),
-    });
-  } catch (error: any) {
-    throw error;
-  }
-};
+export const checkUsernameExists = async (username: string): Promise<boolean> => {
+    try {
+        const q = query(collection(db, "users"), where("username", "==", username))
+        const querySnapshot = await getDocs(q)
+        return !querySnapshot.empty
+    } catch (error) {
+        console.error("Error checking username:", error)
+        return false
+    }
+}
+
+export const updateUserProfile = async (firebaseUid: string, profileData: StudentProfile) => {
+    try {
+        const userRef = doc(db, "users", firebaseUid)
+        await updateDoc(userRef, {
+            fullName: profileData.fullName,
+            username: profileData.username,
+            university: profileData.university,
+            major: profileData.major,
+            enrollYear: profileData.enrollYear,
+            gradYear: profileData.gradYear,
+            studentID: profileData.studentID,
+            studentCard: profileData.studentCard,
+            profileCompleted: true,
+            updatedAt: new Date(),
+        })
+    } catch (error: any) {
+        throw error
+    }
+}
 
 export const getNextUserId = async (): Promise<number> => {
   const counterRef = doc(db, "counters", "userCounter");

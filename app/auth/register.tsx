@@ -1,17 +1,33 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { View, TouchableOpacity, ScrollView } from "react-native"
 import { useForm } from "react-hook-form"
 import { useRouter } from "expo-router"
 import { InputField } from "@/components/auth/InputField"
 import Text from "@/components/ui/Text"
 import IconGoogle from "@/components/ui/IconGoogle"
-import { registerWithEmail } from "@/services/authService"
+import { registerWithEmail, useGoogleAuth } from "@/services/authService"
+// Asumsi Anda dapat mengimpor fungsi Firestore untuk mendapatkan detail user
+// import { getUserProfile } from "@/services/userService" 
 
 type FormValues = {
     email: string
     password: string
     confirmPassword: string
 }
+
+// Catatan: Fungsi ini adalah placeholder. 
+// Anda harus memindahkannya ke userService.ts atau authService.ts 
+// dan menggunakan Firestore untuk mendapatkan status 'profileCompleted'
+const checkUserProfileCompletion = async (uid: string): Promise<boolean> => {
+    // Di sini seharusnya ada panggilan ke Firestore:
+    // const userDoc = await getUserProfile(uid) 
+    // return userDoc?.profileCompleted || false
+
+    // Untuk tujuan demonstrasi: 
+    // Anggap pengguna baru selalu diarahkan ke onboarding
+    return false 
+}
+
 
 export default function Register() {
     const router = useRouter()
@@ -25,6 +41,43 @@ export default function Register() {
         reset,
         formState: { errors },
     } = useForm<FormValues>()
+
+    const { request, response, promptAsync, handleGoogleResponse } = useGoogleAuth()
+
+    useEffect(() => {
+        const handleResponse = async () => {
+            if (!response) return;
+            try {
+                setLoading(true);
+                const result = await handleGoogleResponse(); 
+                
+                if (result && result.uid) {
+                    setSuccess("Google sign up successful!");
+
+                    // 1. Cek status kelengkapan profil
+                    const isProfileComplete = await checkUserProfileCompletion(result.uid);
+
+                    // 2. Tentukan rute berdasarkan status
+                    if (isProfileComplete) {
+                        router.replace("/myroom/roomDashboard");
+                    } else {
+                        router.push({
+                            pathname: "/auth/boarding",
+                            params: { uid: result.uid },
+                        })
+                    }
+                }
+
+            } catch (err) {
+                console.error("Google sign up error:", err);
+                setError("Google sign up failed. Please try again.");
+            } finally {
+                setLoading(false);
+            }
+        };
+        handleResponse();
+    }, [response]);
+
 
     const onSubmit = async (data: FormValues) => {
         setError("")
@@ -144,7 +197,11 @@ export default function Register() {
                 <View className="flex-1 h-px bg-gray-300" />
             </View>
 
-            <TouchableOpacity className="flex-row items-center justify-center border border-gray-300 h-14 rounded-lg mb-4 gap-2">
+            <TouchableOpacity
+                disabled={!request || loading}
+                onPress={() => promptAsync()}
+                className={`flex-row items-center justify-center border border-gray-300 h-14 rounded-lg mb-4 gap-2 ${loading ? "opacity-60" : ""}`}
+            >
                 <IconGoogle />
                 <Text className="text-[#171717] font-bold">Google</Text>
             </TouchableOpacity>
