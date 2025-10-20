@@ -4,13 +4,12 @@ import { Ionicons } from "@expo/vector-icons"
 import { InputField } from "@/components/auth/InputField"
 import { SearchableDropdown } from "@/components/auth/Dropdown"
 import Text from "@/components/ui/Text"
-import IconBoarding from "@/components/ui/IconBoarding"
 import { useForm, Controller } from "react-hook-form"
 import { useAuth } from "@/hooks/useAuth"
 import { updateUserProfile, StudentProfile, checkUsernameExists } from "@/services/userService"
 import handleUpData from "@/hooks/useCloudinary"
 import { universityMajors, years } from "@/components/utils/useA"
-import StudentCardPicker from "@/components/auth/StudentCardPicker"
+import ImagePicker from "@/components/auth/ImagePicker"
 import { useRouter } from "expo-router"
 
 export default function StudentBoarding() {
@@ -19,6 +18,7 @@ export default function StudentBoarding() {
     const [step, setStep] = useState<number>(1)
     const [loading, setLoading] = useState(false)
     const [studentCard, setStudentCard] = useState<string | null>(null)
+    const [profilePicture, setProfilePicture] = useState<string | null>(null)
     const [majorsOptions, setMajorsOptions] = useState<string[]>([])
 
     const { control, handleSubmit, watch, setValue, trigger, setError, formState: { errors }, clearErrors } = useForm<StudentProfile>({
@@ -31,6 +31,7 @@ export default function StudentBoarding() {
             gradYear: "",
             studentID: "",
             studentCard: null,
+            profilePicture: null,
         },
     })
 
@@ -83,16 +84,28 @@ export default function StudentBoarding() {
         setLoading(true)
         try {
             let studentCardUrl: string | null = null
+            let profilePictureUrl: string | null = null
+
             if (studentCard) {
                 const fileObj = { uri: studentCard, name: "student-card.jpg", type: "image/jpeg" }
                 studentCardUrl = await handleUpData(fileObj)
             }
-            await updateUserProfile(user.uid, { ...data, studentCard: studentCardUrl })
-            alert("Profile submitted successfully!")
+
+            if (profilePicture) {
+                const fileObj = { uri: profilePicture, name: "profile-picture.jpg", type: "image/jpeg" }
+                profilePictureUrl = await handleUpData(fileObj)
+            }
+
+            await updateUserProfile(user.uid, {
+                ...data,
+                studentCard: studentCardUrl,
+                profilePicture: profilePictureUrl,
+            })
+            
+            console.log("Profile submitted successfully!")
             router.push({ pathname: "/auth/login" })
         } catch (err: any) {
             console.error("Upload/Submit Error:", err)
-            alert("Failed to submit profile. Check console for details.")
         } finally {
             setLoading(false)
         }
@@ -132,7 +145,7 @@ export default function StudentBoarding() {
                     <View className="flex flex-row justify-center items-center mb-3 ml-6">
                         <Image
                             source={require("@/assets/images/logo-beespace.png")}
-                            style={{ width: 50, height: 50 }}/>
+                            style={{ width: 50, height: 50 }} />
                         <View className="ml-6">
                             <Text className="text-[#171717] text-xl font-bold mb-1">Complete Your Profile</Text>
                             <Text className="text-[#171717] font-medium text-base">Step {step} of 3</Text>
@@ -141,9 +154,17 @@ export default function StudentBoarding() {
                 </View>
             </View>
 
-            <ScrollView className="p-6 space-y-4">
+            <ScrollView className="p-8 space-y-4">
                 {step === 1 && (
                     <>
+                        <Text weight="SemiBold" className="text-[#404040] text-lg mb-1">Profile Picture</Text>
+                        <ImagePicker
+                            value={profilePicture}
+                            onChange={setProfilePicture}
+                            shape="circle"
+                            showText={false}
+                        />
+
                         <InputField
                             label="Full Name"
                             control={control}
@@ -152,6 +173,8 @@ export default function StudentBoarding() {
                             rules={{ required: "Full Name is required" }}
                             error={errors.fullName?.message as string}
                             onClearError={() => clearErrors("fullName")}
+                            alphabeticOnly={true}
+                            maxLength={50}
                         />
 
                         <InputField
@@ -168,9 +191,23 @@ export default function StudentBoarding() {
                             }}
                             error={errors.username?.message as string}
                             onClearError={() => clearErrors("username")}
+                            maxLength={30}
+                            usernameOnly={true}
                         />
 
+                        <View className="flex-row justify-end mt-4">
+                            <TouchableOpacity
+                                onPress={nextStep}
+                                className="w-1/3 bg-yellow-400 h-12 rounded-lg flex justify-center items-center"
+                            >
+                                <Text className="text-white font-bold">Next</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </>
+                )}
 
+                {step === 2 && (
+                    <>
                         <Controller
                             control={control}
                             name="university"
@@ -205,19 +242,6 @@ export default function StudentBoarding() {
                             )}
                         />
 
-                        <View className="flex-row justify-end mt-4">
-                            <TouchableOpacity
-                                onPress={nextStep}
-                                className="w-1/3 bg-yellow-400 h-12 rounded-lg flex justify-center items-center"
-                            >
-                                <Text className="text-white font-bold">Next</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </>
-                )}
-
-                {step === 2 && (
-                    <>
                         <Controller
                             control={control}
                             name="enrollYear"
@@ -295,8 +319,8 @@ export default function StudentBoarding() {
                             onClearError={() => clearErrors("studentID")}
                         />
 
-                        <Text className="text-[#404040] mb-1 font-semibold text-base">Student ID Card</Text>
-                        <StudentCardPicker value={studentCard} onChange={setStudentCard} />
+                        <Text weight="SemiBold" className="text-[#404040] text-lg mb-1">Student ID Card</Text>
+                        <ImagePicker value={studentCard} onChange={setStudentCard} />
 
                         <View className="flex-row justify-end mt-4">
                             <TouchableOpacity

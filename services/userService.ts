@@ -1,4 +1,4 @@
-import { collection, query, where, getDocs, doc, updateDoc, runTransaction } from "firebase/firestore"
+import { collection, query, where, getDocs, doc, updateDoc, getDoc } from "firebase/firestore"
 import { db } from "@/config/firebaseConfig"
 
 export interface StudentProfile {
@@ -10,6 +10,7 @@ export interface StudentProfile {
     gradYear: string
     studentID: string
     studentCard: string | null
+    profilePicture: string | null
 }
 
 export const checkUsernameExists = async (username: string): Promise<boolean> => {
@@ -27,14 +28,7 @@ export const updateUserProfile = async (firebaseUid: string, profileData: Studen
     try {
         const userRef = doc(db, "users", firebaseUid)
         await updateDoc(userRef, {
-            fullName: profileData.fullName,
-            username: profileData.username,
-            university: profileData.university,
-            major: profileData.major,
-            enrollYear: profileData.enrollYear,
-            gradYear: profileData.gradYear,
-            studentID: profileData.studentID,
-            studentCard: profileData.studentCard,
+            ...profileData,
             profileCompleted: true,
             updatedAt: new Date(),
         })
@@ -43,21 +37,18 @@ export const updateUserProfile = async (firebaseUid: string, profileData: Studen
     }
 }
 
-export const getNextUserId = async (): Promise<number> => {
-    const counterRef = doc(db, "counters", "userCounter")
-
-    const nextUid = await runTransaction(db, async (transaction) => {
-        const counterDoc = await transaction.get(counterRef)
-        if (!counterDoc.exists()) {
-            transaction.set(counterRef, { lastUid: 1 })
-            return 1
+export const checkUserProfileCompletion = async (firebaseUid: string): Promise<boolean> => {
+    try {
+        const userRef = doc(db, "users", firebaseUid)
+        const userDoc = await getDoc(userRef)
+        
+        if (userDoc.exists()) {
+            return userDoc.data().profileCompleted === true
         }
-
-        const lastUid = counterDoc.data().lastUid || 0
-        const newUid = lastUid + 1
-        transaction.update(counterRef, { lastUid: newUid })
-        return newUid
-    })
-
-    return nextUid
+        
+        return false
+    } catch (error) {
+        console.error("Error checking profile completion:", error)
+        return false
+    }
 }

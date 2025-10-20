@@ -17,6 +17,8 @@ type InputFieldProps = {
     onClearError?: () => void
     maxLength?: number
     numericOnly?: boolean
+    alphabeticOnly?: boolean
+    usernameOnly?: boolean
 }
 
 export const InputField = ({
@@ -31,17 +33,28 @@ export const InputField = ({
     required,
     onClearError,
     maxLength,
-    numericOnly = false, // default false
+    numericOnly = false,
+    alphabeticOnly = false,
+    usernameOnly = false,
 }: InputFieldProps) => {
     const [showPassword, setShowPassword] = useState(false)
     const [isFocused, setIsFocused] = useState(false)
 
     const borderColor = isFocused ? "#FCBC03" : error ? "#EF4444" : "#D1D5DB"
 
+    const formatToTitleCase = (str: string) => {
+        if (!str) return str;
+        return str
+            .toLowerCase()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    };
+
     return (
         <View className="mb-4">
             {label && (
-                <Text weight="Medium" className="text-lg font-medium text-[#171717] mb-2">
+                <Text weight="SemiBold" className="text-lg font-medium text-[#404040] mb-2">
                     {label} {required && <Text className="text-[#EF4444]">*</Text>}
                 </Text>
             )}
@@ -93,12 +106,21 @@ export const InputField = ({
                             }}
                             onFocus={() => setIsFocused(true)}
                             onChangeText={(text) => {
-                                const filteredText = numericOnly ? text.replace(/[^0-9]/g, "") : text
+                                let filteredText = text
+
+                                if (numericOnly) {
+                                    filteredText = text.replace(/[^0-9]/g, "")
+                                } else if (alphabeticOnly) {
+                                    filteredText = text.replace(/[^a-zA-Z\s]/g, "")
+                                    filteredText = formatToTitleCase(filteredText)
+                                } else if (usernameOnly) {
+                                    filteredText = text.replace(/[^a-zA-Z0-9._]/g, "")
+                                }
                                 onChange(filteredText)
                                 if (onClearError) onClearError()
                             }}
                             value={value}
-                            autoCapitalize="none"
+                            autoCapitalize={alphabeticOnly ? "words" : "none"}
                             maxLength={maxLength}
                             keyboardType={numericOnly ? "numeric" : "default"}
                         />

@@ -63,7 +63,7 @@ export const SearchableDropdown = ({
     return (
         <View className="mb-4">
             {label && (
-                <Text weight="Medium" className="text-lg font-medium text-[#171717] mb-2">
+                <Text weight="SemiBold" className="text-lg font-medium text-[#404040] mb-2">
                     {label} {required && <Text className="text-[#EF4444]">*</Text>}
                 </Text>
             )}
