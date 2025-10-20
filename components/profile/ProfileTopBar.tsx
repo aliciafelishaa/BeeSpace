@@ -1,84 +1,170 @@
+import {
+  ProfileMenuModal,
+  type ProfileMenuKey,
+} from "@/components/profile/ProfileMenuModal";
+import { COLORS } from "@/constants/utils/colors";
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { Alert, Image, Share, TouchableOpacity, View } from "react-native";
-import { ProfileMenuModal } from "./ProfileMenuModal";
+import {
+  Image,
+  Platform,
+  Share,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-interface ProfileTopBarProps {
-  isOwnProfile: boolean;
+export interface ProfileTopBarProps {
+  isOwnProfile?: boolean;
   userId?: string;
   userName?: string;
+
+  title?: string;
+
+  showShare?: boolean;
+  showMenu?: boolean;
+
+  onBack?: () => void;
+
+  onMenuNavigate?: (key: ProfileMenuKey) => void;
 }
 
 export const ProfileTopBar: React.FC<ProfileTopBarProps> = ({
-  isOwnProfile,
+  isOwnProfile = true,
   userId,
   userName,
+  title,
+  showShare = true,
+  showMenu = true,
+  onBack,
+  onMenuNavigate,
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleBack = () => {
+    if (onBack) return onBack();
+    router.back();
+  };
 
   const handleShare = async () => {
     try {
       await Share.share({
         message: `Check out ${userName ?? "this user"}'s profile on BeeSpace!`,
-        url: userId ? `beespace://profile/${userId}` : undefined, // ready for deep link
+        url: userId ? `beespace://profile/${userId}` : undefined,
       });
-    } catch (error: any) {
-      Alert.alert("Share failed", error.message || "Something went wrong.");
-      console.error("Error sharing:", error);
+    } catch (e: any) {
+      console.warn("Share failed:", e?.message ?? e);
     }
   };
 
   return (
     <>
-      <View className="flex-row items-center justify-between px-4 mt-8">
-        {/* ← Back Button */}
-        <TouchableOpacity
-          onPress={() => router.back()}
-          accessibilityLabel="Back"
-          className="w-10 h-10 items-center justify-center rounded-full active:opacity-70"
-        >
-          <Image
-            source={require("@/assets/utils/arrow-left-back.png")}
-            className="w-6 h-6"
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
-
-        {/* → Right Actions */}
-        <View className="flex-row gap-4">
-          {/* Share Button */}
+      <View
+        style={{
+          paddingTop: Platform.select({ ios: 8, android: 8, default: 8 }),
+          paddingHorizontal: 16,
+          marginTop: 8,
+        }}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          {/* Untuk handle back */}
           <TouchableOpacity
-            onPress={handleShare}
-            accessibilityLabel="Share profile"
-            className="w-10 h-10 items-center justify-center rounded-full active:opacity-70"
+            onPress={handleBack}
+            accessibilityLabel="Back"
+            style={{
+              width: 40,
+              height: 40,
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 999,
+            }}
+            activeOpacity={0.7}
           >
             <Image
-              source={require("@/assets/profile/icon-share.png")}
-              className="w-6 h-6"
+              source={require("@/assets/utils/arrow-left-back.png")}
+              style={{ width: 24, height: 24 }}
               resizeMode="contain"
             />
           </TouchableOpacity>
 
-          {isOwnProfile && (
-            <TouchableOpacity
-              onPress={() => setMenuOpen(true)}
-              accessibilityLabel="Open menu"
-              className="w-10 h-10 items-center justify-center rounded-full active:opacity-70"
+          {/* Title di tengah */}
+          {title ? (
+            <View
+              pointerEvents="none"
+              style={{
+                position: "absolute",
+                left: 0,
+                right: 0,
+                alignItems: "center",
+              }}
             >
-              <Image
-                source={require("@/assets/profile/icon-menu.png")}
-                className="w-6 h-6"
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-          )}
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: "600",
+                  color: COLORS.neutral900,
+                }}
+              >
+                {title}
+              </Text>
+            </View>
+          ) : null}
+
+          <View style={{ flexDirection: "row", columnGap: 12 }}>
+            {showShare && (
+              <TouchableOpacity
+                onPress={handleShare}
+                accessibilityLabel="Share profile"
+                style={{
+                  width: 40,
+                  height: 40,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: 999,
+                }}
+                activeOpacity={0.7}
+              >
+                <Image
+                  source={require("@/assets/profile/icon-share.png")}
+                  style={{ width: 24, height: 24 }}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            )}
+
+            {isOwnProfile && showMenu && (
+              <TouchableOpacity
+                onPress={() => setMenuOpen(true)}
+                accessibilityLabel="Open menu"
+                style={{
+                  width: 40,
+                  height: 40,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: 999,
+                }}
+                activeOpacity={0.7}
+              >
+                <Image
+                  source={require("@/assets/profile/icon-menu.png")}
+                  style={{ width: 24, height: 24 }}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
 
-      {isOwnProfile && (
+      {/* Modal menu */}
+      {isOwnProfile && showMenu && (
         <ProfileMenuModal
           isOpen={menuOpen}
           onClose={() => setMenuOpen(false)}
+          onNavigate={(key) => {
+            setMenuOpen(false);
+            onMenuNavigate?.(key);
+          }}
         />
       )}
     </>
