@@ -1,4 +1,3 @@
-// components/profile/ProfileHeader.tsx
 import { COLORS } from "@/constants/utils/colors";
 import { RelationshipState, UserProfile } from "@/types/profile/profile";
 import { router } from "expo-router";
@@ -60,19 +59,31 @@ export const ProfileHeader: React.FC<Props> = memo(
         {/* Counts: Following | Followers */}
         <View className="flex-row items-center gap-8 mb-3">
             <TouchableOpacity
-                onPress={() => router.push("/profile/following")}
+                onPress={() => router.push({
+                    pathname: 'profile/follow/[userId]',
+                    params: {
+                        userId: user.id,
+                        initialTab: 'following'
+                    }
+                })}
                 className="items-center"
-                >
+            >
                 <Text className="text-[16px] font-semibold">
                     {user.followStats.following}
                 </Text>
                 <Text className="text-[12px]">Following</Text>
-                </TouchableOpacity>
+            </TouchableOpacity>
 
-                <TouchableOpacity
-                onPress={() => router.push("/profile/followers")}
+            <TouchableOpacity
+                onPress={() => router.push({
+                    pathname: 'profile/follow/[userId]',
+                    params: {
+                        userId: user.id,
+                        initialTab: 'followers'
+                    }
+                })}
                 className="items-center"
-                >
+            >
                 <Text className="text-[16px] font-semibold">
                     {user.followStats.followers}
                 </Text>
@@ -107,7 +118,7 @@ export const ProfileHeader: React.FC<Props> = memo(
         {/* Actions */}
         {relation === "owner" ? (
           <TouchableOpacity
-            onPress={onPressEdit ?? (() => router.push("/profile/edit"))}
+            onPress={onPressEdit}
             className="px-4 py-2 rounded-[10px] border"
             style={{ borderColor: COLORS.primary, backgroundColor: COLORS.white }}
           >

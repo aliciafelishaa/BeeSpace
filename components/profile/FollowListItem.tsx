@@ -1,4 +1,3 @@
-// components/profile/FollowListItem.tsx
 import { COLORS } from "@/constants/utils/colors";
 import { router } from "expo-router";
 import React from "react";

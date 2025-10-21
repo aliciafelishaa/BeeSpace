@@ -13,12 +13,17 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 SplashScreen.preventAutoHideAsync();
 
-function shouldShowBottomNav(user: any, pathname: string): boolean {
+function shouldShowBottomNav(user: any, pathname: string, isEditing:boolean): boolean {
   // if (!user) return false;
   const hiddenPatterns = [
     /^\/auth/, 
     /^\/myroom\/detailroom/,
-    /^\/profile/];
+    ];
+
+  if (pathname === '/profile' && isEditing) {
+    return false;
+  }
+
   return !hiddenPatterns.some((regex) => regex.test(pathname));
 }
 
@@ -28,12 +33,13 @@ function RootContent() {
   const pathname = usePathname();
   const [activeTab, setActiveTab] = useState("home");
   const [fontsLoaded] = useFonts({ ...Fonts });
-
+  const [isProfileEditing, setIsProfileEditing] = useState(false);
+  
   useEffect(() => {
     const yourroomAliases = ["/yourroom", "/yourroom/yourRoom", "/myroom/roomDashboard"];
 
     const isMatch = (base: string, p: string) =>
-      p === base || p.startsWith(base + "/");
+      p === base || p.startsWith(base + "/");    
 
     const current =
       [...NAV_ITEMS]
@@ -45,6 +51,15 @@ function RootContent() {
 
     if (current) setActiveTab(current.id);
   }, [pathname]);
+  
+  useEffect(() => {
+    const handleProfileEdit = (event: any) => {
+      setIsProfileEditing(event.detail.editing); 
+    };
+    
+    window.addEventListener('profileEditChange', handleProfileEdit);
+    return () => window.removeEventListener('profileEditChange', handleProfileEdit);
+  }, []);
 
   useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync();
@@ -65,7 +80,7 @@ function RootContent() {
         <Slot />
       </View>
 
-      {shouldShowBottomNav(user, pathname) && (
+      {shouldShowBottomNav(user, pathname, isProfileEditing) && (
         <BottomNavbar
           items={NAV_ITEMS}
           activeId={activeTab}

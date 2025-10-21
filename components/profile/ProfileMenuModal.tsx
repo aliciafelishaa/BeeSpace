@@ -120,7 +120,7 @@ export const ProfileMenuModal: React.FC<ProfileMenuModalProps> = ({
         }}
       >
         <Pressable 
-          style={{ flex: 1 }} // <-- Pakai style murni
+          style={{ flex: 1 }} 
           accessibilityLabel="Close menu"
           onPress={onClose}
         />

@@ -4,7 +4,7 @@ export const mockProfile: UserProfile = {
   id: "1",
   name: "Tasya Jenner",
   username: "tasyajenner",
-  avatarUrl: require("@/assets/profile/empty-profile.jpg"), // sesuai tipe any/Url
+  avatarUrl: require("@/assets/profile/empty-profile.jpg"), 
   bio: "I believe I can fly || B27 || Computer Science\nInstagram: tasyapndya",
 
   isMe: true,

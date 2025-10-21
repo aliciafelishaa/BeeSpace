@@ -8,10 +8,9 @@ import React, { useState } from "react";
 import {
   Image,
   Platform,
-  Share,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 export interface ProfileTopBarProps {
@@ -46,16 +45,6 @@ export const ProfileTopBar: React.FC<ProfileTopBarProps> = ({
     router.back();
   };
 
-  const handleShare = async () => {
-    try {
-      await Share.share({
-        message: `Check out ${userName ?? "this user"}'s profile on BeeSpace!`,
-        url: userId ? `beespace://profile/${userId}` : undefined,
-      });
-    } catch (e: any) {
-      console.warn("Share failed:", e?.message ?? e);
-    }
-  };
 
   return (
     <>
@@ -111,26 +100,6 @@ export const ProfileTopBar: React.FC<ProfileTopBarProps> = ({
           ) : null}
 
           <View style={{ flexDirection: "row", columnGap: 12 }}>
-            {showShare && (
-              <TouchableOpacity
-                onPress={handleShare}
-                accessibilityLabel="Share profile"
-                style={{
-                  width: 40,
-                  height: 40,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderRadius: 999,
-                }}
-                activeOpacity={0.7}
-              >
-                <Image
-                  source={require("@/assets/profile/icon-share.png")}
-                  style={{ width: 24, height: 24 }}
-                  resizeMode="contain"
-                />
-              </TouchableOpacity>
-            )}
 
             {isOwnProfile && showMenu && (
               <TouchableOpacity
