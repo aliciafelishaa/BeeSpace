@@ -3,7 +3,7 @@ import { Fonts } from "@/constants/utils/fonts";
 import { NAV_ITEMS } from "@/constants/utils/navbarItems";
 import { AuthContext } from "@/context/AuthContext";
 import { FamilyViewProvider } from "@/context/FamilyViewContext";
-import '@/global.css';
+import "@/global.css";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useFonts } from "expo-font";
 import { Slot, SplashScreen, usePathname, useRouter } from "expo-router";
@@ -13,19 +13,21 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 SplashScreen.preventAutoHideAsync();
 
-function shouldShowBottomNav(user: any, pathname: string, isEditing:boolean): boolean {
-  // if (!user) return false;
-  const hiddenPatterns = [
-    /^\/auth/, 
-    /^\/myroom\/detailroom/,
-    ];
+// function shouldShowBottomNav(
+//   user: any,
+//   pathname: string,
+//   isEditing: boolean
+// ): boolean {
+//   if (!user) return false;
+//   const hiddenPatterns = [/^\/auth/, /^\/myroom\/detailroom/];
+//   const isChatPage = pathname === "/directmessage/chat";
 
-  if (pathname === '/profile' && isEditing) {
-    return false;
-  }
+//   if (pathname === "/profile" && isEditing) {
+//     return false;
+//   }
 
-  return !hiddenPatterns.some((regex) => regex.test(pathname));
-}
+//   return !hiddenPatterns.some((regex) => regex.test(pathname)) && !isChatPage;
+// }
 
 function RootContent() {
   const { user, initializing } = useAuthState();
@@ -34,31 +36,36 @@ function RootContent() {
   const [activeTab, setActiveTab] = useState("home");
   const [fontsLoaded] = useFonts({ ...Fonts });
   const [isProfileEditing, setIsProfileEditing] = useState(false);
-  
+
   useEffect(() => {
-    const yourroomAliases = ["/yourroom", "/yourroom/yourRoom", "/myroom/roomDashboard"];
+    const yourroomAliases = [
+      "/yourroom",
+      "/yourroom/yourRoom",
+      "/myroom/roomDashboard",
+    ];
 
     const isMatch = (base: string, p: string) =>
-      p === base || p.startsWith(base + "/");    
+      p === base || p.startsWith(base + "/");
 
     const current =
       [...NAV_ITEMS]
         .sort((a, b) => b.route.length - a.route.length)
-        .find((item) => isMatch(item.route, pathname))
-      || (yourroomAliases.some((a) => isMatch(a, pathname))
-          ? NAV_ITEMS.find((i) => i.id === "myroom")
-          : undefined);
+        .find((item) => isMatch(item.route, pathname)) ||
+      (yourroomAliases.some((a) => isMatch(a, pathname))
+        ? NAV_ITEMS.find((i) => i.id === "/myroom")
+        : undefined);
 
     if (current) setActiveTab(current.id);
   }, [pathname]);
-  
+
   useEffect(() => {
     const handleProfileEdit = (event: any) => {
-      setIsProfileEditing(event.detail.editing); 
+      setIsProfileEditing(event.detail.editing);
     };
-    
-    window.addEventListener('profileEditChange', handleProfileEdit);
-    return () => window.removeEventListener('profileEditChange', handleProfileEdit);
+
+    window.addEventListener("profileEditChange", handleProfileEdit);
+    return () =>
+      window.removeEventListener("profileEditChange", handleProfileEdit);
   }, []);
 
   useEffect(() => {
@@ -80,16 +87,16 @@ function RootContent() {
         <Slot />
       </View>
 
-      {shouldShowBottomNav(user, pathname, isProfileEditing) && (
-        <BottomNavbar
-          items={NAV_ITEMS}
-          activeId={activeTab}
-          onSelect={handleSelect}
-        />
-      )}
+      {/* {shouldShowBottomNav(user, pathname, isProfileEditing) && ( */}
+      <BottomNavbar
+        items={NAV_ITEMS}
+        activeId={activeTab}
+        onSelect={handleSelect}
+      />
+      {/* )} */}
     </View>
   );
-}   
+}
 
 export default function RootLayout() {
   return (
@@ -102,4 +109,3 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
-

@@ -23,7 +23,7 @@ export const NAV_ITEMS: NavItem[] = [
     id: "directmessage",
     icon: require("@/assets/utils/passive-icon/dm.png"),
     activeIcon: require("@/assets/utils/active-icon/dm.png"),
-    route: "/directmessage/dm-homepage",
+    route: "/directmessage/chatList",
   },
   {
     id: "profile",

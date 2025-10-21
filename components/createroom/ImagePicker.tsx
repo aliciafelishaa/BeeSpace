@@ -1,7 +1,7 @@
 import IconUpload from "@/components/ui/icon-upload";
 import { CoverPickerProps } from "@/types/myroom/coverProps";
 import * as ExpoImagePicker from "expo-image-picker";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 
 export default function ImagePicker({
@@ -12,15 +12,24 @@ export default function ImagePicker({
   onEdit = true,
 }: CoverPickerProps) {
   const [uploading, setUploading] = useState(false);
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const permission =
+        await ExpoImagePicker.requestMediaLibraryPermissionsAsync();
+      setHasPermission(permission.granted);
+    })();
+  }, []);
 
   const pickImage = async () => {
     try {
-      const permission =
-        await ExpoImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
+      if (hasPermission === false) {
         alert("Permission to access gallery is required!");
         return;
       }
+
+      setUploading(true);
 
       const result = await ExpoImagePicker.launchImageLibraryAsync({
         mediaTypes: ExpoImagePicker.MediaTypeOptions.Images,
@@ -28,7 +37,7 @@ export default function ImagePicker({
         aspect: [4, 3],
         quality: 0.7,
       });
-
+      console.log("cobaaa");
       if (!result.canceled) {
         onChangeImage(result.assets[0].uri);
       }
@@ -44,7 +53,9 @@ export default function ImagePicker({
   return (
     <View className="mb-5">
       {onEdit ? (
-        <Text className="text-lg font-interMedium text-[#171717] mb-2">{label}</Text>
+        <Text className="text-lg font-interMedium text-[#171717] mb-2">
+          {label}
+        </Text>
       ) : (
         <Text className="text-lg font-medium text-[#171717] mb-2">
           {label} <Text className="text-[#EF4444]">*</Text>

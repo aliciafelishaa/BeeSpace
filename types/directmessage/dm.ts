@@ -2,12 +2,14 @@ export interface User {
   id: string;
   name: string;
   avatar?: string;
+  email?: string;
+  username?: string;
 }
 
 export interface Message {
   id: string;
   text: string;
-  timestamp: Date;
+  timestamp: Date | any;
   senderId: string;
   read: boolean;
   type: "text" | "image";
@@ -20,6 +22,7 @@ export interface Message {
 
 export interface Chat {
   id: string;
+  userId: string;
   user?: User;
   lastMessage: Message;
   unreadCount: number;

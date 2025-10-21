@@ -1,7 +1,10 @@
 import ButtonDecision from "@/components/myroom/ButtonDecision";
 import HeaderBack from "@/components/utils/HeaderBack";
 import { COLORS } from "@/constants/utils/colors";
+import { useAuthState } from "@/hooks/useAuthState";
 import { useRoom } from "@/hooks/useRoom";
+import { initiateChat } from "@/services/chatListService";
+import { getUserById } from "@/services/userService";
 import { RoomEntry } from "@/types/myroom/room";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -12,52 +15,88 @@ import {
 } from "react-native-safe-area-context";
 
 export default function DetailRoom() {
-  const { id } = useLocalSearchParams();
-  console.log("ID dari route:", id);
+  const { user } = useAuthState();
+  const { uid: paramUid, id } = useLocalSearchParams();
+  const uid = paramUid || user?.uid;
   const insets = useSafeAreaInsets();
   const [modalVisible, setModalVisible] = useState(false);
   const [rooms, setRooms] = useState<RoomEntry[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const { getRoom } = useRoom();
   const [loading, setLoading] = useState(false);
   const { deleteRoom } = useRoom();
   const isOwner = true;
   const hasJoined = false;
   const isEnded = false;
-
-  useEffect(() => {
-    console.log("DetailRoom rendered, id =", id);
-  }, [id]);
+  const [hostName, setHostName] = useState<string>("");
 
   useEffect(() => {
     const fetchRoom = async () => {
       setLoading(true);
-      const res = await getRoom();
+      const res = await getRoom(uid);
       if (res.success && res.data) {
         const selectedRoom = res.data.find((r) => r.id.toString() === id);
         if (selectedRoom) {
           setRooms([selectedRoom]);
+
+          if (selectedRoom.fromUid) {
+            const userRes = await getUserById(selectedRoom.fromUid);
+            setHostName(userRes?.name || "Unknown Host");
+          }
         } else {
           setRooms([]);
-          console.log("❌ Room dengan ID ini tidak ada");
         }
       } else {
         setRooms([]);
-        console.log("❌ getRoom gagal atau data kosong");
       }
       setLoading(false);
     };
     fetchRoom();
-  }, [id]);
+  }, [id, getRoom]);
 
   const room = rooms[0];
 
-  const handleDeleteRoom = async () => {
-    console.log("Mau Delete");
-    console.log(room);
-    if (!room || !id) return;
+  // Perlu sync
+  const handleInitiateChat = async () => {
+    if (!currentUser?.id || !room) {
+      return;
+    }
+
     try {
-      const res = await deleteRoom(id);
-      if (res.success) {
+      if (!room.fromUid || room.fromUid === "null") {
+        alert("Sync blm kelar..");
+        return;
+      }
+
+      if (room.fromUid === currentUser.id) {
+        alert("You are the host of this room.");
+        return;
+      }
+
+      const chatId = await initiateChat(currentUser.id, room.fromUid);
+      console.log("ChatID:", chatId);
+
+      router.push(`/directmessage/chat?id=${chatId}&hostId=${room.fromUid}`);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteRoom = async () => {
+    console.log("Attempting to delete room...");
+
+    if (!id) {
+      console.error("Missing room ID");
+      return;
+    }
+    if (!uid) {
+      console.error("Missing user UID");
+      return;
+    }
+
+    try {
+      const res = await deleteRoom(id, uid);
+      if (res?.success) {
         console.log("Success");
         router.back();
       } else {
@@ -250,14 +289,16 @@ export default function DetailRoom() {
                     <View className="flex-row gap-3 items-center">
                       <View className="w-[36px] h-[36px] rounded-full bg-primary2nd"></View>
                       <Text className="font-inter font-normal text-[14px]">
-                        {" "}
-                        Balqis Muharda
+                        {hostName || "Unknown Host"}
                       </Text>
                     </View>
                     <View>
-                      <Image
-                        source={require("@/assets/page/detailroom/chat.svg")}
-                      ></Image>
+                      {/* INI YANG Private CHAT */}
+                      <TouchableOpacity onPress={handleInitiateChat}>
+                        <Image
+                          source={require("@/assets/page/detailroom/chat.svg")}
+                        />
+                      </TouchableOpacity>
                     </View>
                   </View>
                 </View>
