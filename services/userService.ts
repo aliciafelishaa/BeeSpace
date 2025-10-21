@@ -29,6 +29,7 @@ export const getUserById = async (userId: string) => {
         id: userId,
         name: data.fullName || "",
         avatar: data.avatar || null,
+        university: data.university || "",
       };
     }
     return null;

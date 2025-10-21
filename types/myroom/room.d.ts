@@ -15,4 +15,5 @@ export interface RoomEntry {
   timeEnd: string;
   timeStart: string;
   hostName?: string;
+  imageAvatar?: ImageSourcePropType;
 }

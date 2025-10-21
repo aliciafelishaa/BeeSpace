@@ -7,10 +7,8 @@ import {
   doc,
   getDoc,
   getDocs,
-  query,
   Timestamp,
   updateDoc,
-  where,
 } from "firebase/firestore";
 
 export const createRoom = async (payload: RoomEntry) => {
@@ -44,8 +42,7 @@ export const createRoom = async (payload: RoomEntry) => {
 
 export const getAllRoom = async (uid: string) => {
   const roomcol = collection(db, "roomEvents");
-  const q = query(roomcol, where("fromUid", "==", uid));
-  const snapshot = await getDocs(q);
+  const snapshot = await getDocs(roomcol);
 
   return snapshot.docs.map((doc) => {
     const data = doc.data();
