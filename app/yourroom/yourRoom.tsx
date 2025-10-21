@@ -153,17 +153,19 @@ export default function MyRoomDash({
               ) : rooms.length > 0 ? (
                 rooms.map((room) => (
                   <CardRoom
-                    key={room.fromUid}
+                    key={room.id}
                     id={room.id}
                     title={room.planName}
-                    // date={`${room.date} ${room.timeStart} - ${room.timeEnd}`}
                     date={new Date(room.date)}
                     location={room.place}
                     slotRemaining={room.minMember}
+                    timeStart={room.timeStart}
+                    timeEnd={room.timeEnd}
                     slotTotal={room.maxMember}
-                    hostName={room.hostName}
+                    hostName={room.hostName || "Anonymous"}
                     imageSource={room.cover ? { uri: room.cover } : false}
-                    isEdit={true}
+                    isEdit={false}
+                    imageAvatar={room.imageAvatar}
                   />
                 ))
               ) : (

@@ -13,21 +13,21 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 SplashScreen.preventAutoHideAsync();
 
-function shouldShowBottomNav(
-  user: any,
-  pathname: string,
-  isEditing: boolean
-): boolean {
-  if (!user) return false;
-  const hiddenPatterns = [/^\/auth/, /^\/myroom\/detailroom/];
-  const isChatPage = pathname === "/directmessage/chat";
+// function shouldShowBottomNav(
+//   user: any,
+//   pathname: string,
+//   isEditing: boolean
+// ): boolean {
+//   if (!user) return false;
+//   const hiddenPatterns = [/^\/auth/, /^\/myroom\/detailroom/];
+//   const isChatPage = pathname === "/directmessage/chat";
 
-  if (pathname === "/profile" && isEditing) {
-    return false;
-  }
+//   if (pathname === "/profile" && isEditing) {
+//     return false;
+//   }
 
-  return !hiddenPatterns.some((regex) => regex.test(pathname)) && !isChatPage;
-}
+//   return !hiddenPatterns.some((regex) => regex.test(pathname)) && !isChatPage;
+// }
 
 function RootContent() {
   const { user, initializing } = useAuthState();
@@ -52,7 +52,7 @@ function RootContent() {
         .sort((a, b) => b.route.length - a.route.length)
         .find((item) => isMatch(item.route, pathname)) ||
       (yourroomAliases.some((a) => isMatch(a, pathname))
-        ? NAV_ITEMS.find((i) => i.id === "/")
+        ? NAV_ITEMS.find((i) => i.id === "/myroom")
         : undefined);
 
     if (current) setActiveTab(current.id);
@@ -87,13 +87,13 @@ function RootContent() {
         <Slot />
       </View>
 
-      {shouldShowBottomNav(user, pathname, isProfileEditing) && (
-        <BottomNavbar
-          items={NAV_ITEMS}
-          activeId={activeTab}
-          onSelect={handleSelect}
-        />
-      )}
+      {/* {shouldShowBottomNav(user, pathname, isProfileEditing) && ( */}
+      <BottomNavbar
+        items={NAV_ITEMS}
+        activeId={activeTab}
+        onSelect={handleSelect}
+      />
+      {/* )} */}
     </View>
   );
 }
