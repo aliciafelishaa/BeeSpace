@@ -1,8 +1,8 @@
 import ButtonDecision from "@/components/myroom/ButtonDecision";
 import HeaderBack from "@/components/utils/HeaderBack";
 import { COLORS } from "@/constants/utils/colors";
+import { useAuthState } from "@/hooks/useAuthState";
 import { useRoom } from "@/hooks/useRoom";
-import { getCurrentUserData } from "@/services/authService";
 import { initiateChat } from "@/services/chatListService";
 import { RoomEntry } from "@/types/myroom/room";
 import { router, useLocalSearchParams } from "expo-router";
@@ -14,7 +14,9 @@ import {
 } from "react-native-safe-area-context";
 
 export default function DetailRoom() {
-  const { id } = useLocalSearchParams();
+  const { user } = useAuthState();
+  const { uid: paramUid, id } = useLocalSearchParams();
+  const uid = paramUid || user?.uid;
   console.log("ID dari route:", id);
   const insets = useSafeAreaInsets();
   const [modalVisible, setModalVisible] = useState(false);
@@ -31,18 +33,18 @@ export default function DetailRoom() {
     console.log("DetailRoom rendered, id =", id);
   }, [id]);
 
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      const userData = await getCurrentUserData();
-      setCurrentUser(userData);
-    };
-    fetchCurrentUser();
-  }, []);
+  // useEffect(() => {
+  //   const fetchCurrentUser = async () => {
+  //     const userData = await getCurrentUserData();
+  //     setCurrentUser(userData);
+  //   };
+  //   fetchCurrentUser();
+  // }, []);
 
   useEffect(() => {
     const fetchRoom = async () => {
       setLoading(true);
-      const res = await getRoom();
+      const res = await getRoom(uid);
       if (res.success && res.data) {
         const selectedRoom = res.data.find((r) => r.id.toString() === id);
         if (selectedRoom) {
@@ -89,9 +91,9 @@ export default function DetailRoom() {
   const handleDeleteRoom = async () => {
     console.log("Mau Delete");
     console.log(room);
-    if (!room || !id) return;
+    if (!room || !id || !uid) return;
     try {
-      const res = await deleteRoom(id);
+      const res = await deleteRoom(id, uid);
       if (res.success) {
         console.log("Success");
         router.back();

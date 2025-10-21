@@ -1,9 +1,10 @@
 import CardRoom from "@/components/myroom/CardRoom";
 import EmptyState from "@/components/myroom/EmptyState";
+import { useAuthState } from "@/hooks/useAuthState";
 import { useRoom } from "@/hooks/useRoom";
 import { SectionTab } from "@/types/myroom/myroom";
 import { RoomEntry } from "@/types/myroom/room";
-import { usePathname } from "expo-router";
+import { useLocalSearchParams, usePathname } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
@@ -70,11 +71,18 @@ export default function MyRoomDash({
   const [rooms, setRooms] = useState<RoomEntry[]>([]);
   const { getRoom } = useRoom();
   const [loading, setLoading] = useState(false);
+  const { user } = useAuthState();
+  const { uid: paramUid } = useLocalSearchParams();
+  const uid = paramUid || user?.uid;
 
   useEffect(() => {
+    if (!uid) {
+      console.warn("UID not found. User not logged in or invalid param.");
+      return;
+    }
     const fetchRoom = async () => {
       setLoading(true);
-      const res = await getRoom();
+      const res = await getRoom(uid);
       console.log(res.data);
       if (res.success && res.data) {
         setRooms(res.data);
@@ -85,7 +93,7 @@ export default function MyRoomDash({
     };
     fetchRoom();
     console.log(rooms);
-  }, []);
+  }, [uid]);
 
   return (
     <SafeAreaView

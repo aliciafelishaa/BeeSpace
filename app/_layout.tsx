@@ -17,7 +17,7 @@ function shouldShowBottomNav(user: any, pathname: string): boolean {
   // if (!user) return false;
   const hiddenPatterns = [/^\/auth/, /^\/myroom\/detailroom/];
   const isChatPage = pathname === "/directmessage/chat";
-  
+
   return !hiddenPatterns.some((regex) => regex.test(pathname)) && !isChatPage;
 }
 
@@ -43,7 +43,7 @@ function RootContent() {
         .sort((a, b) => b.route.length - a.route.length)
         .find((item) => isMatch(item.route, pathname)) ||
       (yourroomAliases.some((a) => isMatch(a, pathname))
-        ? NAV_ITEMS.find((i) => i.id === "myroom")
+        ? NAV_ITEMS.find((i) => i.id === "/")
         : undefined);
 
     if (current) setActiveTab(current.id);

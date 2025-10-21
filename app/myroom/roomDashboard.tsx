@@ -4,10 +4,12 @@ import CardRoom from "@/components/myroom/CardRoom";
 import ModalFilteringDynamic from "@/components/utils/ModalFiltering";
 import SearchBar from "@/components/utils/SearchBar";
 import { COLORS } from "@/constants/utils/colors";
+import { useAuthState } from "@/hooks/useAuthState";
 import { useRoom } from "@/hooks/useRoom";
+import { getUserById } from "@/services/userService";
 import { RoomCategory, TimeCategory } from "@/types/myroom/myroom";
 import { RoomEntry } from "@/types/myroom/room";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
@@ -24,15 +26,33 @@ export default function MyRoomDash() {
   const [rooms, setRooms] = useState<RoomEntry[]>([]);
   const { getRoom } = useRoom();
   const [loading, setLoading] = useState(false);
+  const { user } = useAuthState();
+  const { uid: paramUid } = useLocalSearchParams();
+  const uid = paramUid || user?.uid;
 
   useEffect(() => {
     const fetchRoom = async () => {
+      if (!uid) {
+        console.warn("UID not found. User not logged in or invalid param.");
+        return;
+      }
       setLoading(true);
-      const res = await getRoom();
+      const res = await getRoom(uid);
       console.log("Test");
       console.log(res.data);
       if (res.success && res.data) {
-        setRooms(res.data);
+        const roomsData = res.data;
+        const roomsWithHost = await Promise.all(
+          roomsData.map(async (room: RoomEntry) => {
+            const userRes = await getUserById(room.fromUid);
+            return {
+              ...room,
+              hostName: userRes?.name || "Unknown",
+            };
+          })
+        );
+
+        setRooms(roomsWithHost);
       } else {
         setRooms([]);
       }
@@ -40,7 +60,7 @@ export default function MyRoomDash() {
     };
     fetchRoom();
     console.log(rooms);
-  }, []);
+  }, [uid]);
 
   return (
     <SafeAreaView
@@ -215,7 +235,7 @@ export default function MyRoomDash() {
             ) : rooms.length > 0 ? (
               rooms.map((room) => (
                 <CardRoom
-                  key={room.fromUid}
+                  key={room.id}
                   id={room.id}
                   title={room.planName}
                   // date={`${room.date} ${room.timeStart} - ${room.timeEnd}`}
@@ -223,7 +243,7 @@ export default function MyRoomDash() {
                   location={room.place}
                   slotRemaining={room.minMember}
                   slotTotal={room.maxMember}
-                  hostName={room.fromUid ? room.fromUid : "Ano"}
+                  hostName={room.fromUid || "Anonymous"}
                   imageSource={room.cover ? { uri: room.cover } : false}
                   isEdit={false}
                 />

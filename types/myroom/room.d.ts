@@ -14,4 +14,8 @@ export interface RoomEntry {
   planName: string;
   timeEnd: string;
   timeStart: string;
+  fromUser?: {
+    uid: string;
+    name: string;
+  };
 }
