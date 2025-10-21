@@ -14,7 +14,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 SplashScreen.preventAutoHideAsync();
 
 function shouldShowBottomNav(user: any, pathname: string): boolean {
-  // if (!user) return false;
+  if (!user) return false;
   const hiddenPatterns = [/^\/auth/, /^\/myroom\/detailroom/];
   const isChatPage = pathname === "/directmessage/chat";
 

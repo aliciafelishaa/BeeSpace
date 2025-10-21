@@ -1,4 +1,4 @@
-import { collection, query, where, getDocs, doc, updateDoc, runTransaction } from "firebase/firestore"
+import { collection, query, where, getDocs, doc, updateDoc, runTransaction, getDoc } from "firebase/firestore"
 import { db } from "@/config/firebaseConfig"
 
 export interface StudentProfile {

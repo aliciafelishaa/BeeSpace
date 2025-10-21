@@ -32,18 +32,15 @@ export default function MyRoomDash() {
 
   useEffect(() => {
     const fetchRoom = async () => {
-      if (!uid) {
-        console.warn("UID not found. User not logged in or invalid param.");
-        return;
-      }
+      if (!uid) return;
       setLoading(true);
       const res = await getRoom(uid);
-      console.log("Test");
-      console.log(res.data);
+
       if (res.success && res.data) {
         const roomsData = res.data;
         const roomsWithHost = await Promise.all(
-          roomsData.map(async (room: RoomEntry) => {
+          roomsData.map(async (room: RoomEntry) => 
+          {console.log(room.fromUid)
             const userRes = await getUserById(room.fromUid);
             return {
               ...room,
@@ -59,7 +56,6 @@ export default function MyRoomDash() {
       setLoading(false);
     };
     fetchRoom();
-    console.log(rooms);
   }, [uid]);
 
   return (
@@ -243,7 +239,7 @@ export default function MyRoomDash() {
                   location={room.place}
                   slotRemaining={room.minMember}
                   slotTotal={room.maxMember}
-                  hostName={room.fromUid || "Anonymous"}
+                  hostName={room.hostName || "Anonymous"}
                   imageSource={room.cover ? { uri: room.cover } : false}
                   isEdit={false}
                 />

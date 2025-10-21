@@ -142,7 +142,6 @@ export const deleteRoomService = async (id: string, uid: string) => {
     if (data.fromUid !== uid) {
       return { success: false, message: "Unauthorized access" };
     }
-
     await deleteDoc(docRef);
     return { success: true, message: "Room deleted successfully" };
   } catch (error) {

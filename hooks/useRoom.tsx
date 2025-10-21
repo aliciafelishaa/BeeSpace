@@ -35,7 +35,6 @@ export function useRoom() {
   };
 
   const getRoom = async (uid: string) => {
-    console.log(uid);
     try {
       if (!uid) {
         throw new Error("User is not logged in");

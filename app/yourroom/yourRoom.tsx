@@ -2,6 +2,7 @@ import CardRoom from "@/components/myroom/CardRoom";
 import EmptyState from "@/components/myroom/EmptyState";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useRoom } from "@/hooks/useRoom";
+import { getUserById } from "@/services/userService";
 import { SectionTab } from "@/types/myroom/myroom";
 import { RoomEntry } from "@/types/myroom/room";
 import { useLocalSearchParams, usePathname } from "expo-router";
@@ -85,7 +86,19 @@ export default function MyRoomDash({
       const res = await getRoom(uid);
       console.log(res.data);
       if (res.success && res.data) {
-        setRooms(res.data);
+        const roomsData = res.data;
+        const roomsWithHost = await Promise.all(
+          roomsData.map(async (room: RoomEntry) => {
+            console.log(room.fromUid);
+            const userRes = await getUserById(room.fromUid);
+            return {
+              ...room,
+              hostName: userRes?.name || "Unknown",
+            };
+          })
+        );
+
+        setRooms(roomsWithHost);
       } else {
         setRooms([]);
       }
@@ -148,7 +161,7 @@ export default function MyRoomDash({
                     location={room.place}
                     slotRemaining={room.minMember}
                     slotTotal={room.maxMember}
-                    hostName={room.fromUid ? room.fromUid : "Ano"}
+                    hostName={room.hostName}
                     imageSource={room.cover ? { uri: room.cover } : false}
                     isEdit={true}
                   />
