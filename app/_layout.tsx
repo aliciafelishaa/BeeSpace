@@ -13,11 +13,15 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 SplashScreen.preventAutoHideAsync();
 
-function shouldShowBottomNav(user: any, pathname: string): boolean {
+function shouldShowBottomNav(user: any, pathname: string, isEditing:boolean): boolean {
   if (!user) return false;
   const hiddenPatterns = [/^\/auth/, /^\/myroom\/detailroom/];
   const isChatPage = pathname === "/directmessage/chat";
 
+  if (pathname === '/profile' && isEditing) {
+    return false;
+  }
+  
   return !hiddenPatterns.some((regex) => regex.test(pathname)) && !isChatPage;
 }
 
@@ -27,7 +31,8 @@ function RootContent() {
   const pathname = usePathname();
   const [activeTab, setActiveTab] = useState("home");
   const [fontsLoaded] = useFonts({ ...Fonts });
-
+  const [isProfileEditing, setIsProfileEditing] = useState(false);
+  
   useEffect(() => {
     const yourroomAliases = [
       "/yourroom",
@@ -36,7 +41,7 @@ function RootContent() {
     ];
 
     const isMatch = (base: string, p: string) =>
-      p === base || p.startsWith(base + "/");
+      p === base || p.startsWith(base + "/");    
 
     const current =
       [...NAV_ITEMS]
@@ -48,6 +53,15 @@ function RootContent() {
 
     if (current) setActiveTab(current.id);
   }, [pathname]);
+  
+  useEffect(() => {
+    const handleProfileEdit = (event: any) => {
+      setIsProfileEditing(event.detail.editing); 
+    };
+    
+    window.addEventListener('profileEditChange', handleProfileEdit);
+    return () => window.removeEventListener('profileEditChange', handleProfileEdit);
+  }, []);
 
   useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync();
@@ -63,9 +77,12 @@ function RootContent() {
   }
 
   return (
-    <View style={{ flex: 1 }}>
-      <Slot />
-      {shouldShowBottomNav(user, pathname) && (
+    <View style={{ flex: 1, minHeight: 0 }}>
+      <View style={{ flex: 1, minHeight: 0 }}>
+        <Slot />
+      </View>
+
+      {shouldShowBottomNav(user, pathname, isProfileEditing) && (
         <BottomNavbar
           items={NAV_ITEMS}
           activeId={activeTab}

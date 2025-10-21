@@ -1,73 +1,58 @@
-import React, { useState, useEffect } from "react"
-import { View, TouchableOpacity, ScrollView } from "react-native"
-import { useForm } from "react-hook-form"
-import { useRouter } from "expo-router"
-import { InputField } from "@/components/auth/InputField"
-import Text from "@/components/ui/Text"
-import IconGoogle from "@/components/ui/IconGoogle"
-import { registerWithEmail, useGoogleAuth } from "@/services/authService"
-// Asumsi Anda dapat mengimpor fungsi Firestore untuk mendapatkan detail user
-// import { getUserProfile } from "@/services/userService" 
+import React, { useState, useEffect } from "react";
+import { View, TouchableOpacity, ScrollView } from "react-native";
+import { useForm } from "react-hook-form";
+import { useRouter } from "expo-router";
+import { InputField } from "@/components/auth/InputField";
+import Text from "@/components/ui/Text";
+import IconGoogle from "@/components/ui/IconGoogle";
+import { registerWithEmail } from "@/services/authService";
+import { checkUserProfileCompletion } from "@/services/userService";
+import { useGoogleAuth } from "@/services/googleAuthService";
 
 type FormValues = {
-    email: string
-    password: string
-    confirmPassword: string
-}
-
-// Catatan: Fungsi ini adalah placeholder. 
-// Anda harus memindahkannya ke userService.ts atau authService.ts 
-// dan menggunakan Firestore untuk mendapatkan status 'profileCompleted'
-const checkUserProfileCompletion = async (uid: string): Promise<boolean> => {
-    // Di sini seharusnya ada panggilan ke Firestore:
-    // const userDoc = await getUserProfile(uid) 
-    // return userDoc?.profileCompleted || false
-
-    // Untuk tujuan demonstrasi: 
-    // Anggap pengguna baru selalu diarahkan ke onboarding
-    return false 
-}
-
+    email: string;
+    password: string;
+    confirmPassword: string;
+};
 
 export default function Register() {
-    const router = useRouter()
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState("")
-    const [success, setSuccess] = useState("")
+    const router = useRouter();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
 
     const {
         control,
         handleSubmit,
         reset,
         formState: { errors },
-    } = useForm<FormValues>()
+    } = useForm<FormValues>();
 
-    const { request, response, promptAsync, handleGoogleResponse } = useGoogleAuth()
+    const { request, response, signInWithGoogle } = useGoogleAuth();
 
     useEffect(() => {
-        const handleResponse = async () => {
+        const handleGoogleResponse = async () => {
             if (!response) return;
             try {
                 setLoading(true);
-                const result = await handleGoogleResponse(); 
-                
-                if (result && result.uid) {
+                const result = await signInWithGoogle();
+
+                if (result && result.user?.uid) {
                     setSuccess("Google sign up successful!");
 
-                    // 1. Cek status kelengkapan profil
-                    const isProfileComplete = await checkUserProfileCompletion(result.uid);
+                    const isProfileComplete = await checkUserProfileCompletion(
+                        result.user.uid
+                    );
 
-                    // 2. Tentukan rute berdasarkan status
                     if (isProfileComplete) {
                         router.replace("/myroom/roomDashboard");
                     } else {
                         router.push({
                             pathname: "/auth/boarding",
-                            params: { uid: result.uid },
-                        })
+                            params: { uid: result.user.uid },
+                        });
                     }
                 }
-
             } catch (err) {
                 console.error("Google sign up error:", err);
                 setError("Google sign up failed. Please try again.");
@@ -75,43 +60,43 @@ export default function Register() {
                 setLoading(false);
             }
         };
-        handleResponse();
+
+        handleGoogleResponse();
     }, [response]);
 
-
     const onSubmit = async (data: FormValues) => {
-        setError("")
-        setSuccess("")
-        setLoading(true)
+        setError("");
+        setSuccess("");
+        setLoading(true);
 
         if (data.password !== data.confirmPassword) {
-            setError("Passwords do not match")
-            setLoading(false)
-            return
+            setError("Passwords do not match");
+            setLoading(false);
+            return;
         }
 
         try {
-            const newUser = await registerWithEmail(data.email, data.password)
-            setSuccess("Account created successfully!")
-            reset()
+            const newUser = await registerWithEmail(data.email, data.password);
+            setSuccess("Account created successfully!");
+            reset();
 
             router.push({
                 pathname: "/auth/boarding",
                 params: { uid: newUser.uid },
-            })
+            });
         } catch (err: any) {
-            console.error(err)
+            console.error(err);
             if (err.code === "auth/email-already-in-use") {
-                setError("This email is already registered")
+                setError("This email is already registered");
             } else if (err.code === "auth/invalid-email") {
-                setError("Invalid email address")
+                setError("Invalid email address");
             } else {
-                setError("Registration failed, please try again")
+                setError("Registration failed, please try again");
             }
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
     return (
         <ScrollView
@@ -124,14 +109,13 @@ export default function Register() {
             showsVerticalScrollIndicator={false}
         >
             <View className="w-full items-center mt-12">
-                <Text className="text-2xl font-bold text-center">Create your account</Text>
+                <Text className="text-2xl font-bold text-center">
+                    Create your account
+                </Text>
                 <Text className="text-lg text-[#737373] font-medium mb-14">
                     Select your method to sign up
                 </Text>
             </View>
-
-            {error ? <Text className="text-red-500 mb-2">{error}</Text> : null}
-            {success ? <Text className="text-green-500 mb-2">{success}</Text> : null}
 
             <InputField
                 control={control}
@@ -180,6 +164,9 @@ export default function Register() {
                 error={errors.confirmPassword?.message}
             />
 
+            {error ? <Text className="text-red-500 mb-2">{error}</Text> : null}
+            {success ? <Text className="text-green-500 mb-2">{success}</Text> : null}
+
             <TouchableOpacity
                 onPress={handleSubmit(onSubmit)}
                 disabled={loading}
@@ -193,25 +180,28 @@ export default function Register() {
 
             <View className="flex-row items-center my-4">
                 <View className="flex-1 h-px bg-gray-300" />
-                <Text className="mx-3 text-gray-400 font-semibold">or continue with</Text>
+                <Text className="mx-3 text-[#737373] font-semibold">or continue with</Text>
                 <View className="flex-1 h-px bg-gray-300" />
             </View>
 
             <TouchableOpacity
                 disabled={!request || loading}
-                onPress={() => promptAsync()}
-                className={`flex-row items-center justify-center border border-gray-300 h-14 rounded-lg mb-4 gap-2 ${loading ? "opacity-60" : ""}`}
+                onPress={() => signInWithGoogle()}
+                className={`flex-row items-center justify-center border border-gray-300 h-14 rounded-lg mb-4 gap-2 ${loading ? "opacity-60" : ""
+                    }`}
             >
                 <IconGoogle />
                 <Text className="text-[#171717] font-bold">Google</Text>
             </TouchableOpacity>
 
             <View className="flex-row justify-center mt-4 mb-12">
-                <Text className="text-[#404040] font-medium">Already have an account? </Text>
+                <Text weight="SemiBold" className="text-[#737373] font-medium">
+                    Already have an account?{" "}
+                </Text>
                 <TouchableOpacity onPress={() => router.push("/auth/login")}>
                     <Text className="text-[#DC9010] font-semibold">Sign In</Text>
                 </TouchableOpacity>
             </View>
         </ScrollView>
-    )
+    );
 }

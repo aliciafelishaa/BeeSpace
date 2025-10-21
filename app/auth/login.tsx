@@ -1,91 +1,89 @@
-// app/auth/login.tsx
-import React, { useEffect, useState } from "react";
-import { View, TouchableOpacity, ScrollView } from "react-native";
-import { useForm } from "react-hook-form";
-import { useRouter } from "expo-router";
-import { InputField } from "@/components/auth/InputField";
-import Text from "@/components/ui/Text";
-import IconGoogle from "@/components/ui/IconGoogle";
-import LogoBeeSpace from "@/components/ui/LogoBeeSpace";
-import { loginWithEmail, useGoogleAuth } from "@/services/authService";
-import * as WebBrowser from "expo-web-browser";
+import React, { useEffect, useState } from "react"
+import { View, TouchableOpacity, ScrollView } from "react-native"
+import { useForm } from "react-hook-form"
+import { useRouter } from "expo-router"
+import { InputField } from "@/components/auth/InputField"
+import Text from "@/components/ui/Text"
+import IconGoogle from "@/components/ui/IconGoogle"
+import LogoBeeSpace from "@/components/ui/LogoBeeSpace"
+import { loginWithEmail, useGoogleAuth } from "@/services/authService"
+import * as WebBrowser from "expo-web-browser"
 
-WebBrowser.maybeCompleteAuthSession();
+WebBrowser.maybeCompleteAuthSession()
 
 type LoginForm = {
-    email: string;
-    password: string;
-};
+    email: string
+    password: string
+}
 
 export default function Login() {
-    const router = useRouter();
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
-    const [success, setSuccess] = useState("");
+    const router = useRouter()
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState("")
+    const [success, setSuccess] = useState("")
 
     const {
         control,
         handleSubmit,
         reset,
         formState: { errors },
-    } = useForm<LoginForm>();
+    } = useForm<LoginForm>()
 
-    const { request, response, promptAsync, handleGoogleResponse } = useGoogleAuth();
+    const { request, response, promptAsync, handleGoogleResponse } = useGoogleAuth()
 
     useEffect(() => {
         const handleResponse = async () => {
-            if (!response) return;
+            if (!response) return
             try {
-                setLoading(true);
-                await handleGoogleResponse();
-                router.replace("/myroom/roomDashboard");
+                setLoading(true)
+                await handleGoogleResponse()
+                router.replace("/myroom/roomDashboard")
             } catch (err) {
-                console.error("Google login error:", err);
-                setError("Google login failed. Please try again.");
+                console.error("Google login error:", err)
+                setError("Google login failed. Please try again.")
             } finally {
-                setLoading(false);
+                setLoading(false)
             }
-        };
-        handleResponse();
-    }, [response]);
+        }
+        handleResponse()
+    }, [response])
 
     const onSubmit = async (data: LoginForm) => {
-        setError("");
-        setSuccess("");
-        setLoading(true);
+        setError("")
+        setSuccess("")
+        setLoading(true)
         try {
-            await loginWithEmail(data.email, data.password);
-            setSuccess("Login successful!");
-            reset();
-            router.push("/");
+            await loginWithEmail(data.email, data.password)
+            setSuccess("Login successful!")
+            reset()
+            router.push("/")
         } catch (err: any) {
-            console.error("Login error:", err);
+            console.error("Login error:", err)
             switch (err.message) {
                 case "EMAIL_NOT_REGISTERED":
-                    setError("Email is not registered.");
-                    break;
+                    setError("Email is not registered.")
+                    break
                 case "PASSWORD_INCORRECT":
-                    setError("Password is incorrect.");
-                    break;
+                    setError("Password is incorrect.")
+                    break
                 case "INVALID_EMAIL":
-                    setError("Invalid email address.");
-                    break;
+                    setError("Invalid email address.")
+                    break
                 default:
-                    setError("Login failed. Please try again.");
+                    setError("Login failed. Please try again.")
             }
         } finally {
-            setLoading(false);
+            setLoading(false)
         }
-    };
+    }
 
     return (
-        <ScrollView
-            contentContainerStyle={{
-                flex: 1,
-                justifyContent: "center",
-                paddingHorizontal: 40,
-                backgroundColor: "#FAFAFA",
-            }}
+        <ScrollView contentContainerStyle={{
+            flex: 1,
+            justifyContent: "center",
+            paddingHorizontal: 40,
+            backgroundColor: "#FAFAFA",
+        }}
         >
             <View className="w-full items-center mb-10 mt-12">
                 <LogoBeeSpace />
@@ -155,5 +153,5 @@ export default function Login() {
                 </TouchableOpacity>
             </View>
         </ScrollView>
-    );
+    )
 }
