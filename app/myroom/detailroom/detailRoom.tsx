@@ -1,9 +1,10 @@
 import ButtonDecision from "@/components/myroom/ButtonDecision";
 import HeaderBack from "@/components/utils/HeaderBack";
 import { COLORS } from "@/constants/utils/colors";
+import { useAuthState } from "@/hooks/useAuthState";
 import { useRoom } from "@/hooks/useRoom";
-import { getCurrentUserData } from "@/services/authService";
 import { initiateChat } from "@/services/chatListService";
+import { getUserById } from "@/services/userService";
 import { RoomEntry } from "@/types/myroom/room";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -14,8 +15,9 @@ import {
 } from "react-native-safe-area-context";
 
 export default function DetailRoom() {
-  const { id } = useLocalSearchParams();
-  console.log("ID dari route:", id);
+  const { user } = useAuthState();
+  const { uid: paramUid, id } = useLocalSearchParams();
+  const uid = paramUid || user?.uid;
   const insets = useSafeAreaInsets();
   const [modalVisible, setModalVisible] = useState(false);
   const [rooms, setRooms] = useState<RoomEntry[]>([]);
@@ -26,27 +28,21 @@ export default function DetailRoom() {
   const isOwner = true;
   const hasJoined = false;
   const isEnded = false;
-
-  useEffect(() => {
-    console.log("DetailRoom rendered, id =", id);
-  }, [id]);
-
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      const userData = await getCurrentUserData();
-      setCurrentUser(userData);
-    };
-    fetchCurrentUser();
-  }, []);
+  const [hostName, setHostName] = useState<string>("");
 
   useEffect(() => {
     const fetchRoom = async () => {
       setLoading(true);
-      const res = await getRoom();
+      const res = await getRoom(uid);
       if (res.success && res.data) {
         const selectedRoom = res.data.find((r) => r.id.toString() === id);
         if (selectedRoom) {
           setRooms([selectedRoom]);
+
+          if (selectedRoom.fromUid) {
+            const userRes = await getUserById(selectedRoom.fromUid);
+            setHostName(userRes?.name || "Unknown Host");
+          }
         } else {
           setRooms([]);
         }
@@ -87,12 +83,20 @@ export default function DetailRoom() {
   };
 
   const handleDeleteRoom = async () => {
-    console.log("Mau Delete");
-    console.log(room);
-    if (!room || !id) return;
+    console.log("Attempting to delete room...");
+
+    if (!id) {
+      console.error("Missing room ID");
+      return;
+    }
+    if (!uid) {
+      console.error("Missing user UID");
+      return;
+    }
+
     try {
-      const res = await deleteRoom(id);
-      if (res.success) {
+      const res = await deleteRoom(id, uid);
+      if (res?.success) {
         console.log("Success");
         router.back();
       } else {
@@ -285,8 +289,7 @@ export default function DetailRoom() {
                     <View className="flex-row gap-3 items-center">
                       <View className="w-[36px] h-[36px] rounded-full bg-primary2nd"></View>
                       <Text className="font-inter font-normal text-[14px]">
-                        {" "}
-                        Balqis Muharda
+                        {hostName || "Unknown Host"}
                       </Text>
                     </View>
                     <View>

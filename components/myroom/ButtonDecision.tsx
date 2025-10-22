@@ -11,10 +11,9 @@ export default function ButtonDecision({
   onDeleteRoom,
 }: ButtonDecisionProps) {
   const [modalVisible, setModalVisible] = useState(false);
-  const { id } = useLocalSearchParams();
+  const { uid,id } = useLocalSearchParams();
 
   useEffect(() => {
-    console.log("🧠 [ButtonDecision Rendered]");
     console.log("isOwner:", isOwner);
     console.log("hasJoined:", hasJoined);
     console.log("isEnded:", isEnded);
