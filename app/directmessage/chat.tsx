@@ -1,5 +1,5 @@
 import { ChatWindow } from "@/components/directmessage/chat";
-// import { getCurrentUserData } from "@/services/authService";
+import { getCurrentUserData } from "@/services/authService";
 import { getUserById } from "@/services/userService";
 import { Chat } from "@/types/directmessage/dm";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -12,13 +12,13 @@ export default function ChatDetailPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [chat, setChat] = useState<Chat | null>(null);
 
-  // useEffect(() => {
-  //   const fetchCurrentUser = async () => {
-  //     const userData = await getCurrentUserData();
-  //     setCurrentUser(userData);
-  //   };
-  //   fetchCurrentUser();
-  // }, []);
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const userData = await getCurrentUserData();
+      setCurrentUser(userData);
+    };
+    fetchCurrentUser();
+  }, []);
 
   useEffect(() => {
     const initializeChat = async () => {
