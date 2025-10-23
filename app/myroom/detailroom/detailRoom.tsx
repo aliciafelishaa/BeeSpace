@@ -9,7 +9,14 @@ import { getUserById } from "@/services/userService";
 import { RoomEntry } from "@/types/myroom/room";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -24,7 +31,7 @@ export default function DetailRoom() {
   const [rooms, setRooms] = useState<RoomEntry[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const { getRoom } = useRoom();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { deleteRoom } = useRoom();
   const isOwner = true;
   const hasJoined = false;
@@ -133,6 +140,17 @@ export default function DetailRoom() {
 
   const actualIsOwner = room?.fromUid === currentUser?.id;
 
+  if (loading) {
+    return (
+      <SafeAreaView
+        className="flex-1 items-center justify-center"
+        style={{ backgroundColor: COLORS.white }}
+      >
+        <ActivityIndicator size="large" color="#FCBC03" />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView
       style={{
@@ -159,7 +177,12 @@ export default function DetailRoom() {
           <HeaderBack />
         </View>
       ) : (
-        <Text>Loading...</Text>
+        <View
+          className="flex-1 items-center justify-center"
+          style={{ backgroundColor: COLORS.white }}
+        >
+          <ActivityIndicator size="large" color="#FCBC03" />
+        </View>
       )}
 
       <ScrollView
@@ -333,7 +356,12 @@ export default function DetailRoom() {
               </View>
             </>
           ) : (
-            <Text>Loading...</Text>
+            <View
+              className="flex-1 items-center justify-center"
+              style={{ backgroundColor: COLORS.white }}
+            >
+              <ActivityIndicator size="large" color="#FCBC03" />
+            </View>
           )}
         </View>
       </ScrollView>
