@@ -161,9 +161,6 @@ export const listenUserGroupChats = (
   userId: string,
   callback: (chats: Chat[]) => void
 ): (() => void) => {
-  console.log("🔍 [listenUserGroupChats] Starting for user:", userId);
-
-  // ✅ KONSISTEN PAKAI createdAt
   const q = query(
     collection(db, "groupChats"),
     where("memberUids", "array-contains", userId),
@@ -173,23 +170,17 @@ export const listenUserGroupChats = (
   const unsubscribe = onSnapshot(
     q,
     (querySnapshot) => {
-      console.log(
-        "📦 [listenUserGroupChats] Docs found:",
-        querySnapshot.docs.length
-      );
-
       const chats: Chat[] = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        console.log("📄 Group found:", data.name);
 
         chats.push({
           id: doc.id,
           userId: data.hostUid,
           lastMessage: {
             id: "",
-            text: data.lastMessage || "Group created",
-            timestamp: data.createdAt?.toDate?.() || new Date(), // ✅ PAKAI createdAt
+            text: data.lastMessage,
+            timestamp: data.createdAt?.toDate?.() || new Date(),
             senderId: data.hostUid || "",
             read: true,
             type: "text",
@@ -206,20 +197,17 @@ export const listenUserGroupChats = (
 
       callback(chats);
     },
-    (error) => {
-      console.error("❌ [listenUserGroupChats] Error:", error);
-      // Error ini akan kasih tau link untuk buat index
+    (err) => {
+      console.error(err);
     }
   );
-
   return unsubscribe;
 };
+
 export const listenAllUserChats = (
   userId: string,
   callback: (chats: Chat[]) => void
 ): (() => void) => {
-  console.log("🎯 [listenAllUserChats] STARTED for user:", userId);
-
   let privateChats: Chat[] = [];
   let groupChats: Chat[] = [];
 
@@ -230,32 +218,20 @@ export const listenAllUserChats = (
         new Date(b.lastMessage.timestamp).getTime() -
         new Date(a.lastMessage.timestamp).getTime()
     );
-
-    console.log("🔄 [listenAllUserChats] COMBINED UPDATE:", {
-      private: privateChats.length,
-      group: groupChats.length,
-      total: allChats.length,
-    });
-
     callback(allChats);
   };
 
-  console.log("🔸 [listenAllUserChats] Setting up private chat listener...");
   const unsubscribePrivate = listenUserChats(userId, (chats) => {
-    console.log("💬 [listenAllUserChats] PRIVATE update:", chats.length);
     privateChats = chats;
     onCombinedUpdate();
   });
 
-  console.log("🔸 [listenAllUserChats] Setting up group chat listener...");
   const unsubscribeGroup = listenUserGroupChats(userId, (chats) => {
-    console.log("👥 [listenAllUserChats] GROUP update:", chats.length);
     groupChats = chats;
     onCombinedUpdate();
   });
 
   return () => {
-    console.log("🛑 [listenAllUserChats] CLEANUP");
     unsubscribePrivate();
     unsubscribeGroup();
   };
