@@ -29,36 +29,15 @@ export default function MessagesPage() {
     fetchCurrentUser();
   }, []);
 
-  // useEffect(() => {
-  //   if (!currentUser?.id) return;
-
-  //   const unsubscribe = listenAllUserChats(currentUser.id, (updatedChats) => {
-  //     setChats(updatedChats);
-  //   });
-
-  //   return () => unsubscribe();
-  // }, [currentUser?.id]);
-
-  // SINI
   useEffect(() => {
     if (!currentUser?.id) return;
 
-    console.log("🚀 LISTEN CHATS FOR USER:", currentUser.id);
-
-    const unsubscribe = listenAllUserChats(currentUser.id, (chats) => {
-      console.log("🎉 CHATS UPDATE:", {
-        total: chats.length,
-        group: chats.filter((c) => c.isGroupChat).length,
-        private: chats.filter((c) => !c.isGroupChat).length,
-      });
-      setChats(chats);
+    const unsubscribe = listenAllUserChats(currentUser.id, (updatedChats) => {
+      setChats(updatedChats);
     });
 
-    return () => {
-      console.log("🛑 UNSUBSCRIBE");
-      unsubscribe();
-    };
-  }, [currentUser?.id]); // ✅ PAKE .id
+    return () => unsubscribe();
+  }, [currentUser?.id]);
 
   const filteredChats = useMemo(() => {
     let result = [...chats];
