@@ -18,14 +18,21 @@ export interface Message {
   fileSize?: number;
   replyTo?: string;
   status?: "sent" | "delivered" | "read";
+  senderName?: string;
 }
 
 export interface Chat {
   id: string;
   userId: string;
-  user?: User;
   lastMessage: Message;
   unreadCount: number;
+  user?: User;
+  isGroupChat?: boolean;
+  groupData?: {
+    name: string;
+    memberUids: string[];
+    roomId: string;
+  };
 }
 
 export type FilterType = "all" | "not-read" | "newest" | "oldest";

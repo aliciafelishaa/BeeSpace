@@ -3,7 +3,7 @@ import { FilterModal } from "@/components/directmessage/filter-bar";
 import { SearchBar } from "@/components/directmessage/search-bar";
 import { COLORS } from "@/constants/utils/colors";
 import { getCurrentUserData } from "@/services/authService";
-import { listenUserChats } from "@/services/chatListService";
+import { listenAllUserChats } from "@/services/directmessage/chatListService";
 import { Chat, FilterType, SearchFilters } from "@/types/directmessage/dm";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
@@ -21,23 +21,44 @@ export default function MessagesPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Fetch User
-    useEffect(() => {
-      const fetchCurrentUser = async () => {
-        const userData = await getCurrentUserData();
-        setCurrentUser(userData);
-      };
-      fetchCurrentUser();
-    }, []);
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const userData = await getCurrentUserData();
+      setCurrentUser(userData);
+    };
+    fetchCurrentUser();
+  }, []);
 
+  // useEffect(() => {
+  //   if (!currentUser?.id) return;
+
+  //   const unsubscribe = listenAllUserChats(currentUser.id, (updatedChats) => {
+  //     setChats(updatedChats);
+  //   });
+
+  //   return () => unsubscribe();
+  // }, [currentUser?.id]);
+
+  // SINI
   useEffect(() => {
     if (!currentUser?.id) return;
 
-    const unsubscribe = listenUserChats(currentUser.id, (updatedChats) => {
-      setChats(updatedChats);
+    console.log("🚀 LISTEN CHATS FOR USER:", currentUser.id);
+
+    const unsubscribe = listenAllUserChats(currentUser.id, (chats) => {
+      console.log("🎉 CHATS UPDATE:", {
+        total: chats.length,
+        group: chats.filter((c) => c.isGroupChat).length,
+        private: chats.filter((c) => !c.isGroupChat).length,
+      });
+      setChats(chats);
     });
 
-    return () => unsubscribe();
-  }, [currentUser?.id]);
+    return () => {
+      console.log("🛑 UNSUBSCRIBE");
+      unsubscribe();
+    };
+  }, [currentUser?.id]); // ✅ PAKE .id
 
   const filteredChats = useMemo(() => {
     let result = [...chats];
@@ -47,7 +68,9 @@ export default function MessagesPage() {
       result = result.filter(
         (chat) =>
           chat.user?.name?.toLowerCase().includes(query) ||
-          chat.lastMessage.text.toLowerCase().includes(query)
+          chat.lastMessage.text.toLowerCase().includes(query) ||
+          (chat.isGroupChat &&
+            chat.groupData?.name?.toLowerCase().includes(query))
       );
     }
 

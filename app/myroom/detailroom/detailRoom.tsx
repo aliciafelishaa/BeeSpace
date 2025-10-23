@@ -1,10 +1,11 @@
+//a
 import ButtonDecision from "@/components/myroom/ButtonDecision";
 import HeaderBack from "@/components/utils/HeaderBack";
 import { COLORS } from "@/constants/utils/colors";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useRoom } from "@/hooks/useRoom";
 import { getCurrentUserData } from "@/services/authService";
-import { initiateChat } from "@/services/chatListService";
+import { initiateChat } from "@/services/directmessage/chatListService";
 import { getUserById } from "@/services/userService";
 import { RoomEntry } from "@/types/myroom/room";
 import { router, useLocalSearchParams } from "expo-router";
@@ -53,7 +54,7 @@ export default function DetailRoom() {
       setLoading(false);
     };
     fetchRoom();
-  }, [id, getRoom]);
+  }, [id, getRoom, uid]);
 
   const room = rooms[0];
 
@@ -343,6 +344,8 @@ export default function DetailRoom() {
         hasJoined={hasJoined}
         isEnded={isEnded}
         onDeleteRoom={handleDeleteRoom}
+        room={room} 
+        currentUser={currentUser} 
       />
     </SafeAreaView>
   );

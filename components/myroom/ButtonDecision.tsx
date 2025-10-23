@@ -1,3 +1,9 @@
+import {
+  getGroupChat,
+  initiateGroupChat,
+  joinGroupChat,
+} from "@/services/directmessage/groupChatService";
+import { joinRoom } from "@/services/room.service";
 import { ButtonDecisionProps } from "@/types/myroom/buttondecision";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -9,15 +15,95 @@ export default function ButtonDecision({
   hasJoined = false,
   isEnded = false,
   onDeleteRoom,
-}: ButtonDecisionProps) {
+  room,
+  currentUser,
+}: ButtonDecisionProps & { room?: any; currentUser?: any }) {
   const [modalVisible, setModalVisible] = useState(false);
-  const { uid,id } = useLocalSearchParams();
+  const [joined, setJoined] = useState(hasJoined);
+  const { uid, id } = useLocalSearchParams();
+
+  // useEffect(() => {
+  //   console.log("isOwner:", isOwner);
+  //   console.log("hasJoined:", hasJoined);
+  //   console.log("isEnded:", isEnded);
+  //   console.log("room:", room);
+  //   console.log("currentUser:", currentUser);
+  // }, [isOwner, hasJoined, isEnded, room, currentUser]);
 
   useEffect(() => {
-    console.log("isOwner:", isOwner);
-    console.log("hasJoined:", hasJoined);
-    console.log("isEnded:", isEnded);
-  }, [isOwner, hasJoined, isEnded]);
+    if (room?.joinedUids && currentUser?.id) {
+      const isUserJoined = room.joinedUids.includes(currentUser.id);
+      setJoined(isUserJoined);
+    }
+  }, [room, currentUser]);
+
+  // Function Join Room jika diclick
+  const handleJoinRoom = async () => {
+    if (!room?.id || !currentUser?.id) {
+      return;
+    }
+    try {
+      const joinSuccess = await joinRoom(room.id, currentUser.id);
+
+      if (!joinSuccess) {
+        alert("Failed to join room!");
+        return;
+      }
+
+      const chatId = `group_${room.id}`;
+      const chatExists = await getGroupChat(chatId);
+
+      if (chatExists) {
+        await joinGroupChat(chatId, currentUser.id);
+      } else {
+        await initiateGroupChat(
+          room.id,
+          room.fromUid,
+          room.planName,
+          currentUser.id
+        );
+      }
+      setJoined(true);
+      alert("Successfully joined room!");
+    } catch (err) {
+      console.error("Error:", err);
+    }
+  };
+
+  // Logic filtering Group Chat
+  const handleGroupChat = async () => {
+    if (!room?.id || !currentUser?.id) {
+      alert("Invalid data!");
+      return;
+    }
+
+    try {
+      const chatId = `group_${room.id}`;
+
+      const canAccessChat = isOwner || joined;
+
+      if (!canAccessChat) {
+        alert("Please join room chat first!");
+        return;
+      }
+
+      const groupChat = await getGroupChat(chatId);
+
+      if (!groupChat) {
+        await initiateGroupChat(
+          room.id,
+          room.fromUid,
+          room.planName,
+          currentUser.id
+        );
+        await joinGroupChat(chatId, currentUser.id);
+      }
+
+      router.push(`/directmessage/chat?id=${chatId}&roomId=${room.id}`);
+    } catch (err) {
+      console.error("Error:", err);
+    }
+  };
 
   if (isOwner) {
     return (
@@ -42,7 +128,7 @@ export default function ButtonDecision({
 
         <TouchableOpacity
           className="rounded-[8px] w-[80px] h-[45px] bg-primary4th border border-primary2nd items-center justify-center py-4"
-          onPress={() => router.push("/directmessage/chatList")}
+          onPress={handleGroupChat}
         >
           <Image source={require("@/assets/images/dm.png")}></Image>
         </TouchableOpacity>
@@ -69,7 +155,7 @@ export default function ButtonDecision({
   }
 
   // Kondisi 2: user bukan owner & belum join & belum berakhir
-  if (!isOwner && !hasJoined && !isEnded) {
+  if (!isOwner && !joined && !isEnded) {
     return (
       <View
         className="items-center w-full h-30 bg-white shadow-slate-200 absolute bottom-0 left-0 right-0 py-4 px-2 gap-3 flex-row"
@@ -81,7 +167,10 @@ export default function ButtonDecision({
           elevation: 8,
         }}
       >
-        <TouchableOpacity className="rounded-[8px] h-[45px] bg-primary2nd items-center justify-center py-4 flex-1">
+        <TouchableOpacity
+          className="rounded-[8px] h-[45px] bg-primary2nd items-center justify-center py-4 flex-1"
+          onPress={handleJoinRoom}
+        >
           <Text className="text-neutral-50 font-semibold text-[14px]">
             Join Room
           </Text>
@@ -107,7 +196,7 @@ export default function ButtonDecision({
     );
   }
 
-  //   Kondisi 3: jika sudah ikut dan waktu event sudah lewat
+  // Kondisi 3: jika sudah ikut dan waktu event sudah lewat
   if (isEnded) {
     return (
       <View className="items-center w-full absolute bottom-0 left-0 right-0 py-4 bg-gray-100">
@@ -119,20 +208,34 @@ export default function ButtonDecision({
   }
 
   // Kondisi jika sudah join tapi event belum selesai
-  return (
-    <View
-      className="items-center w-full bg-white shadow-slate-200 absolute bottom-0 left-0 right-0 py-4 px-2 gap-3 flex-row"
-      style={{
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: -1 },
-        shadowOpacity: 0.09,
-        shadowRadius: 4,
-        elevation: 8,
-      }}
-    >
-      <TouchableOpacity className="rounded-[8px] flex-1 h-[45px] bg-[#E8F6EF] border border-[#4CAF50] items-center justify-center">
-        <Text className="text-[#4CAF50] font-semibold text-[14px]">Joined</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  if (joined && !isEnded) {
+    return (
+      <View
+        className="items-center w-full bg-white shadow-slate-200 absolute bottom-0 left-0 right-0 py-4 px-2 gap-3 flex-row"
+        style={{
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -1 },
+          shadowOpacity: 0.09,
+          shadowRadius: 4,
+          elevation: 8,
+        }}
+      >
+        <TouchableOpacity
+          className="rounded-[8px] h-[45px] bg-primary2nd items-center justify-center py-4 flex-1"
+          onPress={handleGroupChat}
+        >
+          <Text className="text-neutral-50 font-semibold text-[14px]">
+            Joined
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          className="rounded-[8px] w-[80px] h-[45px] bg-primary4th border border-primary2nd items-center justify-center py-4"
+          onPress={handleGroupChat}
+        >
+          <Image source={require("@/assets/images/dm.png")}></Image>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 }

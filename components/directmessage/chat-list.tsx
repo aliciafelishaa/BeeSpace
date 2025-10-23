@@ -43,6 +43,7 @@ export const ChatList: React.FC<ChatListProps> = ({
     <ScrollView className="flex-1" style={{ backgroundColor: COLORS.white }}>
       {chats.map((chat) => {
         const chatUser = chatUsers[chat.userId] || chat.user;
+        const isGroupChat = chat.isGroupChat;
 
         return (
           <TouchableOpacity
@@ -60,7 +61,19 @@ export const ChatList: React.FC<ChatListProps> = ({
           >
             <View className="flex-row items-center">
               <View className="mr-3">
-                {chatUser?.avatar ? (
+                {isGroupChat ? (
+                  <View
+                    className="w-14 h-14 rounded-full items-center justify-center"
+                    style={{ backgroundColor: COLORS.primary2nd }}
+                  >
+                    <Text
+                      className="font-semibold text-lg"
+                      style={{ color: COLORS.white }}
+                    >
+                      G
+                    </Text>
+                  </View>
+                ) : chatUser?.avatar ? (
                   <Image
                     source={{ uri: chatUser.avatar }}
                     className="w-14 h-14 rounded-full"
@@ -87,7 +100,9 @@ export const ChatList: React.FC<ChatListProps> = ({
                     style={{ color: COLORS.neutral900 }}
                     numberOfLines={1}
                   >
-                    {chatUser?.name || "Loading..."}
+                    {isGroupChat
+                      ? chat.groupData?.name
+                      : chatUser?.name || "Loading..."}
                   </Text>
                   <Text
                     className="text-xs ml-2"
