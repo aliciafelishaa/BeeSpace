@@ -2,6 +2,8 @@ import { db } from "@/config/firebaseConfig";
 import { RoomEntry } from "@/types/myroom/room";
 import {
   addDoc,
+  arrayRemove,
+  arrayUnion,
   collection,
   deleteDoc,
   doc,
@@ -144,5 +146,46 @@ export const deleteRoomService = async (id: string, uid: string) => {
   } catch (error) {
     console.error("Error deleting room:", error);
     return { success: false, message: "Failed to delete room" };
+  }
+};
+
+export const joinRoom = async (
+  roomId: string,
+  userId: string
+): Promise<boolean> => {
+  try {
+    const roomRef = doc(db, "roomEvents", roomId);
+
+    const roomDoc = await getDoc(roomRef);
+    if (!roomDoc.exists()) {
+      throw new Error("Room not found");
+    }
+
+    await updateDoc(roomRef, {
+      joinedUids: arrayUnion(userId),
+    });
+
+    return true;
+  } catch (err) {
+    console.error("Error:", err);
+    return false;
+  }
+};
+
+export const leaveRoom = async (
+  roomId: string,
+  userId: string
+): Promise<boolean> => {
+  try {
+    const roomRef = doc(db, "roomEvents", roomId);
+
+    await updateDoc(roomRef, {
+      joinedUids: arrayRemove(userId),
+    });
+
+    return true;
+  } catch (err) {
+    console.error("Error:", err);
+    return false;
   }
 };
