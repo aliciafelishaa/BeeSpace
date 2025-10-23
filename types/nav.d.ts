@@ -10,3 +10,4 @@ export interface BottomNavProps {
   activeId: string;
   onSelect: (id: string, route: string) => void;
 }
+// s
