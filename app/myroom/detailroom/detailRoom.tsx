@@ -3,7 +3,7 @@ import HeaderBack from "@/components/utils/HeaderBack";
 import { COLORS } from "@/constants/utils/colors";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useRoom } from "@/hooks/useRoom";
-import { initiateChat } from "@/services/chatListService";
+import { initiateChat } from "@/services/directmessage/chatListService";
 import { getUserById } from "@/services/userService";
 import { RoomEntry } from "@/types/myroom/room";
 import { router, useLocalSearchParams } from "expo-router";

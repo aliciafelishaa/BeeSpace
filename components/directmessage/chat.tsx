@@ -1,6 +1,6 @@
 import { COLORS } from "@/constants/utils/colors";
 import { getCurrentUserData } from "@/services/authService";
-import { listenMessages, sendMessage } from "@/services/dmService";
+import { listenMessages, sendMessage } from "@/services/directmessage/dmService";
 import { getUserById } from "@/services/userService";
 import { Chat, Message } from "@/types/directmessage/dm";
 import { Ionicons } from "@expo/vector-icons";

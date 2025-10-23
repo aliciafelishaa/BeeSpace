@@ -3,7 +3,7 @@ import { FilterModal } from "@/components/directmessage/filter-bar";
 import { SearchBar } from "@/components/directmessage/search-bar";
 import { COLORS } from "@/constants/utils/colors";
 // import { getCurrentUserData } from "@/services/authService";
-import { listenUserChats } from "@/services/chatListService";
+import { listenUserChats } from "@/services/directmessage/chatListService";
 import { Chat, FilterType, SearchFilters } from "@/types/directmessage/dm";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
@@ -21,13 +21,13 @@ export default function MessagesPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Fetch User
-    // useEffect(() => {
-    //   const fetchCurrentUser = async () => {
-    //     const userData = await getCurrentUserData();
-    //     setCurrentUser(userData);
-    //   };
-    //   fetchCurrentUser();
-    // }, []);
+  // useEffect(() => {
+  //   const fetchCurrentUser = async () => {
+  //     const userData = await getCurrentUserData();
+  //     setCurrentUser(userData);
+  //   };
+  //   fetchCurrentUser();
+  // }, []);
 
   useEffect(() => {
     if (!currentUser?.id) return;
