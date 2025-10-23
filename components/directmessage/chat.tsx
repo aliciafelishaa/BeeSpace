@@ -47,7 +47,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     fetchCurrentUser();
   }, []);
 
-  // Get chat user data (for private chat) or group data
+  // Buat fetch chat data
   useEffect(() => {
     const fetchChatData = async () => {
       if (!chat) return;

@@ -49,7 +49,6 @@ export const ChatList: React.FC<ChatListProps> = ({
 
   const getChatAvatar = (chat: Chat) => {
     if (chat.isGroupChat) {
-      // ✅ Group chat: pakai profilePicture jika ada, else pakai initial
       if (chat.groupData?.profilePicture) {
         return (
           <Image
@@ -73,7 +72,6 @@ export const ChatList: React.FC<ChatListProps> = ({
         );
       }
     } else {
-      // ✅ Private chat: pakai avatar user
       const chatUser = chatUsers[chat.userId] || chat.user;
       if (chatUser?.avatar) {
         return (
@@ -100,7 +98,7 @@ export const ChatList: React.FC<ChatListProps> = ({
     }
   };
 
-  // agak sus
+  // Bisa dipakai buat logic member nanti menghitung max member
   const getMemberCountText = (chat: Chat) => {
     if (chat.isGroupChat) {
       const memberCount = chat.groupData?.memberUids?.length || 0;
@@ -132,7 +130,6 @@ export const ChatList: React.FC<ChatListProps> = ({
             activeOpacity={0.7}
           >
             <View className="flex-row items-center">
-              {/* Avatar */}
               <View className="mr-3">{getChatAvatar(chat)}</View>
 
               {/* Content */}
@@ -179,7 +176,6 @@ export const ChatList: React.FC<ChatListProps> = ({
                   {chat.lastMessage.text}
                 </Text>
 
-                {/* Unread Badge */}
                 {chat.unreadCount > 0 && (
                   <View
                     className="absolute -right-2 -top-1 w-5 h-5 rounded-full items-center justify-center"
