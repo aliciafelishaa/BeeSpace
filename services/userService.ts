@@ -1,52 +1,86 @@
-import { doc, updateDoc, runTransaction } from "firebase/firestore"
-import { db } from "@/config/firebaseConfig"
+import { db } from "@/config/firebaseConfig";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 
 export interface StudentProfile {
-    fullName: string
-    username: string
-    university: string
-    major: string
-    enrollYear: string
-    gradYear: string
-    studentID: string
-    studentCard: string | null
+  fullName: string;
+  username: string;
+  university: string;
+  major: string;
+  enrollYear: string;
+  gradYear: string;
+  studentID: string;
+  studentCard: string | null;
+  profilePicture: string | null;
 }
-
-export const updateUserProfile = async (firebaseUid: string, profileData: StudentProfile) => {
-    try {
-        const userRef = doc(db, "users", firebaseUid)
-        await updateDoc(userRef, {
-            fullName: profileData.fullName,
-            username: profileData.username,
-            university: profileData.university,
-            major: profileData.major,
-            enrollYear: profileData.enrollYear,
-            gradYear: profileData.gradYear,
-            studentID: profileData.studentID,
-            studentCard: profileData.studentCard,
-            profileCompleted: true,
-            updatedAt: new Date(),
-        })
-    } catch (error: any) {
-        throw error
+export const getUserById = async (userId: string) => {
+  try {
+    const userDoc = await getDoc(doc(db, "users", userId));
+    if (userDoc.exists()) {
+      const data = userDoc.data();
+      return {
+        id: userId,
+        name: data.fullName || "",
+        avatar: data.avatar || null,
+        university: data.university || "",
+      };
     }
-}
+    return null;
+  } catch (error) {
+    console.error("Error:", error);
+    return null;
+  }
+};
+export const checkUsernameExists = async (
+  username: string
+): Promise<boolean> => {
+  try {
+    const q = query(collection(db, "users"), where("username", "==", username));
+    const querySnapshot = await getDocs(q);
+    return !querySnapshot.empty;
+  } catch (error) {
+    console.error("Error checking username:", error);
+    return false;
+  }
+};
 
-export const getNextUserId = async (): Promise<number> => {
-    const counterRef = doc(db, "counters", "userCounter")
+export const updateUserProfile = async (
+  firebaseUid: string,
+  profileData: StudentProfile
+) => {
+  try {
+    const userRef = doc(db, "users", firebaseUid);
+    await updateDoc(userRef, {
+      ...profileData,
+      profileCompleted: true,
+      updatedAt: new Date(),
+    });
+  } catch (error: any) {
+    throw error;
+  }
+};
 
-    const nextUid = await runTransaction(db, async (transaction) => {
-        const counterDoc = await transaction.get(counterRef)
-        if (!counterDoc.exists()) {
-            transaction.set(counterRef, { lastUid: 1 })
-            return 1
-        }
+export const checkUserProfileCompletion = async (
+  firebaseUid: string
+): Promise<boolean> => {
+  try {
+    const userRef = doc(db, "users", firebaseUid);
+    const userDoc = await getDoc(userRef);
 
-        const lastUid = counterDoc.data().lastUid || 0
-        const newUid = lastUid + 1
-        transaction.update(counterRef, { lastUid: newUid })
-        return newUid
-    })
+    if (userDoc.exists()) {
+      return userDoc.data().profileCompleted === true;
+    }
 
-    return nextUid
-}
+    return false;
+  } catch (error) {
+    console.error("Error checking profile completion:", error);
+    return false;
+  }
+};

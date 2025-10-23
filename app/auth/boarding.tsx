@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from "react"
-import { View, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native"
+import { View, Image, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
 import { InputField } from "@/components/auth/InputField"
 import { SearchableDropdown } from "@/components/auth/Dropdown"
 import Text from "@/components/ui/Text"
-import IconBoarding from "@/components/ui/IconBoarding"
 import { useForm, Controller } from "react-hook-form"
 import { useAuth } from "@/hooks/useAuth"
-import { updateUserProfile, StudentProfile } from "@/services/userService"
+import { updateUserProfile, StudentProfile, checkUsernameExists } from "@/services/userService"
 import handleUpData from "@/hooks/useCloudinary"
 import { universityMajors, years } from "@/components/utils/useA"
-import StudentCardPicker from "@/components/auth/StudentCardPicker"
+import ImagePicker from "@/components/auth/ImagePicker"
 import { useRouter } from "expo-router"
 
 export default function StudentBoarding() {
@@ -19,9 +18,10 @@ export default function StudentBoarding() {
     const [step, setStep] = useState<number>(1)
     const [loading, setLoading] = useState(false)
     const [studentCard, setStudentCard] = useState<string | null>(null)
+    const [profilePicture, setProfilePicture] = useState<string | null>(null)
     const [majorsOptions, setMajorsOptions] = useState<string[]>([])
 
-    const { control, handleSubmit, watch, setValue, trigger, formState: { errors }, clearErrors } = useForm<StudentProfile>({
+    const { control, handleSubmit, watch, setValue, trigger, setError, formState: { errors }, clearErrors } = useForm<StudentProfile>({
         defaultValues: {
             fullName: "",
             username: "",
@@ -31,10 +31,13 @@ export default function StudentBoarding() {
             gradYear: "",
             studentID: "",
             studentCard: null,
+            profilePicture: null,
         },
     })
 
     const selectedUniversity = watch("university")
+    const enrollYear = watch("enrollYear")
+    const gradYear = watch("gradYear")
 
     useEffect(() => {
         if (selectedUniversity && universityMajors[selectedUniversity]) {
@@ -81,19 +84,52 @@ export default function StudentBoarding() {
         setLoading(true)
         try {
             let studentCardUrl: string | null = null
+            let profilePictureUrl: string | null = null
+
             if (studentCard) {
                 const fileObj = { uri: studentCard, name: "student-card.jpg", type: "image/jpeg" }
                 studentCardUrl = await handleUpData(fileObj)
             }
-            await updateUserProfile(user.uid, { ...data, studentCard: studentCardUrl })
-            alert("Profile submitted successfully!")
-            router.push({pathname: "/"})
+
+            if (profilePicture) {
+                const fileObj = { uri: profilePicture, name: "profile-picture.jpg", type: "image/jpeg" }
+                profilePictureUrl = await handleUpData(fileObj)
+            }
+
+            await updateUserProfile(user.uid, {
+                ...data,
+                studentCard: studentCardUrl,
+                profilePicture: profilePictureUrl,
+            })
+            
+            console.log("Profile submitted successfully!")
+            router.push({ pathname: "/auth/login" })
         } catch (err: any) {
             console.error("Upload/Submit Error:", err)
-            alert("Failed to submit profile. Check console for details.")
         } finally {
             setLoading(false)
         }
+    }
+
+    const validateUsername = async (username: string) => {
+        const exists = await checkUsernameExists(username)
+        if (exists) {
+            setError("username", { type: "manual", message: "Username already taken" })
+            return false
+        }
+        return true
+    }
+
+    const validateGradYear = (gradYear: string) => {
+        if (enrollYear && gradYear) {
+            const enroll = parseInt(enrollYear)
+            const grad = parseInt(gradYear)
+            if (grad <= enroll) {
+                setError("gradYear", { type: "manual", message: "Graduation year must be at least one year after enrollment" })
+                return false
+            }
+        }
+        return true
     }
 
     return (
@@ -107,7 +143,9 @@ export default function StudentBoarding() {
                         </TouchableOpacity>
                     )}
                     <View className="flex flex-row justify-center items-center mb-3 ml-6">
-                        <IconBoarding />
+                        <Image
+                            source={require("@/assets/images/logo-beespace.png")}
+                            style={{ width: 50, height: 50 }} />
                         <View className="ml-6">
                             <Text className="text-[#171717] text-xl font-bold mb-1">Complete Your Profile</Text>
                             <Text className="text-[#171717] font-medium text-base">Step {step} of 3</Text>
@@ -116,9 +154,17 @@ export default function StudentBoarding() {
                 </View>
             </View>
 
-            <View className="p-6 space-y-4">
+            <ScrollView className="p-8 space-y-4">
                 {step === 1 && (
                     <>
+                        <Text weight="SemiBold" className="text-[#404040] text-lg mb-1">Profile Picture</Text>
+                        <ImagePicker
+                            value={profilePicture}
+                            onChange={setProfilePicture}
+                            shape="circle"
+                            showText={false}
+                        />
+
                         <InputField
                             label="Full Name"
                             control={control}
@@ -127,17 +173,41 @@ export default function StudentBoarding() {
                             rules={{ required: "Full Name is required" }}
                             error={errors.fullName?.message as string}
                             onClearError={() => clearErrors("fullName")}
+                            alphabeticOnly={true}
+                            maxLength={50}
                         />
+
                         <InputField
                             label="Username"
                             control={control}
                             name="username"
                             placeholder="Input Text Here"
-                            rules={{ required: "Username is required" }}
+                            rules={{
+                                required: "Username is required",
+                                validate: async (value: string) => {
+                                    const exists = await checkUsernameExists(value)
+                                    return exists ? "Username already taken" : true
+                                },
+                            }}
                             error={errors.username?.message as string}
                             onClearError={() => clearErrors("username")}
+                            maxLength={30}
+                            usernameOnly={true}
                         />
 
+                        <View className="flex-row justify-end mt-4">
+                            <TouchableOpacity
+                                onPress={nextStep}
+                                className="w-1/3 bg-yellow-400 h-12 rounded-lg flex justify-center items-center"
+                            >
+                                <Text className="text-white font-bold">Next</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </>
+                )}
+
+                {step === 2 && (
+                    <>
                         <Controller
                             control={control}
                             name="university"
@@ -172,19 +242,6 @@ export default function StudentBoarding() {
                             )}
                         />
 
-                        <View className="flex-row justify-end mt-4">
-                            <TouchableOpacity
-                                onPress={nextStep}
-                                className="w-1/3 bg-yellow-400 h-12 rounded-lg flex justify-center items-center"
-                            >
-                                <Text className="text-white font-bold">Next</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </>
-                )}
-
-                {step === 2 && (
-                    <>
                         <Controller
                             control={control}
                             name="enrollYear"
@@ -194,7 +251,11 @@ export default function StudentBoarding() {
                                     label="Enrollment Year"
                                     placeholder="Select Enrollment Year"
                                     value={value}
-                                    onValueChange={(val) => { onChange(val); clearErrors("enrollYear") }}
+                                    onValueChange={(val) => {
+                                        onChange(val)
+                                        clearErrors("enrollYear")
+                                        validateGradYear(gradYear || "")
+                                    }}
                                     options={years}
                                     error={errors.enrollYear?.message as string}
                                     onClearError={() => clearErrors("enrollYear")}
@@ -205,19 +266,33 @@ export default function StudentBoarding() {
                         <Controller
                             control={control}
                             name="gradYear"
-                            rules={{ required: "Graduation Year is required" }}
+                            rules={{
+                                required: "Graduation Year is required",
+                                validate: (value) => {
+                                    if (!enrollYear) return true
+                                    const enroll = parseInt(enrollYear)
+                                    const grad = parseInt(value)
+                                    return grad <= enroll
+                                        ? "Graduation year must be at least one year after enrollment"
+                                        : true
+                                }
+                            }}
                             render={({ field: { onChange, value } }) => (
                                 <SearchableDropdown
                                     label="Graduation Year"
                                     placeholder="Select Graduation Year"
                                     value={value}
-                                    onValueChange={(val) => { onChange(val); clearErrors("gradYear") }}
+                                    onValueChange={(val) => {
+                                        onChange(val)
+                                        clearErrors("gradYear")
+                                    }}
                                     options={years}
                                     error={errors.gradYear?.message as string}
                                     onClearError={() => clearErrors("gradYear")}
                                 />
                             )}
                         />
+
 
                         <View className="flex-row justify-end mt-4">
                             <TouchableOpacity
@@ -237,12 +312,15 @@ export default function StudentBoarding() {
                             control={control}
                             name="studentID"
                             placeholder="Student ID"
+                            maxLength={20}
+                            numericOnly={true}
                             rules={{ required: "Student ID is required" }}
                             error={errors.studentID?.message as string}
                             onClearError={() => clearErrors("studentID")}
                         />
-                        <Text className="text-[#404040] mb-1 font-semibold text-base">Student ID Card</Text>
-                        <StudentCardPicker value={studentCard} onChange={setStudentCard} />
+
+                        <Text weight="SemiBold" className="text-[#404040] text-lg mb-1">Student ID Card</Text>
+                        <ImagePicker value={studentCard} onChange={setStudentCard} />
 
                         <View className="flex-row justify-end mt-4">
                             <TouchableOpacity
@@ -255,7 +333,7 @@ export default function StudentBoarding() {
                         </View>
                     </>
                 )}
-            </View>
+            </ScrollView>
         </ScrollView>
     )
 }

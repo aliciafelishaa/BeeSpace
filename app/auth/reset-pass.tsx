@@ -1,10 +1,13 @@
-import TextInput from "@/components/auth/InputField"
-import LogoBeeSpace from "@/components/ui/LogoBeeSpace"
-import Text from "@/components/ui/Text"
-import { Feather } from "@expo/vector-icons"
-import { useRouter } from "expo-router"
 import React, { useState } from "react"
-import { ScrollView, TouchableOpacity, View } from "react-native"
+import { View, TouchableOpacity, ScrollView } from "react-native"
+import { useForm } from "react-hook-form"
+import { useRouter } from "expo-router"
+import { InputField } from "@/components/auth/InputField"
+import Text from "@/components/ui/Text"
+import LogoBeeSpace from "@/components/ui/LogoBeeSpace"
+import { confirmPasswordReset } from "firebase/auth"
+import { auth } from "@/config/firebaseConfig"
+import { useLocalSearchParams } from "expo-router"
 
 type ResetForm = {
     password: string
@@ -13,85 +16,113 @@ type ResetForm = {
 
 export default function ResetPass() {
     const router = useRouter()
-    const [form, setForm] = useState<ResetForm>({
-        password: "",
-        confirmPassword: "",
-    })
-    const [showPassword, setShowPassword] = useState(false)
+    const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
     const [success, setSuccess] = useState("")
+    const { oobCode } = useLocalSearchParams()
 
-    const handleChange = (name: keyof ResetForm, value: string) => {
-        setForm({ ...form, [name]: value })
-    }
+    const {
+        control,
+        handleSubmit,
+        watch,
+        reset,
+        formState: { errors },
+    } = useForm<ResetForm>()
 
-    const handleSubmit = () => {
+    const password = watch("password")
+
+    const onSubmit = async (data: ResetForm) => {
         setError("")
         setSuccess("")
+        setLoading(true)
 
-        if (!form.password || !form.confirmPassword) {
-            return setError("All fields are required")
-        }
-        if (form.password.length < 6) {
-            return setError("Password must be at least 6 characters")
-        }
-        if (form.password !== form.confirmPassword) {
-            return setError("Passwords do not match")
-        }
+        try {
+            if (!oobCode) throw new Error("INVALID_CODE")
 
-        setTimeout(() => {
-            setSuccess("Password has been reset successfully!")
-            setForm({ password: "", confirmPassword: "" })
-        }, 1000)
+            await confirmPasswordReset(auth, oobCode as string, data.password)
+
+            setSuccess("✅ Password has been reset successfully!")
+            reset()
+
+            setTimeout(() => router.push("/auth/login"), 2000)
+        } catch (err: any) {
+            console.error(err)
+            if (err.message === "INVALID_CODE") {
+                setError("Invalid or expired reset link.")
+            } else {
+                setError("Failed to reset password. Please try again.")
+            }
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
-        <ScrollView className="flex-1 justify-center bg-[#FAFAFA] px-12">
-            <View className="w-full flex justify-center items-center mb-6">
+        <ScrollView
+            contentContainerStyle={{
+                flexGrow: 1,
+                justifyContent: "center",
+                paddingHorizontal: 40,
+                backgroundColor: "#FAFAFA",
+            }}
+        >
+            <View className="w-full items-center mb-8">
                 <LogoBeeSpace />
-                <Text className="text-3xl font-bold text-center my-4">Reset Password</Text>
-                <Text className="text-[#737373] font-semibold text-center mb-4">
-                    You can now reset your password
+                <Text className="text-3xl font-bold text-center my-4">
+                    Reset Password
+                </Text>
+                <Text className="text-[#737373] text-center font-medium mb-6">
+                    Please enter your new password.
                 </Text>
             </View>
+
+            <InputField
+                control={control}
+                name="password"
+                placeholder="New Password"
+                icon="lock"
+                type="password"
+                rules={{
+                    required: "Password is required",
+                    minLength: {
+                        value: 6,
+                        message: "Minimum 6 characters",
+                    },
+                }}
+                error={errors.password?.message}
+            />
+
+            <InputField
+                control={control}
+                name="confirmPassword"
+                placeholder="Confirm New Password"
+                icon="lock"
+                type="password"
+                rules={{
+                    required: "Confirm password is required",
+                    validate: (value: string) =>
+                        value === password || "Passwords do not match",
+                }}
+                error={errors.confirmPassword?.message}
+            />
 
             {error ? <Text className="text-red-500 mb-2">{error}</Text> : null}
             {success ? <Text className="text-green-500 mb-2">{success}</Text> : null}
 
-            <TextInput
-                icon={<Feather name="lock" size={20} color="gray" />}
-                placeholder="New Password"
-                value={form.password}
-                onChangeText={(v: string) => handleChange("password", v)}
-                secureTextEntry
-                showPasswordToggle
-                showPassword={showPassword}
-                setShowPassword={setShowPassword}
-            />
-
-            <TextInput
-                icon={<Feather name="lock" size={20} color="gray" />}
-                placeholder="Confirm New Password"
-                value={form.confirmPassword}
-                onChangeText={(v: string) => handleChange("confirmPassword", v)}
-                secureTextEntry
-                showPasswordToggle
-                showPassword={showPassword}
-                setShowPassword={setShowPassword}
-            />
-
             <TouchableOpacity
-                onPress={handleSubmit}
-                className="bg-[#FCBC03] justify-center h-14 rounded-lg mt-6"
+                onPress={handleSubmit(onSubmit)}
+                disabled={loading}
+                className={`bg-[#FCBC03] justify-center h-14 rounded-lg mt-4 ${loading ? "opacity-60" : ""
+                    }`}
             >
                 <Text className="text-white text-center text-lg font-bold">
-                    Save your new password
+                    {loading ? "Saving..." : "Save your new password"}
                 </Text>
             </TouchableOpacity>
 
-            <View className="flex-row justify-center mt-6">
+            <View className="flex-row justify-center mt-6 mb-12">
                 <Text className="text-[#404040] font-medium">Back to </Text>
-                <TouchableOpacity onPress={() => router.push("/login")}>
+                <TouchableOpacity onPress={() => router.push("/auth/login")}>
                     <Text className="text-[#DC9010] font-semibold">Login</Text>
                 </TouchableOpacity>
             </View>
