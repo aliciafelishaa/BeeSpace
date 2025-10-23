@@ -30,5 +30,6 @@ export const NAV_ITEMS: NavItem[] = [
     icon: require("@/assets/utils/passive-icon/profile.png"),
     activeIcon: require("@/assets/utils/active-icon/profile.png"),
     route: "/profile",
+    // a
   },
 ] as const;
