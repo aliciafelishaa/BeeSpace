@@ -2,8 +2,8 @@ import { ChatList } from "@/components/directmessage/chat-list";
 import { FilterModal } from "@/components/directmessage/filter-bar";
 import { SearchBar } from "@/components/directmessage/search-bar";
 import { COLORS } from "@/constants/utils/colors";
-// import { getCurrentUserData } from "@/services/authService";
-import { listenUserChats } from "@/services/directmessage/chatListService";
+import { getCurrentUserData } from "@/services/authService";
+import { listenAllUserChats } from "@/services/directmessage/chatListService";
 import { Chat, FilterType, SearchFilters } from "@/types/directmessage/dm";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
@@ -21,18 +21,18 @@ export default function MessagesPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Fetch User
-  // useEffect(() => {
-  //   const fetchCurrentUser = async () => {
-  //     const userData = await getCurrentUserData();
-  //     setCurrentUser(userData);
-  //   };
-  //   fetchCurrentUser();
-  // }, []);
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const userData = await getCurrentUserData();
+      setCurrentUser(userData);
+    };
+    fetchCurrentUser();
+  }, []);
 
   useEffect(() => {
     if (!currentUser?.id) return;
 
-    const unsubscribe = listenUserChats(currentUser.id, (updatedChats) => {
+    const unsubscribe = listenAllUserChats(currentUser.id, (updatedChats) => {
       setChats(updatedChats);
     });
 
@@ -47,7 +47,9 @@ export default function MessagesPage() {
       result = result.filter(
         (chat) =>
           chat.user?.name?.toLowerCase().includes(query) ||
-          chat.lastMessage.text.toLowerCase().includes(query)
+          chat.lastMessage.text.toLowerCase().includes(query) ||
+          (chat.isGroupChat &&
+            chat.groupData?.name?.toLowerCase().includes(query))
       );
     }
 

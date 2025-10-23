@@ -3,6 +3,7 @@ import HeaderBack from "@/components/utils/HeaderBack";
 import { COLORS } from "@/constants/utils/colors";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useRoom } from "@/hooks/useRoom";
+import { getCurrentUserData } from "@/services/authService";
 import { initiateChat } from "@/services/directmessage/chatListService";
 import { getUserById } from "@/services/userService";
 import { RoomEntry } from "@/types/myroom/room";
@@ -52,13 +53,23 @@ export default function DetailRoom() {
       setLoading(false);
     };
     fetchRoom();
-  }, [id, getRoom]);
+  }, [id, getRoom, uid]);
 
   const room = rooms[0];
+
+  // Fetch Data User
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const userData = await getCurrentUserData();
+      setCurrentUser(userData);
+    };
+    fetchCurrentUser();
+  }, []);
 
   // Perlu sync
   const handleInitiateChat = async () => {
     if (!currentUser?.id || !room) {
+      alert("Data is invalid...");
       return;
     }
 
@@ -119,6 +130,8 @@ export default function DetailRoom() {
   // const roomDateTime = new Date(`${room?.date}T${room?.timeEnd}`);
   // const now = new Date();
   // const isEnded = now > roomDateTime;
+
+  const actualIsOwner = room?.fromUid === currentUser?.id;
 
   return (
     <SafeAreaView
@@ -326,10 +339,12 @@ export default function DetailRoom() {
       </ScrollView>
 
       <ButtonDecision
-        isOwner={isOwner}
+        isOwner={actualIsOwner}
         hasJoined={hasJoined}
         isEnded={isEnded}
         onDeleteRoom={handleDeleteRoom}
+        room={room}
+        currentUser={currentUser}
       />
     </SafeAreaView>
   );
