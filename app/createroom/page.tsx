@@ -90,14 +90,14 @@ export default function CreateRoomPage() {
   };
 
   const handleSubmit = async () => {
-    // if (!user?.uid) {
-    //   setErrorMessage("You must be logged in to save a diary");
-    //   setShowError(true);
-    //   return;
-    // }
+    if (!user?.uid) {
+      setErrorMessage("You must be logged in to save a diary");
+      setShowError(true);
+      return;
+    }
     console.log("testing2");
     const inputRoom = {
-      // fromUid: user?.uid,
+      fromUid: user?.uid,
       ...formData,
       date: new Date(formData.date),
     };

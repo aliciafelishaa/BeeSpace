@@ -1,5 +1,12 @@
 import { COLORS } from "@/constants/utils/colors";
-import { currentUser, getMockMessages } from "@/dummy/data";
+import { getCurrentUserData } from "@/services/authService";
+import {
+  listenGroupMessages,
+  listenMessages,
+  sendGroupMessage,
+  sendMessage,
+} from "@/services/directmessage/dmService";
+import { getUserById } from "@/services/userService";
 import { Chat, Message } from "@/types/directmessage/dm";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useRef, useState } from "react";
@@ -17,45 +24,97 @@ import {
 interface ChatWindowProps {
   chat: Chat | null;
   onBack: () => void;
+  isGroupChat?: boolean;
 }
 
-export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
+export const ChatWindow: React.FC<ChatWindowProps> = ({
+  chat,
+  onBack,
+  isGroupChat = false,
+}) => {
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [chatUser, setChatUser] = useState<any>(null);
   const scrollViewRef = useRef<ScrollView>(null);
 
+  // Get Current User
   useEffect(() => {
-    if (chat) {
-      setMessages(getMockMessages(chat.id));
-    } else {
+    const fetchCurrentUser = async () => {
+      const userData = await getCurrentUserData();
+      setCurrentUser(userData);
+    };
+    fetchCurrentUser();
+  }, []);
+
+  // Get chat user data (for private chat) or group data
+  useEffect(() => {
+    const fetchChatData = async () => {
+      if (!chat) return;
+
+      if (isGroupChat) {
+        setChatUser({
+          name: chat.groupData?.name || "Group Chat",
+          avatar: null,
+          isGroup: true,
+        });
+      } else {
+        if (chat.userId) {
+          const userData = await getUserById(chat.userId);
+          setChatUser(userData);
+        }
+      }
+    };
+    fetchChatData();
+  }, [chat, isGroupChat]);
+
+  useEffect(() => {
+    if (!chat) {
       setMessages([]);
+      return;
     }
-  }, [chat]);
 
-  const scrollToBottom = () => {
-    scrollViewRef.current?.scrollToEnd({ animated: true });
-  };
+    const unsubscribe = isGroupChat
+      ? listenGroupMessages(chat.id, (msgs: Message[]) => {
+          setMessages(msgs);
+        })
+      : listenMessages(chat.id, (msgs: Message[]) => {
+          setMessages(msgs);
+        });
+
+    return () => unsubscribe();
+  }, [chat, isGroupChat]);
 
   useEffect(() => {
-    scrollToBottom();
+    scrollViewRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
 
-  const handleSendMessage = () => {
-    if (newMessage.trim() && chat) {
-      const newMsg: Message = {
-        id: Date.now().toString(),
-        text: newMessage.trim(),
-        timestamp: new Date(),
-        senderId: currentUser.id,
-        read: true,
-        type: "text",
-        status: "sent",
-      };
-
-      setMessages((prev) => [...prev, newMsg]);
+  const handleSendMessage = async () => {
+    if (chat && newMessage.trim() && currentUser) {
+      if (isGroupChat) {
+        await sendGroupMessage(
+          chat.id,
+          newMessage,
+          currentUser.id,
+          currentUser.name || currentUser.email
+        );
+      } else {
+        await sendMessage(chat.id, newMessage, currentUser.id);
+      }
       setNewMessage("");
     }
   };
+
+  if (!currentUser) {
+    return (
+      <View
+        className="flex-1 items-center justify-center"
+        style={{ backgroundColor: COLORS.neutral100 }}
+      >
+        <Text>No user found...</Text>
+      </View>
+    );
+  }
 
   const formatMessageTime = (date: Date) => {
     return date.toLocaleTimeString("id-ID", {
@@ -64,44 +123,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
     });
   };
 
-  if (!chat) {
-    return (
-      <View
-        className="flex-1 items-center justify-center"
-        style={{ backgroundColor: COLORS.neutral100 }}
-      >
-        <View className="items-center p-8">
-          <View
-            className="w-16 h-16 rounded-full items-center justify-center mb-4"
-            style={{ backgroundColor: COLORS.neutral300 }}
-          >
-            <Text className="text-4xl">💬</Text>
-          </View>
-          <Text
-            className="text-lg font-medium mb-2 text-center"
-            style={{ color: COLORS.neutral900 }}
-          >
-            Select a chat to start messaging...
-          </Text>
-          <Text
-            className="text-sm text-center"
-            style={{ color: COLORS.neutral500 }}
-          >
-            Choose a conversation from the list
-          </Text>
-        </View>
-      </View>
-    );
-  }
-
   return (
-    // WOI DI SCROLL VIEW
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ backgroundColor: COLORS.white, flex: 1 }}
     >
       <View
-        className="px-6 py-4 flex-row items-center "
+        className="px-6 py-4 flex-row items-center"
         style={{ backgroundColor: COLORS.white }}
       >
         <TouchableOpacity onPress={onBack} className="mr-8" activeOpacity={0.7}>
@@ -112,21 +140,27 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
           />
         </TouchableOpacity>
 
-        {chat.user?.avatar ? (
+        {chatUser?.avatar ? (
           <Image
-            source={{ uri: chat.user.avatar }}
+            source={{ uri: chatUser.avatar }}
             className="w-12 h-12 rounded-full mr-3"
           />
         ) : (
           <View
             className="w-12 h-12 rounded-full items-center justify-center mr-3"
-            style={{ backgroundColor: COLORS.neutral300 }}
+            style={{
+              backgroundColor: isGroupChat
+                ? COLORS.primary2nd
+                : COLORS.neutral300,
+            }}
           >
             <Text
               className="font-semibold text-base"
               style={{ color: COLORS.white }}
             >
-              {chat.user?.name?.charAt(0).toUpperCase() || "U"}
+              {isGroupChat
+                ? "G"
+                : chatUser?.name?.charAt(0).toUpperCase() || "U"}
             </Text>
           </View>
         )}
@@ -136,13 +170,16 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
             className="font-bold text-lg"
             style={{ color: COLORS.neutral900 }}
           >
-            {chat.user?.name}
+            {chatUser?.name || "Loading..."}
+            {isGroupChat && " (Group)"}
           </Text>
           <Text
             className="text-xs font-medium"
             style={{ color: COLORS.success }}
           >
-            Online
+            {isGroupChat
+              ? `${chat?.groupData?.memberUids?.length || 0} members`
+              : "Online"}
           </Text>
         </View>
       </View>
@@ -176,17 +213,28 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
                 key={message.id}
                 className={`mb-4 ${isOwnMessage ? "items-end" : "items-start"}`}
               >
+                {isGroupChat && !isOwnMessage && (
+                  <Text className="text-xs text-neutral-500 mb-1 ml-2">
+                    {message.senderName || "User"}
+                  </Text>
+                )}
                 <View
                   className={`max-w-[80%] px-4 py-3 ${
                     isOwnMessage
                       ? "rounded-3xl rounded-br-sm"
                       : "rounded-3xl rounded-bl-sm"
                   }`}
-                  style={{ backgroundColor: COLORS.white }}
+                  style={{
+                    backgroundColor: isOwnMessage
+                      ? COLORS.primary2nd
+                      : COLORS.white,
+                  }}
                 >
                   <Text
                     className="text-sm leading-5 mb-1"
-                    style={{ color: COLORS.neutral900 }}
+                    style={{
+                      color: isOwnMessage ? COLORS.white : COLORS.neutral900,
+                    }}
                   >
                     {message.text}
                   </Text>
@@ -194,11 +242,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
                   <View className="flex-row items-center justify-end gap-1">
                     <Text
                       className="text-[10px]"
-                      style={{ color: COLORS.neutral500 }}
+                      style={{
+                        color: isOwnMessage
+                          ? COLORS.primary4th
+                          : COLORS.neutral500,
+                      }}
                     >
                       {formatMessageTime(message.timestamp)}
                     </Text>
-                    {isOwnMessage && (
+                    {isOwnMessage && !isGroupChat && (
                       <View className="ml-1 flex-row items-center">
                         {message.status === "read" && (
                           <>
@@ -226,12 +278,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
                             <Ionicons
                               name="checkmark"
                               size={12}
-                              color={COLORS.black}
+                              color={COLORS.white}
                             />
                             <Ionicons
                               name="checkmark"
                               size={12}
-                              color={COLORS.black}
+                              color={COLORS.white}
                               style={{ marginLeft: -6 }}
                             />
                           </>
@@ -240,7 +292,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
                           <Ionicons
                             name="checkmark"
                             size={12}
-                            color={COLORS.black}
+                            color={COLORS.white}
                           />
                         )}
                       </View>

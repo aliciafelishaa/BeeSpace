@@ -4,10 +4,12 @@ import CardRoom from "@/components/myroom/CardRoom";
 import ModalFilteringDynamic from "@/components/utils/ModalFiltering";
 import SearchBar from "@/components/utils/SearchBar";
 import { COLORS } from "@/constants/utils/colors";
+import { useAuthState } from "@/hooks/useAuthState";
 import { useRoom } from "@/hooks/useRoom";
+import { getUserById } from "@/services/userService";
 import { RoomCategory, TimeCategory } from "@/types/myroom/myroom";
 import { RoomEntry } from "@/types/myroom/room";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
@@ -24,23 +26,110 @@ export default function MyRoomDash() {
   const [rooms, setRooms] = useState<RoomEntry[]>([]);
   const { getRoom } = useRoom();
   const [loading, setLoading] = useState(false);
+  const { user } = useAuthState();
+  const { uid: paramUid } = useLocalSearchParams();
+  const uid = paramUid || user?.uid;
+  const [filteredRooms, setFilteredRooms] = useState<RoomEntry[]>([]);
+  const [userData, setUserData] = useState<any>(null);
 
   useEffect(() => {
     const fetchRoom = async () => {
+      if (!uid) return;
       setLoading(true);
-      const res = await getRoom();
-      console.log("Test");
-      console.log(res.data);
+      const res = await getRoom(uid);
+
       if (res.success && res.data) {
-        setRooms(res.data);
+        const roomsData = res.data;
+        const roomsWithHost = await Promise.all(
+          roomsData.map(async (room: RoomEntry) => {
+            console.log(room.fromUid);
+            const userRes = await getUserById(room.fromUid);
+            return {
+              ...room,
+              hostName: userRes?.name || "Unknown",
+              avatar: userRes?.avatar || "",
+            };
+          })
+        );
+
+        setRooms(roomsWithHost);
       } else {
         setRooms([]);
       }
       setLoading(false);
     };
     fetchRoom();
-    console.log(rooms);
-  }, []);
+  }, [uid]);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!uid) return;
+      const userRes = await getUserById(uid);
+      setUserData(userRes);
+    };
+    fetchUserData();
+  }, [uid]);
+
+  useEffect(() => {
+    const applyFilter = async () => {
+      const now = new Date();
+
+      const filtered = await Promise.all(
+        rooms.map(async (room) => {
+          const roomDate = new Date(room.date);
+
+          // --- filter kategori ---
+          if (activeTab !== "all" && room.category !== activeTab) {
+            return null;
+          }
+
+          // --- filter waktu ---
+          if (activeFilter === "today") {
+            const isToday =
+              roomDate.getDate() === now.getDate() &&
+              roomDate.getMonth() === now.getMonth() &&
+              roomDate.getFullYear() === now.getFullYear();
+            if (!isToday) return null;
+          }
+
+          if (activeFilter === "thisweek") {
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - now.getDay());
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 7);
+
+            const isThisWeek = roomDate >= startOfWeek && roomDate <= endOfWeek;
+            if (!isThisWeek) return null;
+          }
+
+          if (activeFilter === "thismonth") {
+            const isThisMonth =
+              roomDate.getMonth() === now.getMonth() &&
+              roomDate.getFullYear() === now.getFullYear();
+            if (!isThisMonth) return null;
+          }
+          if (activeFilter === "mycampus") {
+            if (!userData?.university) return null;
+            const sameCampus =
+              room.place
+                ?.toLowerCase()
+                .includes(userData.university.toLowerCase()) ||
+              userData.university
+                .toLowerCase()
+                .includes(room.place?.toLowerCase());
+            if (!sameCampus) return null;
+          }
+
+          return room;
+        })
+      );
+
+      // hapus nilai null dari hasil filter
+      setFilteredRooms(filtered.filter((r) => r !== null) as RoomEntry[]);
+    };
+
+    applyFilter();
+  }, [rooms, activeTab, activeFilter, userData]);
 
   return (
     <SafeAreaView
@@ -85,10 +174,14 @@ export default function MyRoomDash() {
                 </View>
               </View>
               <View>
-                <Image
-                  source={require("@/assets/utils/notifications.png")}
-                  className="w-[40px] h-[40px]"
-                ></Image>
+                <TouchableOpacity
+                  onPress={() => router.push("/notifications/notification")}
+                >
+                  <Image
+                    source={require("@/assets/utils/notifications.png")}
+                    className="w-[40px] h-[40px]"
+                  />
+                </TouchableOpacity>
               </View>
             </View>
 
@@ -212,20 +305,22 @@ export default function MyRoomDash() {
               <Text className="text-center text-neutral-500">
                 Loading rooms...
               </Text>
-            ) : rooms.length > 0 ? (
-              rooms.map((room) => (
+            ) : filteredRooms.length > 0 ? (
+              filteredRooms.map((room) => (
                 <CardRoom
-                  key={room.fromUid}
+                  key={room.id}
                   id={room.id}
                   title={room.planName}
-                  // date={`${room.date} ${room.timeStart} - ${room.timeEnd}`}
                   date={new Date(room.date)}
                   location={room.place}
                   slotRemaining={room.minMember}
+                  timeStart={room.timeStart}
+                  timeEnd={room.timeEnd}
                   slotTotal={room.maxMember}
-                  hostName={room.fromUid ? room.fromUid : "Ano"}
+                  hostName={room.hostName || "Anonymous"}
                   imageSource={room.cover ? { uri: room.cover } : false}
                   isEdit={false}
+                  imageAvatar={room.imageAvatar}
                 />
               ))
             ) : (

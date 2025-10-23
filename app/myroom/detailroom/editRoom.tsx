@@ -7,6 +7,7 @@ import TimeRangePickerInput from "@/components/createroom/TimePickerInput";
 import ToggleSwitch from "@/components/createroom/ToggleSwitch";
 import IconBack from "@/components/ui/icon-back";
 import { COLORS } from "@/constants/utils/colors";
+import { useAuthState } from "@/hooks/useAuthState";
 import { useRoom } from "@/hooks/useRoom";
 import { useRoomCover } from "@/hooks/useRoomCover";
 import { router, useLocalSearchParams } from "expo-router";
@@ -25,7 +26,9 @@ import {
 } from "react-native-safe-area-context";
 
 export default function EditRoom() {
-  const { id } = useLocalSearchParams();
+  const { user } = useAuthState();
+  const { uid: paramUid, id } = useLocalSearchParams();
+  const uid = paramUid || user?.uid;
   const [step, setStep] = useState(1);
   const insets = useSafeAreaInsets();
   const { addRoom, updateRoom, getRoomId } = useRoom();
@@ -67,19 +70,18 @@ export default function EditRoom() {
     }
   };
   const handleEdit = async () => {
-    // if (!user?.uid) {
-    //   setErrorMessage("You must be logged in to save a diary");
-    //   setShowError(true);
-    //   return;
-    // }
-    console.log("testing2");
+    if (!user?.uid) {
+      setErrorMessage("You must be logged in to save a diary");
+      setShowError(true);
+      return;
+    }
     const inputRoom = {
-      // fromUid: user?.uid,
+      fromUid: user?.uid,
       ...formData,
       date: new Date(formData.date),
     };
 
-    const result = await updateRoom(id, inputRoom);
+    const result = await updateRoom(id, inputRoom, uid);
     if (result.success) {
       console.log("✅ Form Submitted:", result);
       router.back();
@@ -114,9 +116,9 @@ export default function EditRoom() {
 
   useEffect(() => {
     const fetchRoom = async () => {
-      if (!id) return;
+      if (!id || !uid) return;
       setLoading(true);
-      const res = await getRoomId(id);
+      const res = await getRoomId(id, uid);
       if (res.success && res.data) {
         console.log(res.data);
         setRooms(res.data);
@@ -127,7 +129,7 @@ export default function EditRoom() {
       setLoading(false);
     };
     fetchRoom();
-  }, [id]);
+  }, [id, uid]);
 
   useEffect(() => {
     if (rooms) {
