@@ -105,17 +105,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   };
 
-  if (!currentUser) {
-    return (
-      <View
-        className="flex-1 items-center justify-center"
-        style={{ backgroundColor: COLORS.neutral100 }}
-      >
-        <Text>No user found...</Text>
-      </View>
-    );
-  }
-
   const formatMessageTime = (date: Date) => {
     return date.toLocaleTimeString("id-ID", {
       hour: "2-digit",
@@ -205,103 +194,105 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         </View>
 
         <View>
-          {messages.map((message) => {
-            const isOwnMessage = message.senderId === currentUser.id;
+          {messages
+            .filter((message) => message != null)
+            .map((message) => {
+              const isOwnMessage = message.senderId === currentUser?.id;
 
-            return (
-              <View
-                key={message.id}
-                className={`mb-4 ${isOwnMessage ? "items-end" : "items-start"}`}
-              >
-                {isGroupChat && !isOwnMessage && (
-                  <Text className="text-xs text-neutral-500 mb-1 ml-2">
-                    {message.senderName || "User"}
-                  </Text>
-                )}
+              return (
                 <View
-                  className={`max-w-[80%] px-4 py-3 ${
-                    isOwnMessage
-                      ? "rounded-3xl rounded-br-sm"
-                      : "rounded-3xl rounded-bl-sm"
-                  }`}
-                  style={{
-                    backgroundColor: isOwnMessage
-                      ? COLORS.primary2nd
-                      : COLORS.white,
-                  }}
+                  key={message.id}
+                  className={`mb-4 ${isOwnMessage ? "items-end" : "items-start"}`}
                 >
-                  <Text
-                    className="text-sm leading-5 mb-1"
+                  {isGroupChat && !isOwnMessage && (
+                    <Text className="text-xs text-neutral-500 mb-1 ml-2">
+                      {message.senderName || "User"}
+                    </Text>
+                  )}
+                  <View
+                    className={`max-w-[80%] px-4 py-3 ${
+                      isOwnMessage
+                        ? "rounded-3xl rounded-br-sm"
+                        : "rounded-3xl rounded-bl-sm"
+                    }`}
                     style={{
-                      color: isOwnMessage ? COLORS.white : COLORS.neutral900,
+                      backgroundColor: isOwnMessage
+                        ? COLORS.primary2nd
+                        : COLORS.white,
                     }}
                   >
-                    {message.text}
-                  </Text>
-
-                  <View className="flex-row items-center justify-end gap-1">
                     <Text
-                      className="text-[10px]"
+                      className="text-sm leading-5 mb-1"
                       style={{
-                        color: isOwnMessage
-                          ? COLORS.primary4th
-                          : COLORS.neutral500,
+                        color: isOwnMessage ? COLORS.white : COLORS.neutral900,
                       }}
                     >
-                      {formatMessageTime(message.timestamp)}
+                      {message.text}
                     </Text>
-                    {isOwnMessage && !isGroupChat && (
-                      <View className="ml-1 flex-row items-center">
-                        {message.status === "read" && (
-                          <>
-                            <Ionicons
-                              name="checkmark"
-                              size={12}
-                              color="#DC9010"
-                            />
-                            <Ionicons
-                              name="checkmark"
-                              size={12}
-                              color="#DC9010"
-                              style={{ marginLeft: -6 }}
-                            />
-                            <Text
-                              className="text-[10px] ml-1"
-                              style={{ color: "#DC9010" }}
-                            >
-                              Read
-                            </Text>
-                          </>
-                        )}
-                        {message.status === "delivered" && (
-                          <>
+
+                    <View className="flex-row items-center justify-end gap-1">
+                      <Text
+                        className="text-[10px]"
+                        style={{
+                          color: isOwnMessage
+                            ? COLORS.primary4th
+                            : COLORS.neutral500,
+                        }}
+                      >
+                        {formatMessageTime(message.timestamp)}
+                      </Text>
+                      {isOwnMessage && !isGroupChat && (
+                        <View className="ml-1 flex-row items-center">
+                          {message.status === "read" && (
+                            <>
+                              <Ionicons
+                                name="checkmark"
+                                size={12}
+                                color="#DC9010"
+                              />
+                              <Ionicons
+                                name="checkmark"
+                                size={12}
+                                color="#DC9010"
+                                style={{ marginLeft: -6 }}
+                              />
+                              <Text
+                                className="text-[10px] ml-1"
+                                style={{ color: "#DC9010" }}
+                              >
+                                Read
+                              </Text>
+                            </>
+                          )}
+                          {message.status === "delivered" && (
+                            <>
+                              <Ionicons
+                                name="checkmark"
+                                size={12}
+                                color={COLORS.white}
+                              />
+                              <Ionicons
+                                name="checkmark"
+                                size={12}
+                                color={COLORS.white}
+                                style={{ marginLeft: -6 }}
+                              />
+                            </>
+                          )}
+                          {message.status === "sent" && (
                             <Ionicons
                               name="checkmark"
                               size={12}
                               color={COLORS.white}
                             />
-                            <Ionicons
-                              name="checkmark"
-                              size={12}
-                              color={COLORS.white}
-                              style={{ marginLeft: -6 }}
-                            />
-                          </>
-                        )}
-                        {message.status === "sent" && (
-                          <Ionicons
-                            name="checkmark"
-                            size={12}
-                            color={COLORS.white}
-                          />
-                        )}
-                      </View>
-                    )}
+                          )}
+                        </View>
+                      )}
+                    </View>
                   </View>
                 </View>
-              </View>
-            );
-          })}
+              );
+            })}
         </View>
       </ScrollView>
 
