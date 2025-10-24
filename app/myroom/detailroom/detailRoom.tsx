@@ -28,50 +28,53 @@ export default function DetailRoom() {
   const uid = paramUid || user?.uid;
   const insets = useSafeAreaInsets();
   const [modalVisible, setModalVisible] = useState(false);
-  const [rooms, setRooms] = useState<RoomEntry[]>([]);
+  const [room, setRoom] = useState<RoomEntry | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const { getRoom } = useRoom();
   const [loading, setLoading] = useState(true);
-  const { deleteRoom } = useRoom();
+  const [error, setError] = useState<string | null>(null);
+  const [hostName, setHostName] = useState<string>("");
+  const { getRoom, deleteRoom } = useRoom();
   const isOwner = true;
   const hasJoined = false;
   const isEnded = false;
-  const [hostName, setHostName] = useState<string>("");
-
-  useEffect(() => {
-    const fetchRoom = async () => {
-      setLoading(true);
-      const res = await getRoom(uid);
-      if (res.success && res.data) {
-        const selectedRoom = res.data.find((r) => r.id.toString() === id);
-        if (selectedRoom) {
-          setRooms([selectedRoom]);
-
-          if (selectedRoom.fromUid) {
-            const userRes = await getUserById(selectedRoom.fromUid);
-            setHostName(userRes?.name || "Unknown Host");
-          }
-        } else {
-          setRooms([]);
-        }
-      } else {
-        setRooms([]);
-      }
-      setLoading(false);
-    };
-    fetchRoom();
-  }, [id, getRoom, uid]);
-
-  const room = rooms[0];
 
   // Fetch Data User
   useEffect(() => {
-    const fetchCurrentUser = async () => {
-      const userData = await getCurrentUserData();
-      setCurrentUser(userData);
+    const fetchData = async () => {
+      if (!id || !uid) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+
+        const userData = await getCurrentUserData();
+        setCurrentUser(userData);
+
+        const roomRes = await getRoom(uid);
+
+        if (roomRes.success && roomRes.data) {
+          const selectedRoom = roomRes.data.find((r) => r.id.toString() === id);
+          if (selectedRoom) {
+            setRoom(selectedRoom);
+
+            if (selectedRoom.fromUid) {
+              const userRes = await getUserById(selectedRoom.fromUid);
+              setHostName(userRes?.name || "Unknown Host");
+            }
+          }
+        }
+      } catch (err) {
+        setError("Failed to load data");
+        console.log(err);
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchCurrentUser();
-  }, []);
+
+    fetchData();
+  }, [id, uid]);
 
   // Perlu sync
   const handleInitiateChat = async () => {
