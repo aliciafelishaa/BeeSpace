@@ -2,8 +2,9 @@ import {
   getGroupChat,
   initiateGroupChat,
   joinGroupChat,
+  leaveGroupChat,
 } from "@/services/directmessage/groupChatService";
-import { joinRoom } from "@/services/room.service";
+import { joinRoom, leaveRoom } from "@/services/room.service";
 import { ButtonDecisionProps } from "@/types/myroom/buttondecision";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -64,7 +65,27 @@ export default function ButtonDecision({
         );
       }
       setJoined(true);
-      alert("Successfully joined room!");
+    } catch (err) {
+      console.error("Error:", err);
+    }
+  };
+
+  // Function Leave Room jika diclick
+  const handleLeaveRoom = async () => {
+    if (!room?.id || !currentUser?.id) {
+      return;
+    }
+    try {
+      const leaveRoomSuccess = await leaveRoom(room.id, currentUser.id);
+
+      if (!leaveRoomSuccess) {
+        return;
+      }
+
+      const chatId = `group_${room.id}`;
+      await leaveGroupChat(chatId, currentUser.id);
+
+      setJoined(false);
     } catch (err) {
       console.error("Error:", err);
     }
@@ -221,11 +242,12 @@ export default function ButtonDecision({
         }}
       >
         <TouchableOpacity
-          className="rounded-[8px] h-[45px] bg-primary2nd items-center justify-center py-4 flex-1"
-          onPress={handleGroupChat}
+          className="rounded-[8px] h-[45px] items-center justify-center py-4 flex-1 border-red-800"
+          style={{ backgroundColor: "#EF4444" }}
+          onPress={handleLeaveRoom}
         >
           <Text className="text-neutral-50 font-semibold text-[14px]">
-            Joined
+            Leave Group
           </Text>
         </TouchableOpacity>
 
@@ -235,6 +257,24 @@ export default function ButtonDecision({
         >
           <Image source={require("@/assets/images/dm.png")}></Image>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          className="rounded-[8px] w-[80px] h-[45px] bg-primary4th border border-primary2nd items-center justify-center py-4"
+          onPress={() => setModalVisible(true)}
+        >
+          <Text className="text-primary font-interSemiBold text-[14px]">
+            ...
+          </Text>
+        </TouchableOpacity>
+
+        <ModalEditDelete
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          isJoin={true}
+          isReport={true}
+          isEdit={false}
+          onDelete={onDeleteRoom}
+        />
       </View>
     );
   }
