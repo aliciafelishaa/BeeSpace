@@ -1,5 +1,12 @@
 import { db } from "@/config/firebaseConfig";
-import { arrayUnion, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import {
+  arrayRemove,
+  arrayUnion,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
 
 export interface GroupChat {
   id: string;
@@ -73,5 +80,23 @@ export const getGroupChat = async (
   } catch (err) {
     console.error("Error:", err);
     return null;
+  }
+};
+
+export const leaveGroupChat = async (
+  chatId: string,
+  userId: string
+): Promise<boolean> => {
+  try {
+    const chatRef = doc(db, "groupChats", chatId);
+
+    await updateDoc(chatRef, {
+      memberUids: arrayRemove(userId),
+    });
+
+    return true;
+  } catch (err) {
+    console.error("Error:", err);
+    return false;
   }
 };
