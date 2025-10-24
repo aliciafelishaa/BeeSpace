@@ -7,7 +7,7 @@ import { listenAllUserChats } from "@/services/directmessage/chatListService";
 import { Chat, FilterType, SearchFilters } from "@/types/directmessage/dm";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 
 export default function MessagesPage() {
   const router = useRouter();
@@ -19,12 +19,20 @@ export default function MessagesPage() {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [chats, setChats] = useState<Chat[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   // Fetch User
   useEffect(() => {
     const fetchCurrentUser = async () => {
-      const userData = await getCurrentUserData();
-      setCurrentUser(userData);
+      try {
+        setLoading(true);
+        const userData = await getCurrentUserData();
+        setCurrentUser(userData);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchCurrentUser();
   }, []);
@@ -85,10 +93,13 @@ export default function MessagesPage() {
     setFilters((prev) => ({ ...prev, category }));
   };
 
-  if (!currentUser) {
+  if (loading) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <Text>Loading...</Text>
+      <View
+        className="flex-1 items-center justify-center"
+        style={{ backgroundColor: COLORS.white }}
+      >
+        <ActivityIndicator size="large" color="#FCBC03" />
       </View>
     );
   }
