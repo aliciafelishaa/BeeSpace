@@ -61,6 +61,7 @@ export const listenUserChats = (
               type: data.lastMessage?.type || "text",
             },
             unreadCount: data.unreadCount?.[userId] || 0,
+            isGroupChat: false,
           });
         } catch (err) {
           console.error("Error:", err);
@@ -153,4 +154,85 @@ export const initiateChat = async (
   }
 
   return await createChat(currentUserId, otherUserId);
+};
+
+// GROUP CHATS
+export const listenUserGroupChats = (
+  userId: string,
+  callback: (chats: Chat[]) => void
+): (() => void) => {
+  const q = query(
+    collection(db, "groupChats"),
+    where("memberUids", "array-contains", userId),
+    orderBy("createdAt", "desc")
+  );
+
+  const unsubscribe = onSnapshot(
+    q,
+    (querySnapshot) => {
+      const chats: Chat[] = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+
+        chats.push({
+          id: doc.id,
+          userId: data.hostUid,
+          lastMessage: {
+            id: "",
+            text: data.lastMessage,
+            timestamp: data.createdAt?.toDate?.() || new Date(),
+            senderId: data.hostUid || "",
+            read: true,
+            type: "text",
+          },
+          unreadCount: 0,
+          isGroupChat: true,
+          groupData: {
+            name: data.name,
+            memberUids: data.memberUids || [],
+            roomId: data.roomId,
+          },
+        });
+      });
+
+      callback(chats);
+    },
+    (err) => {
+      console.error(err);
+    }
+  );
+  return unsubscribe;
+};
+
+export const listenAllUserChats = (
+  userId: string,
+  callback: (chats: Chat[]) => void
+): (() => void) => {
+  let privateChats: Chat[] = [];
+  let groupChats: Chat[] = [];
+
+  const onCombinedUpdate = () => {
+    const allChats = [...privateChats, ...groupChats];
+    allChats.sort(
+      (a, b) =>
+        new Date(b.lastMessage.timestamp).getTime() -
+        new Date(a.lastMessage.timestamp).getTime()
+    );
+    callback(allChats);
+  };
+
+  const unsubscribePrivate = listenUserChats(userId, (chats) => {
+    privateChats = chats;
+    onCombinedUpdate();
+  });
+
+  const unsubscribeGroup = listenUserGroupChats(userId, (chats) => {
+    groupChats = chats;
+    onCombinedUpdate();
+  });
+
+  return () => {
+    unsubscribePrivate();
+    unsubscribeGroup();
+  };
 };

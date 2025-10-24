@@ -3,12 +3,20 @@ import HeaderBack from "@/components/utils/HeaderBack";
 import { COLORS } from "@/constants/utils/colors";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useRoom } from "@/hooks/useRoom";
-import { initiateChat } from "@/services/chatListService";
+import { getCurrentUserData } from "@/services/authService";
+import { initiateChat } from "@/services/directmessage/chatListService";
 import { getUserById } from "@/services/userService";
 import { RoomEntry } from "@/types/myroom/room";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -20,45 +28,58 @@ export default function DetailRoom() {
   const uid = paramUid || user?.uid;
   const insets = useSafeAreaInsets();
   const [modalVisible, setModalVisible] = useState(false);
-  const [rooms, setRooms] = useState<RoomEntry[]>([]);
+  const [room, setRoom] = useState<RoomEntry | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const { getRoom } = useRoom();
-  const [loading, setLoading] = useState(false);
-  const { deleteRoom } = useRoom();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [hostName, setHostName] = useState<string>("");
+  const { getRoom, deleteRoom } = useRoom();
   const isOwner = true;
   const hasJoined = false;
   const isEnded = false;
-  const [hostName, setHostName] = useState<string>("");
 
+  // Fetch Data User
   useEffect(() => {
-    const fetchRoom = async () => {
-      setLoading(true);
-      const res = await getRoom(uid);
-      if (res.success && res.data) {
-        const selectedRoom = res.data.find((r) => r.id.toString() === id);
-        if (selectedRoom) {
-          setRooms([selectedRoom]);
-
-          if (selectedRoom.fromUid) {
-            const userRes = await getUserById(selectedRoom.fromUid);
-            setHostName(userRes?.name || "Unknown Host");
-          }
-        } else {
-          setRooms([]);
-        }
-      } else {
-        setRooms([]);
+    const fetchData = async () => {
+      if (!id || !uid) {
+        setLoading(false);
+        return;
       }
-      setLoading(false);
-    };
-    fetchRoom();
-  }, [id, getRoom]);
 
-  const room = rooms[0];
+      try {
+        setLoading(true);
+
+        const userData = await getCurrentUserData();
+        setCurrentUser(userData);
+
+        const roomRes = await getRoom(uid);
+
+        if (roomRes.success && roomRes.data) {
+          const selectedRoom = roomRes.data.find((r) => r.id.toString() === id);
+          if (selectedRoom) {
+            setRoom(selectedRoom);
+
+            if (selectedRoom.fromUid) {
+              const userRes = await getUserById(selectedRoom.fromUid);
+              setHostName(userRes?.name || "Unknown Host");
+            }
+          }
+        }
+      } catch (err) {
+        setError("Failed to load data");
+        console.log(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [id, uid]);
 
   // Perlu sync
   const handleInitiateChat = async () => {
     if (!currentUser?.id || !room) {
+      alert("Data is invalid...");
       return;
     }
 
@@ -120,6 +141,19 @@ export default function DetailRoom() {
   // const now = new Date();
   // const isEnded = now > roomDateTime;
 
+  const actualIsOwner = room?.fromUid === currentUser?.id;
+
+  if (loading) {
+    return (
+      <SafeAreaView
+        className="flex-1 items-center justify-center"
+        style={{ backgroundColor: COLORS.white }}
+      >
+        <ActivityIndicator size="large" color="#FCBC03" />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView
       style={{
@@ -146,7 +180,12 @@ export default function DetailRoom() {
           <HeaderBack />
         </View>
       ) : (
-        <Text>Loading...</Text>
+        <View
+          className="flex-1 items-center justify-center"
+          style={{ backgroundColor: COLORS.white }}
+        >
+          <ActivityIndicator size="large" color="#FCBC03" />
+        </View>
       )}
 
       <ScrollView
@@ -320,16 +359,23 @@ export default function DetailRoom() {
               </View>
             </>
           ) : (
-            <Text>Loading...</Text>
+            <View
+              className="flex-1 items-center justify-center"
+              style={{ backgroundColor: COLORS.white }}
+            >
+              <ActivityIndicator size="large" color="#FCBC03" />
+            </View>
           )}
         </View>
       </ScrollView>
 
       <ButtonDecision
-        isOwner={isOwner}
+        isOwner={actualIsOwner}
         hasJoined={hasJoined}
         isEnded={isEnded}
         onDeleteRoom={handleDeleteRoom}
+        room={room}
+        currentUser={currentUser}
       />
     </SafeAreaView>
   );
