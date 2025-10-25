@@ -11,7 +11,10 @@ import {
   getDocs,
   Timestamp,
   updateDoc,
+  query,
+  where,
 } from "firebase/firestore";
+import { updateRoomStats } from "./userService";
 
 export const createRoom = async (payload: RoomEntry) => {
   if (!payload.fromUid) {
@@ -33,9 +36,18 @@ export const createRoom = async (payload: RoomEntry) => {
       planName: payload.planName,
       timeEnd: payload.timeEnd,
       timeStart: payload.timeStart,
+      joinedUids: [], // Initialize empty array for joined users
+      status: "active", // active, completed, cancelled
     };
     console.log("payload:", roomData);
     const reqRef = await addDoc(collection(db, "roomEvents"), roomData);
+    
+    // Update user stats - increment hosted rooms
+    await updateRoomStats(payload.fromUid, {
+      hostedRooms: 1,
+      activeRooms: 1,
+    });
+    
     return { success: true, id: reqRef.id };
   } catch (err) {
     return { success: false, message: err };
@@ -55,6 +67,48 @@ export const getAllRoom = async (uid: string) => {
       date: data.date instanceof Timestamp ? data.date.toDate() : data.date,
     } as RoomEntry & { id: string };
   });
+};
+
+// Get rooms where user is joined
+export const getJoinedRooms = async (uid: string) => {
+  try {
+    const roomsCol = collection(db, "roomEvents");
+    const q = query(roomsCol, where("joinedUids", "array-contains", uid));
+    const snapshot = await getDocs(q);
+
+    return snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        date: data.date instanceof Timestamp ? data.date.toDate() : data.date,
+      } as RoomEntry & { id: string };
+    });
+  } catch (error) {
+    console.error("Error getting joined rooms:", error);
+    return [];
+  }
+};
+
+// Get rooms created by user (hosted)
+export const getHostedRooms = async (uid: string) => {
+  try {
+    const roomsCol = collection(db, "roomEvents");
+    const q = query(roomsCol, where("fromUid", "==", uid));
+    const snapshot = await getDocs(q);
+
+    return snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        date: data.date instanceof Timestamp ? data.date.toDate() : data.date,
+      } as RoomEntry & { id: string };
+    });
+  } catch (error) {
+    console.error("Error getting hosted rooms:", error);
+    return [];
+  }
 };
 
 export const getRoombyId = async (id: string, uid: string) => {
@@ -141,7 +195,15 @@ export const deleteRoomService = async (id: string, uid: string) => {
     if (data.fromUid !== uid) {
       return { success: false, message: "Unauthorized access" };
     }
+    
     await deleteDoc(docRef);
+    
+    // Update user stats - decrement hosted and active rooms
+    await updateRoomStats(uid, {
+      hostedRooms: -1,
+      activeRooms: -1,
+    });
+    
     return { success: true, message: "Room deleted successfully" };
   } catch (error) {
     console.error("Error deleting room:", error);
@@ -161,13 +223,27 @@ export const joinRoom = async (
       throw new Error("Room not found");
     }
 
+    const roomData = roomDoc.data();
+    
+    // Check if already joined
+    if (roomData.joinedUids?.includes(userId)) {
+      console.log("User already joined this room");
+      return true;
+    }
+
     await updateDoc(roomRef, {
       joinedUids: arrayUnion(userId),
     });
 
+    // Update user stats - increment total joined
+    await updateRoomStats(userId, {
+      totalJoined: 1,
+    });
+
+    console.log("✅ User joined room successfully");
     return true;
   } catch (err) {
-    console.error("Error:", err);
+    console.error("Error joining room:", err);
     return false;
   }
 };
@@ -183,9 +259,15 @@ export const leaveRoom = async (
       joinedUids: arrayRemove(userId),
     });
 
+    // Update user stats - decrement total joined
+    await updateRoomStats(userId, {
+      totalJoined: -1,
+    });
+
+    console.log("✅ User left room successfully");
     return true;
   } catch (err) {
-    console.error("Error:", err);
+    console.error("Error leaving room:", err);
     return false;
   }
 };
