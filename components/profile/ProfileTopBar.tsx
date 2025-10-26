@@ -1,31 +1,31 @@
 import {
     ProfileMenuModal,
     type ProfileMenuKey,
-} from "@/components/profile/ProfileMenuModal";
-import { COLORS } from "@/constants/utils/colors";
-import { router } from "expo-router";
-import React, { useState } from "react";
+} from "@/components/profile/ProfileMenuModal"
+import { COLORS } from "@/constants/utils/colors"
+import { router } from "expo-router"
+import React, { useState } from "react"
 import {
     Image,
     Platform,
     Text,
     TouchableOpacity,
     View
-} from "react-native";
+} from "react-native"
 
 export interface ProfileTopBarProps {
-    isOwnProfile?: boolean;
-    userId?: string;
-    userName?: string;
+    isOwnProfile?: boolean
+    userId?: string
+    userName?: string
 
-    title?: string;
+    title?: string
 
-    showShare?: boolean;
-    showMenu?: boolean;
+    showShare?: boolean
+    showMenu?: boolean
 
-    onBack?: () => void;
+    onBack?: () => void
 
-    onMenuNavigate?: (key: ProfileMenuKey) => void;
+    onMenuNavigate?: (key: ProfileMenuKey) => void
 }
 
 export const ProfileTopBar: React.FC<ProfileTopBarProps> = ({
@@ -38,12 +38,12 @@ export const ProfileTopBar: React.FC<ProfileTopBarProps> = ({
     onBack,
     onMenuNavigate,
 }) => {
-    const [menuOpen, setMenuOpen] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false)
 
     const handleBack = () => {
-        if (onBack) return onBack();
-        router.back();
-    };
+        if (onBack) return onBack()
+        router.back()
+    }
 
 
     return (
@@ -131,11 +131,11 @@ export const ProfileTopBar: React.FC<ProfileTopBarProps> = ({
                     isOpen={menuOpen}
                     onClose={() => setMenuOpen(false)}
                     onNavigate={(key) => {
-                        setMenuOpen(false);
-                        onMenuNavigate?.(key);
+                        setMenuOpen(false)
+                        onMenuNavigate?.(key)
                     }}
                 />
             )}
         </>
-    );
-};
+    )
+}

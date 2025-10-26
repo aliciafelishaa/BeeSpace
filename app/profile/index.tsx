@@ -8,7 +8,6 @@ import { COLORS } from "@/constants/utils/colors"
 import { router, Redirect } from "expo-router"
 import React, { useState, useEffect } from "react"
 import { Alert, ScrollView, View, ActivityIndicator } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
 import { useAuth } from "@/context/AuthContext"
 import { getFullUserProfile, updateUserProfile } from "@/services/userService"
 import { logout } from "@/services/authService"
@@ -55,7 +54,6 @@ export default function MyProfileScreen() {
         try {
             console.log("📤 Saving profile to Firebase:", payload)
 
-            // Update to Firebase
             await updateUserProfile(authUser.uid, {
                 fullName: payload.fullName,
                 username: payload.username,
@@ -63,13 +61,8 @@ export default function MyProfileScreen() {
             })
 
             console.log("✅ Profile saved to Firebase")
-
-            // Reload profile to get fresh data
             await loadProfile()
-
-            // Back to view mode
             setMode("view")
-
             Alert.alert("Success", "Your profile has been updated!")
         } catch (error: any) {
             console.error("❌ Error saving profile:", error)
@@ -145,7 +138,7 @@ export default function MyProfileScreen() {
     }
 
     return (
-        <SafeAreaView
+        <ScrollView
             className="bg-neutral-100"
             style={{
                 backgroundColor: COLORS.white,
@@ -154,7 +147,7 @@ export default function MyProfileScreen() {
                 top: 0,
                 left: 0,
                 right: 0,
-                bottom: 0,
+                bottom: 100,
             }}
         >
             <View style={{ flex: 1, backgroundColor: COLORS.white }}>
@@ -202,8 +195,8 @@ export default function MyProfileScreen() {
                             }}
                         />
 
-                        <ProfileActivity limit={3} />
-                    </ScrollView>
+                        <ProfileActivity limit={3} userId={user.id} />
+                    </ScrollView>   
                 )}
 
                 {mode === 'edit_profile' && (
@@ -244,6 +237,6 @@ export default function MyProfileScreen() {
                     />
                 )}
             </View>
-        </SafeAreaView>
+        </ScrollView>
     )
 }
