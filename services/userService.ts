@@ -48,7 +48,6 @@ export interface FirebaseUserData {
     updatedAt: Date
 }
 
-// Get basic user info
 export const getUserById = async (userId: string) => {
     try {
         const userDoc = await getDoc(doc(db, "users", userId))
@@ -69,7 +68,6 @@ export const getUserById = async (userId: string) => {
     }
 }
 
-// Get full user profile with stats
 export const getFullUserProfile = async (
     userId: string,
     currentUserId?: string
@@ -114,7 +112,6 @@ export const getFullUserProfile = async (
     }
 }
 
-// Check if username exists
 export const checkUsernameExists = async (username: string): Promise<boolean> => {
     try {
         const q = query(collection(db, "users"), where("username", "==", username))
@@ -126,7 +123,6 @@ export const checkUsernameExists = async (username: string): Promise<boolean> =>
     }
 }
 
-// Update user profile
 export const updateUserProfile = async (
     firebaseUid: string,
     profileData: any
@@ -148,7 +144,7 @@ export const updateUserProfile = async (
         throw error
     }
 }
-// Check if profile is completed
+
 export const checkUserProfileCompletion = async (firebaseUid: string): Promise<boolean> => {
     try {
         const userRef = doc(db, "users", firebaseUid)
@@ -163,7 +159,6 @@ export const checkUserProfileCompletion = async (firebaseUid: string): Promise<b
     }
 }
 
-// Create user document on register
 export const createUserDocument = async (
     userId: string,
     userData: {
@@ -203,59 +198,6 @@ export const createUserDocument = async (
     }
 }
 
-// Increment followers count
-export const incrementFollowersCount = async (userId: string) => {
-    try {
-        const userRef = doc(db, "users", userId)
-        await updateDoc(userRef, {
-            followersCount: increment(1),
-            updatedAt: new Date(),
-        })
-    } catch (error) {
-        console.error("Error incrementing followers:", error)
-    }
-}
-
-// Decrement followers count
-export const decrementFollowersCount = async (userId: string) => {
-    try {
-        const userRef = doc(db, "users", userId)
-        await updateDoc(userRef, {
-            followersCount: increment(-1),
-            updatedAt: new Date(),
-        })
-    } catch (error) {
-        console.error("Error decrementing followers:", error)
-    }
-}
-
-// Increment following count
-export const incrementFollowingCount = async (userId: string) => {
-    try {
-        const userRef = doc(db, "users", userId)
-        await updateDoc(userRef, {
-            followingCount: increment(1),
-            updatedAt: new Date(),
-        })
-    } catch (error) {
-        console.error("Error incrementing following:", error)
-    }
-}
-
-// Decrement following count
-export const decrementFollowingCount = async (userId: string) => {
-    try {
-        const userRef = doc(db, "users", userId)
-        await updateDoc(userRef, {
-            followingCount: increment(-1),
-            updatedAt: new Date(),
-        })
-    } catch (error) {
-        console.error("Error decrementing following:", error)
-    }
-}
-
-// Update room stats
 export const updateRoomStats = async (
     userId: string,
     updates: {
@@ -284,7 +226,6 @@ export const updateRoomStats = async (
     }
 }
 
-// Update user rating
 export const updateUserRating = async (userId: string, newRating: number) => {
     try {
         const userRef = doc(db, "users", userId)
@@ -297,22 +238,20 @@ export const updateUserRating = async (userId: string, newRating: number) => {
     }
 }
 
-// Get relationship status
-const getUserRelationship = async (currentUserId: string, targetUserId: string) => {
+export const getUserRelationship = async (currentUserId: string, targetUserId: string) => {
     try {
         const followDoc = await getDoc(
             doc(db, "users", currentUserId, "following", targetUserId)
-        )
+        );
         return {
             isFollowing: followDoc.exists(),
-        }
+        };
     } catch (error) {
-        console.error("Error getting relationship:", error)
-        return { isFollowing: false }
+        console.error("Error getting relationship:", error);
+        return { isFollowing: false };
     }
-}
+};
 
-// Follow user
 export const followUser = async (currentUserId: string, targetUserId: string) => {
     try {
         await setDoc(
@@ -332,7 +271,6 @@ export const followUser = async (currentUserId: string, targetUserId: string) =>
     }
 }
 
-// Unfollow user
 export const unfollowUser = async (currentUserId: string, targetUserId: string) => {
     try {
         await deleteDoc(doc(db, "users", currentUserId, "following", targetUserId))
@@ -346,7 +284,6 @@ export const unfollowUser = async (currentUserId: string, targetUserId: string) 
     }
 }
 
-// Get followers list
 export const getFollowersList = async (userId: string) => {
     try {
         const followersSnap = await getDocs(
@@ -361,7 +298,6 @@ export const getFollowersList = async (userId: string) => {
     }
 }
 
-// Get following list
 export const getFollowingList = async (userId: string) => {
     try {
         const followingSnap = await getDocs(
@@ -373,5 +309,53 @@ export const getFollowingList = async (userId: string) => {
     } catch (error) {
         console.error("Error getting following:", error)
         return []
+    }
+}
+
+export const incrementFollowersCount = async (userId: string) => {
+    try {
+        const userRef = doc(db, "users", userId)
+        await updateDoc(userRef, {
+            followersCount: increment(1),
+            updatedAt: new Date(),
+        })
+    } catch (error) {
+        console.error("Error incrementing followers:", error)
+    }
+}
+
+export const decrementFollowersCount = async (userId: string) => {
+    try {
+        const userRef = doc(db, "users", userId)
+        await updateDoc(userRef, {
+            followersCount: increment(-1),
+            updatedAt: new Date(),
+        })
+    } catch (error) {
+        console.error("Error decrementing followers:", error)
+    }
+}
+
+export const incrementFollowingCount = async (userId: string) => {
+    try {
+        const userRef = doc(db, "users", userId)
+        await updateDoc(userRef, {
+            followingCount: increment(1),
+            updatedAt: new Date(),
+        })
+    } catch (error) {
+        console.error("Error incrementing following:", error)
+    }
+}
+
+export const decrementFollowingCount = async (userId: string) => {
+    try {
+        const userRef = doc(db, "users", userId)
+        await updateDoc(userRef, {
+            followingCount: increment(-1),
+            updatedAt: new Date(),
+        })
+    } catch (error) {
+        console.error("Error decrementing following:", error)
     }
 }

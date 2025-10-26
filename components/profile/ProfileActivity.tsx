@@ -139,19 +139,14 @@ export const ProfileActivity: React.FC<Props> = ({
     }, [targetUserId])
 
     const upcoming = useMemo(() => {
-        console.log("🔍 Processing rooms:", rooms.length)
-
         const filtered = rooms.filter((r) => {
             if (!r.date) {
-                console.log(`❌ Room ${r.planName} has no date`)
                 return false
             }
 
             const isUp = isUpcoming(r.date)
             return isUp
         })
-
-        console.log(`✅ Filtered to ${filtered.length} upcoming rooms`)
 
         const sorted = filtered.sort((a, b) => {
             const dateA = new Date(a.date).getTime()
@@ -160,7 +155,6 @@ export const ProfileActivity: React.FC<Props> = ({
         })
 
         const limited = sorted.slice(0, Math.max(0, limit))
-        console.log(`✅ Final result: ${limited.length} rooms to display`)
 
         return limited
     }, [rooms, limit])

@@ -3,43 +3,84 @@ import ProfileHeader from "@/components/profile/ProfileHeader"
 import ProfileStat from "@/components/profile/ProfileStats"
 import { ProfileTopBar } from "@/components/profile/ProfileTopBar"
 import { COLORS } from "@/constants/utils/colors"
-import { mockProfiles } from "@/dummy/profileData"
 import { UserProfile } from "@/types/profile/profile"
 import { router, useLocalSearchParams } from "expo-router"
 import React, { useEffect, useState } from "react"
-import { ActivityIndicator, ScrollView, Text, View } from "react-native"
+import { ActivityIndicator, ScrollView, View, Alert } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
+import { useAuth } from "@/context/AuthContext"
+import { getFullUserProfile, followUser, unfollowUser } from "@/services/userService"
+import Text from "@/components/ui/Text"
 
 export default function UserProfileScreen() {
     const { userId } = useLocalSearchParams()
+    const { user: authUser } = useAuth()
     const [user, setUser] = useState<UserProfile | null>(null)
     const [loading, setLoading] = useState(true)
+    const [isUpdatingFollow, setIsUpdatingFollow] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
+    const targetUserId = typeof userId === 'string' ? userId : undefined
+    const currentUserId = authUser?.uid
+
     useEffect(() => {
-        if (userId) {
+        if (targetUserId) {
             fetchUserProfile()
         }
-    }, [userId])
+    }, [targetUserId, currentUserId])
 
     const fetchUserProfile = async () => {
+        if (!targetUserId) {
+            setError("Missing user ID")
+            setLoading(false)
+            return
+        }
+
         setLoading(true)
         setError(null)
 
         try {
-            setTimeout(() => {
-                const foundUser = mockProfiles.find(profile => profile.id === userId)
+            const profile = await getFullUserProfile(targetUserId, currentUserId)
 
-                if (foundUser) {
-                    setUser(foundUser)
-                } else {
-                    setError("User not found")
+            if (profile) {
+                if (currentUserId && targetUserId === currentUserId) {
+                    router.replace("/profile")
+                    return
                 }
-                setLoading(false)
-            }, 500)
+                setUser(profile)
+                console.log("✅ Other profile loaded:", profile)
+            } else {
+                setError("User profile not found")
+            }
         } catch (err) {
+            console.error("❌ Error loading other profile:", err)
             setError("Failed to load user profile")
+        } finally {
             setLoading(false)
+        }
+    }
+
+    const handleFollowToggle = async (isCurrentlyFollowing: boolean) => {
+        if (!currentUserId || !targetUserId || isUpdatingFollow) return
+
+        setIsUpdatingFollow(true)
+
+        try {
+            if (isCurrentlyFollowing) {
+                await unfollowUser(currentUserId, targetUserId)
+                Alert.alert("Success", `You have unfollowed ${user?.username || 'user'}`)
+            } else {
+                await followUser(currentUserId, targetUserId)
+                Alert.alert("Success", `You are now following ${user?.username || 'user'}`)
+            }
+
+            await fetchUserProfile()
+
+        } catch (err) {
+            console.error("❌ Follow/Unfollow error:", err)
+            Alert.alert("Error", "Failed to update follow status. Please try again.")
+        } finally {
+            setIsUpdatingFollow(false)
         }
     }
 
@@ -87,7 +128,6 @@ export default function UserProfileScreen() {
             }}
         >
             <View style={{ flex: 1, backgroundColor: COLORS.white }}>
-                {/* Top Bar with Back button only */}
                 <ProfileTopBar
                     isOwnProfile={false}
                     userId={user.id}
@@ -102,13 +142,17 @@ export default function UserProfileScreen() {
                     className="flex-1"
                     showsVerticalScrollIndicator={false}
                 >
-                    <ProfileHeader user={user} />
+                    <ProfileHeader
+                        user={user}
+                        onPressFollow={handleFollowToggle}
+                        isUpdatingFollow={isUpdatingFollow}
+                    />
 
                     <ProfileStat
                         stats={user.stats}
                         onPressItem={(key) => {
                             router.push({
-                                pathname: '/follow/[userId]',
+                                pathname: 'profile/follow/[userId]',
                                 params: {
                                     userId: user.id,
                                     initialTab: key
@@ -117,7 +161,7 @@ export default function UserProfileScreen() {
                         }}
                     />
 
-                    <ProfileActivity limit={3} />
+                    <ProfileActivity limit={3} userId={user.id} />
                 </ScrollView>
             </View>
         </SafeAreaView>
