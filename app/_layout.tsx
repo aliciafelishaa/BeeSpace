@@ -8,7 +8,7 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { useFonts } from "expo-font";
 import { Slot, SplashScreen, usePathname, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Platform, View } from "react-native";
+import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 SplashScreen.preventAutoHideAsync();
@@ -87,22 +87,12 @@ function RootContent() {
         <Slot />
       </View>
 
-      {/* BUAT WEB biar muncul bottom navvar  */}
       {shouldShowBottomNav(user, pathname, isProfileEditing) && (
-        <View
-          style={{
-            position: Platform.OS === "web" ? "fixed" : "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-          }}
-        >
-          <BottomNavbar
-            items={NAV_ITEMS}
-            activeId={activeTab}
-            onSelect={handleSelect}
-          />
-        </View>
+        <BottomNavbar
+          items={NAV_ITEMS}
+          activeId={activeTab}
+          onSelect={handleSelect}
+        />
       )}
     </View>
   );
