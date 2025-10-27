@@ -228,7 +228,7 @@ export default function ButtonDecision({
     );
   }
 
-  // Kondisi jika sudah join tapi event belum selesai - blom delete
+  // Kondisi jika sudah join tapi event belum selesai
   if (joined && !isEnded) {
     return (
       <View
