@@ -9,6 +9,7 @@ import { router, Redirect } from "expo-router"
 import React, { useState, useEffect } from "react"
 import { Alert, ScrollView, View, ActivityIndicator } from "react-native"
 import { useAuth } from "@/context/AuthContext"
+import { SafeAreaView } from "react-native-safe-area-context"
 import { getFullUserProfile, updateUserProfile } from "@/services/userService"
 import { logout } from "@/services/authService"
 import { UserProfile } from "@/types/profile/profile"
@@ -138,7 +139,7 @@ export default function MyProfileScreen() {
     }
 
     return (
-        <ScrollView
+        <SafeAreaView
             className="bg-neutral-100"
             style={{
                 backgroundColor: COLORS.white,
@@ -237,6 +238,6 @@ export default function MyProfileScreen() {
                     />
                 )}
             </View>
-        </ScrollView>
+        </SafeAreaView>
     )
 }
