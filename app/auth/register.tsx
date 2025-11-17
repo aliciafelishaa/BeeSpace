@@ -1,18 +1,9 @@
-<<<<<<< HEAD
 import { InputField } from "@/components/auth/InputField";
 import Text from "@/components/ui/Text";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { ScrollView, TouchableOpacity, View } from "react-native";
-=======
-import React, { useState } from "react";
-import { View, TouchableOpacity, ScrollView } from "react-native";
-import { useForm } from "react-hook-form";
-import { useRouter } from "expo-router";
-import { InputField } from "@/components/auth/InputField";
-import Text from "@/components/ui/Text";
->>>>>>> 76b36b96420efd8165941003d3e0349f82a29b8e
 // import IconGoogle from "@/components/ui/IconGoogle";
 import { registerWithEmail } from "@/services/authService";
 // import { checkUserProfileCompletion } from "@/services/userService";
