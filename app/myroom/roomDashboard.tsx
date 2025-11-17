@@ -6,6 +6,7 @@ import SearchBar from "@/components/utils/SearchBar";
 import { COLORS } from "@/constants/utils/colors";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useRoom } from "@/hooks/useRoom";
+import { useUserData } from "@/hooks/useUserData";
 import { getUserById } from "@/services/userService";
 import { RoomCategory, TimeCategory } from "@/types/myroom/myroom";
 import { RoomEntry } from "@/types/myroom/room";
@@ -29,9 +30,10 @@ export default function MyRoomDash() {
   const { user } = useAuthState();
   const { uid: paramUid } = useLocalSearchParams();
   const uid = paramUid || user?.uid;
-  const [userData, setUserData] = useState<any>(null);
+  const [userDatas, setUserDatas] = useState<any>(null);
   const [filteredRooms, setFilteredRooms] = useState<RoomEntry[]>([]);
   const [search, setSearch] = useState("");
+  const { userData } = useUserData(uid);
 
   useEffect(() => {
     const fetchRoom = async () => {
@@ -67,7 +69,7 @@ export default function MyRoomDash() {
     const fetchUserData = async () => {
       if (!uid) return;
       const userRes = await getUserById(uid);
-      setUserData(userRes);
+      setUserDatas(userRes);
     };
     fetchUserData();
   }, [uid]);
@@ -167,13 +169,9 @@ export default function MyRoomDash() {
                     className="w-[16px] h-[16px]"
                   ></Image>
                   <Text className="text-neutral-700  text-[14px] font-interSemiBold">
-                    Binus Kemanggisan{" "}
+                    {userData?.university || "-"}
                   </Text>
-                  <Image
-                    source={require("@/assets/utils/arrow-down.png")}
-                    className="w-[16px] h-[16px]"
-                  ></Image>
-                </View>
+                   </View>
               </View>
               <View>
                 <TouchableOpacity
