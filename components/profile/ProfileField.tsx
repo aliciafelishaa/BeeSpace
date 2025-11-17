@@ -1,15 +1,15 @@
-import { COLORS } from "@/constants/utils/colors";
-import React from "react";
-import { Text, TextInput, TextInputProps, View } from "react-native";
+import { COLORS } from "@/constants/utils/colors"
+import React from "react"
+import { Text, TextInput, TextInputProps, View } from "react-native"
 
 type Props = TextInputProps & {
-    label: string;
-    required?: boolean;
-    error?: boolean;
-    errorMessage?: string;
-    containerClassName?: string;
-    textClassName?: string;
-};
+    label: string
+    required?: boolean
+    error?: boolean
+    errorMessage?: string
+    containerClassName?: string
+    textClassName?: string
+}
 
 export function ProfileField({
     label,
@@ -23,7 +23,6 @@ export function ProfileField({
 }: Props) {
     return (
         <View className={`space-y-1 ${containerClassName}`}>
-            {/* Label */}
             <Text
                 className="text-[13px]"
                 style={{
@@ -34,7 +33,6 @@ export function ProfileField({
                 {label} {required && <Text style={{ color: COLORS.error }}>*</Text>}
             </Text>
 
-            {/* Input */}
             <TextInput
                 className={`rounded-xl px-4 py-3 text-[15px] ${textClassName}`}
                 style={{
@@ -46,12 +44,11 @@ export function ProfileField({
                 }}
                 placeholderTextColor={COLORS.neutral500}
                 onChangeText={(text) => {
-                    if (onChangeText) onChangeText(text);
+                    if (onChangeText) onChangeText(text)
                 }}
                 {...props}
             />
 
-            {/* Error message */}
             {error && errorMessage && (
                 <Text
                     style={{
@@ -65,5 +62,5 @@ export function ProfileField({
                 </Text>
             )}
         </View>
-    );
+    )
 }

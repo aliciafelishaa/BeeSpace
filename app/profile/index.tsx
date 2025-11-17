@@ -38,9 +38,9 @@ export default function MyProfileScreen() {
         try {
             const profile = await getFullUserProfile(authUser.uid, authUser.uid)
             setUser(profile)
-            console.log("✅ Profile loaded:", profile)
+            console.log("Profile loaded:", profile)
         } catch (error) {
-            console.error("❌ Error loading profile:", error)
+            console.error("Error loading profile:", error)
         } finally {
             setLoading(false)
         }
@@ -60,15 +60,15 @@ export default function MyProfileScreen() {
                 fullName: payload.fullName,
                 username: payload.username,
                 bio: payload.bio || "",
-                profilePicture: payload.avatar,  // ✅ TAMBAHKAN INI!
+                profilePicture: payload.avatar,
             })
 
-            console.log("✅ Profile saved to Firebase")
+            console.log("Profile saved to Firebase")
             await loadProfile()
             setMode("view")
             Alert.alert("Success", "Your profile has been updated!")
         } catch (error: any) {
-            console.error("❌ Error saving profile:", error)
+            console.error("Error saving profile:", error)
             Alert.alert("Error", error.message || "Failed to update profile. Please try again.")
         } finally {
             setSaving(false)
@@ -88,13 +88,13 @@ export default function MyProfileScreen() {
                 console.log("🔵 Logout result:", success)
 
                 if (success) {
-                    console.log("✅ Redirecting to login")
+                    console.log("Redirecting to login")
                     router.replace("/auth/login")
                 } else {
-                    console.log("❌ Logout failed")
+                    console.log("Logout failed")
                 }
             } catch (error) {
-                console.error("❌ Logout error:", error)
+                console.error("Logout error:", error)
             }
         }
     }

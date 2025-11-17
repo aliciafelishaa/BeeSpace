@@ -1,17 +1,18 @@
 import { db } from "@/config/firebaseConfig"
+import { UserProfile } from "@/types/profile/profile"
 import {
+    arrayUnion,
     collection,
+    deleteDoc,
     doc,
     getDoc,
     getDocs,
+    increment,
     query,
+    setDoc,
     updateDoc,
     where,
-    setDoc,
-    increment,
-    deleteDoc,
 } from "firebase/firestore"
-import { UserProfile } from "@/types/profile/profile"
 
 export interface StudentProfile {
     fullName: string
@@ -88,13 +89,11 @@ export const getFullUserProfile = async (
             username: data.username || "",
             avatarUrl: data.profilePicture || null,
             bio: data.bio || "",
-            // ✅ TAMBAHKAN INI!
             university: data.university || "",
             major: data.major || "",
             studentID: data.studentID || "",
             enrollYear: data.enrollYear || "",
             gradYear: data.gradYear || "",
-            // ✅ SAMPAI SINI
             isMe: currentUserId === userId,
             followStats: {
                 followers: data.followersCount || 0,
@@ -119,7 +118,9 @@ export const getFullUserProfile = async (
     }
 }
 
-export const checkUsernameExists = async (username: string): Promise<boolean> => {
+export const checkUsernameExists = async (
+    username: string
+): Promise<boolean> => {
     try {
         const q = query(collection(db, "users"), where("username", "==", username))
         const querySnapshot = await getDocs(q)
@@ -136,10 +137,10 @@ export const updateUserProfile = async (
 ) => {
     try {
         const userRef = doc(db, "users", firebaseUid)
-        
+
         console.log("🔵 Firebase updateDoc called for:", firebaseUid)
         console.log("🔵 Data:", profileData)
-        
+
         await updateDoc(userRef, {
             ...profileData,
             updatedAt: new Date(),
@@ -152,7 +153,9 @@ export const updateUserProfile = async (
     }
 }
 
-export const checkUserProfileCompletion = async (firebaseUid: string): Promise<boolean> => {
+export const checkUserProfileCompletion = async (
+    firebaseUid: string
+): Promise<boolean> => {
     try {
         const userRef = doc(db, "users", firebaseUid)
         const userDoc = await getDoc(userRef)
@@ -245,30 +248,34 @@ export const updateUserRating = async (userId: string, newRating: number) => {
     }
 }
 
-export const getUserRelationship = async (currentUserId: string, targetUserId: string) => {
+export const getUserRelationship = async (
+    currentUserId: string,
+    targetUserId: string
+) => {
     try {
         const followDoc = await getDoc(
             doc(db, "users", currentUserId, "following", targetUserId)
-        );
+        )
         return {
             isFollowing: followDoc.exists(),
-        };
+        }
     } catch (error) {
-        console.error("Error getting relationship:", error);
-        return { isFollowing: false };
+        console.error("Error getting relationship:", error)
+        return { isFollowing: false }
     }
-};
+}
 
-export const followUser = async (currentUserId: string, targetUserId: string) => {
+export const followUser = async (
+    currentUserId: string,
+    targetUserId: string
+) => {
     try {
-        await setDoc(
-            doc(db, "users", currentUserId, "following", targetUserId),
-            { createdAt: new Date() }
-        )
-        await setDoc(
-            doc(db, "users", targetUserId, "followers", currentUserId),
-            { createdAt: new Date() }
-        )
+        await setDoc(doc(db, "users", currentUserId, "following", targetUserId), {
+            createdAt: new Date(),
+        })
+        await setDoc(doc(db, "users", targetUserId, "followers", currentUserId), {
+            createdAt: new Date(),
+        })
         await incrementFollowingCount(currentUserId)
         await incrementFollowersCount(targetUserId)
         console.log("✅ Followed user")
@@ -278,7 +285,10 @@ export const followUser = async (currentUserId: string, targetUserId: string) =>
     }
 }
 
-export const unfollowUser = async (currentUserId: string, targetUserId: string) => {
+export const unfollowUser = async (
+    currentUserId: string,
+    targetUserId: string
+) => {
     try {
         await deleteDoc(doc(db, "users", currentUserId, "following", targetUserId))
         await deleteDoc(doc(db, "users", targetUserId, "followers", currentUserId))
@@ -296,9 +306,11 @@ export const getFollowersList = async (userId: string) => {
         const followersSnap = await getDocs(
             collection(db, "users", userId, "followers")
         )
-        const followerIds = followersSnap.docs.map(doc => doc.id)
-        const followers = await Promise.all(followerIds.map(id => getUserById(id)))
-        return followers.filter(f => f !== null)
+        const followerIds = followersSnap.docs.map((doc) => doc.id)
+        const followers = await Promise.all(
+            followerIds.map((id) => getUserById(id))
+        )
+        return followers.filter((f) => f !== null)
     } catch (error) {
         console.error("Error getting followers:", error)
         return []
@@ -310,9 +322,11 @@ export const getFollowingList = async (userId: string) => {
         const followingSnap = await getDocs(
             collection(db, "users", userId, "following")
         )
-        const followingIds = followingSnap.docs.map(doc => doc.id)
-        const following = await Promise.all(followingIds.map(id => getUserById(id)))
-        return following.filter(f => f !== null)
+        const followingIds = followingSnap.docs.map((doc) => doc.id)
+        const following = await Promise.all(
+            followingIds.map((id) => getUserById(id))
+        )
+        return following.filter((f) => f !== null)
     } catch (error) {
         console.error("Error getting following:", error)
         return []
@@ -364,5 +378,21 @@ export const decrementFollowingCount = async (userId: string) => {
         })
     } catch (error) {
         console.error("Error decrementing following:", error)
+    }
+}
+
+export const updateUserNotificationToken = async (
+    userId: string,
+    token: string
+) => {
+    try {
+        const userRef = doc(db, "users", userId)
+        await updateDoc(userRef, {
+            notificationTokens: arrayUnion(token),
+            updatedAt: new Date(),
+        })
+    } catch (err) {
+        console.error(err)
+        throw err
     }
 }

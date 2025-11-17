@@ -6,9 +6,11 @@ import React, { useEffect, useMemo, useState } from "react"
 import { ActivityIndicator, Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useAuth } from "@/context/AuthContext"
-import { collection, query, where, getDocs, Timestamp } from "firebase/firestore"
+import { collection, query, where, getDocs, Timestamp, DocumentData } from "firebase/firestore"
 import { db } from "@/config/firebaseConfig"
 import { getUserById } from "@/services/userService"
+
+type RoomWithHost = RoomEntry & { id: string; hostName?: string }
 
 type Props = {
     title?: string
@@ -16,26 +18,30 @@ type Props = {
     userId?: string
 }
 
-const isUpcoming = (dateStr: string | Date) => {
+const parseRoomData = (doc: DocumentData & { id: string }): RoomWithHost => {
+    const data = doc as RoomEntry
+    return {
+        ...data,
+        id: doc.id,
+        date: data.date instanceof Timestamp ? data.date.toDate() : data.date,
+    } as RoomWithHost
+}
+
+const isUpcoming = (dateStr: string | Date | undefined): boolean => {
     if (!dateStr) return false
 
     try {
         const d = dateStr instanceof Date ? dateStr : new Date(dateStr)
-
-        if (isNaN(d.getTime())) {
-            console.warn("Invalid date:", dateStr)
-            return false
-        }
+        if (isNaN(d.getTime())) return false
 
         const today = new Date()
         today.setHours(0, 0, 0, 0)
-
+        
         const eventDate = new Date(d)
         eventDate.setHours(0, 0, 0, 0)
 
         return eventDate >= today
-    } catch (error) {
-        console.error("Error checking upcoming date:", error)
+    } catch {
         return false
     }
 }
@@ -48,14 +54,14 @@ export const ProfileActivity: React.FC<Props> = ({
     const insets = useSafeAreaInsets()
     const { user: authUser } = useAuth()
     const [loading, setLoading] = useState(false)
-    const [rooms, setRooms] = useState<(RoomEntry & { id: string; hostName?: string })[]>([])
+    const [rooms, setRooms] = useState<RoomWithHost[]>([])
 
     const targetUserId = userId || authUser?.uid
 
     useEffect(() => {
         let mounted = true
 
-        const fetchAllUserRooms = async () => {
+        const fetchRooms = async () => {
             if (!targetUserId) return
 
             setLoading(true)
@@ -77,23 +83,8 @@ export const ProfileActivity: React.FC<Props> = ({
                     getDocs(hostedQuery),
                 ])
 
-                const joinedRooms = joinedSnapshot.docs.map((doc) => {
-                    const data = doc.data()
-                    return {
-                        id: doc.id,
-                        ...data,
-                        date: data.date instanceof Timestamp ? data.date.toDate() : data.date,
-                    } as RoomEntry & { id: string }
-                })
-
-                const hostedRooms = hostedSnapshot.docs.map((doc) => {
-                    const data = doc.data()
-                    return {
-                        id: doc.id,
-                        ...data,
-                        date: data.date instanceof Timestamp ? data.date.toDate() : data.date,
-                    } as RoomEntry & { id: string }
-                })
+                const joinedRooms = joinedSnapshot.docs.map(doc => parseRoomData({ id: doc.id, ...doc.data() }))
+                const hostedRooms = hostedSnapshot.docs.map(doc => parseRoomData({ id: doc.id, ...doc.data() }))
 
                 const allRooms = [...joinedRooms, ...hostedRooms]
                 const uniqueRooms = allRooms.filter(
@@ -102,28 +93,21 @@ export const ProfileActivity: React.FC<Props> = ({
 
                 const roomsWithHostNames = await Promise.all(
                     uniqueRooms.map(async (room) => {
-                        try {
-                            const hostData = await getUserById(room.fromUid)
-                            return {
-                                ...room,
-                                hostName: hostData?.name || "Anonymous",
-                            }
-                        } catch (error) {
-                            console.error(`Error fetching host for room ${room.id}:`, error)
-                            return {
-                                ...room,
-                                hostName: "Anonymous",
-                            }
+                        const hostData = await getUserById(room.fromUid)
+                        return {
+                            ...room,
+                            hostName: hostData?.name || "Anonymous",
                         }
                     })
                 )
 
                 if (mounted) {
                     setRooms(roomsWithHostNames)
-                    console.log(`✅ Loaded ${roomsWithHostNames.length} total rooms with host names`)
                 }
-            } catch (error) {
-                console.error("❌ Error fetching rooms:", error)
+            } catch {
+                if (mounted) {
+                    setRooms([])
+                }
             } finally {
                 if (mounted) {
                     setLoading(false)
@@ -131,7 +115,7 @@ export const ProfileActivity: React.FC<Props> = ({
             }
         }
 
-        fetchAllUserRooms()
+        fetchRooms()
 
         return () => {
             mounted = false
@@ -139,14 +123,7 @@ export const ProfileActivity: React.FC<Props> = ({
     }, [targetUserId])
 
     const upcoming = useMemo(() => {
-        const filtered = rooms.filter((r) => {
-            if (!r.date) {
-                return false
-            }
-
-            const isUp = isUpcoming(r.date)
-            return isUp
-        })
+        const filtered = rooms.filter(r => isUpcoming(r.date))
 
         const sorted = filtered.sort((a, b) => {
             const dateA = new Date(a.date).getTime()
@@ -154,9 +131,7 @@ export const ProfileActivity: React.FC<Props> = ({
             return dateA - dateB
         })
 
-        const limited = sorted.slice(0, Math.max(0, limit))
-
-        return limited
+        return sorted.slice(0, Math.max(0, limit))
     }, [rooms, limit])
 
     return (
@@ -173,9 +148,9 @@ export const ProfileActivity: React.FC<Props> = ({
 
             {loading ? (
                 <View className="py-8 items-center">
-                    <ActivityIndicator />
+                    <ActivityIndicator color={COLORS.primary} />
                     <Text className="mt-2 text-[12px]" style={{ color: COLORS.neutral500 }}>
-                        Loading rooms...
+                        Loading activities...
                     </Text>
                 </View>
             ) : upcoming.length > 0 ? (

@@ -5,24 +5,22 @@ import { AuthContext } from "@/context/AuthContext";
 import { FamilyViewProvider } from "@/context/FamilyViewContext";
 import "@/global.css";
 import { useAuthState } from "@/hooks/useAuthState";
+import { useNotifications } from "@/hooks/useNotifications";
 import { useFonts } from "expo-font";
 import { Slot, SplashScreen, usePathname, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { View, Platform, ActivityIndicator } from "react-native";
+import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { auth } from "@/config/firebaseConfig";
 
 SplashScreen.preventAutoHideAsync();
 
 function shouldShowBottomNav(
     user: any,
     pathname: string,
-    isEditing: boolean
 ): boolean {
     if (!user) return false;
     const hiddenPatterns = [/^\/auth/, /^\/myroom\/detailroom/];
     const isChatPage = pathname === "/directmessage/chat";
-
     return !hiddenPatterns.some((regex) => regex.test(pathname)) && !isChatPage;
 }
 
@@ -33,14 +31,8 @@ function RootContent() {
     const [activeTab, setActiveTab] = useState("home");
     const [fontsLoaded] = useFonts({ ...Fonts });
     const [isProfileEditing, setIsProfileEditing] = useState(false);
-    const [isAuthReady, setIsAuthReady] = useState(false);
 
-    useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged(() => {
-            setIsAuthReady(true);
-        });
-        return unsubscribe;
-    }, []);
+    useNotifications();
 
     useEffect(() => {
         const yourroomAliases = [
@@ -64,8 +56,6 @@ function RootContent() {
     }, [pathname]);
 
     useEffect(() => {
-        if (Platform.OS !== "web") return;
-
         const handleProfileEdit = (event: any) => {
             setIsProfileEditing(event.detail.editing);
         };
@@ -76,14 +66,6 @@ function RootContent() {
     }, []);
 
     useEffect(() => {
-        if (Platform.OS === "web") return;
-
-        const isEditingPath = pathname.includes("/profile/edit") ||
-            pathname.includes("?edit=true");
-        setIsProfileEditing(isEditingPath);
-    }, [pathname]);
-
-    useEffect(() => {
         if (fontsLoaded) SplashScreen.hideAsync();
     }, [fontsLoaded]);
 
@@ -92,12 +74,8 @@ function RootContent() {
         router.push(route as any);
     };
 
-    if (initializing || !fontsLoaded || !isAuthReady) {
-        return (
-            <View style={{ flex: 1, backgroundColor: "white", justifyContent: "center", alignItems: "center" }}>
-                <ActivityIndicator size="large" color="#FCBC03" />
-            </View>
-        );
+    if (initializing || !fontsLoaded) {
+        return <View style={{ flex: 1, backgroundColor: "white" }} />;
     }
 
     return (

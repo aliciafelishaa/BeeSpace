@@ -65,7 +65,6 @@ export function ProfileInformation({
             (v: string | any) =>
                 setForm((s) => ({ ...s, [k]: v }));
 
-    // Handle image picking
     const handlePickImage = async () => {
         try {
             const permission = await ExpoImagePicker.requestMediaLibraryPermissionsAsync();
@@ -78,7 +77,7 @@ export function ProfileInformation({
             const result = await ExpoImagePicker.launchImageLibraryAsync({
                 mediaTypes: ExpoImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
-                aspect: [1, 1], // Square untuk avatar
+                aspect: [1, 1],
                 quality: 0.7,
             });
 
@@ -96,9 +95,7 @@ export function ProfileInformation({
 
         try {
             let finalAvatar = form.avatar;
-
-            // Check jika avatar adalah URI lokal baru (belum di-upload)
-            // Support both file:// (mobile) dan blob: (web)
+            
             const isNewImage = typeof form.avatar === 'string' && 
                 (form.avatar.startsWith('file://') || form.avatar.startsWith('blob:'));
 
@@ -106,7 +103,7 @@ export function ProfileInformation({
                 console.log('🔄 Uploading new avatar to Cloudinary...');
                 
                 try {
-                    // Upload ke Cloudinary menggunakan handleUpData
+
                     const fileObj = { 
                         uri: form.avatar, 
                         name: "profile-picture.jpg", 
@@ -122,13 +119,12 @@ export function ProfileInformation({
                         'Failed to upload avatar. Please try again.',
                         [{ text: 'OK' }]
                     );
-                    return; // Stop jika upload gagal
+                    return;
                 }
             } else {
                 console.log('ℹ️ Using existing avatar URL');
             }
 
-            // Save profile dengan avatar URL dari Cloudinary
             const updatedProfile = {
                 ...form,
                 avatar: finalAvatar
