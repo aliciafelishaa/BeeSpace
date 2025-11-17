@@ -2,6 +2,7 @@ import { db } from "@/config/firebaseConfig";
 import { Chat, Message } from "@/types/directmessage/dm";
 import {
   addDoc,
+  arrayRemove,
   collection,
   doc,
   getDoc,
@@ -62,6 +63,7 @@ export const listenUserChats = (
             },
             unreadCount: data.unreadCount?.[userId] || 0,
             isGroupChat: false,
+            muteSettings: data.muteSettings || {},
           });
         } catch (err) {
           console.error("Error:", err);
@@ -192,6 +194,7 @@ export const listenUserGroupChats = (
             memberUids: data.memberUids || [],
             roomId: data.roomId,
           },
+          muteSettings: data.muteSettings || {},
         });
       });
 
@@ -235,4 +238,22 @@ export const listenAllUserChats = (
     unsubscribePrivate();
     unsubscribeGroup();
   };
+};
+
+// Delete Chat
+export const deleteChatForUser = async (
+  chatId: string,
+  userId: string
+): Promise<void> => {
+  try {
+    const chatRef = doc(db, "chats", chatId);
+
+    await updateDoc(chatRef, {
+      participants: arrayRemove(userId),
+      lastUpdated: new Date(),
+    });
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
 };

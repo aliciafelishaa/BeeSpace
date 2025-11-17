@@ -28,6 +28,9 @@ export interface Chat {
   unreadCount: number;
   user?: User;
   isGroupChat?: boolean;
+  muteSettings?: {
+    [userId: string]: ChatMuteSettings;
+  };
   groupData?: {
     name: string;
     memberUids: string[];
@@ -36,6 +39,11 @@ export interface Chat {
     cover?: string;
     description?: string;
   };
+}
+
+export interface ChatMuteSettings {
+  muted: boolean;
+  mutedAt?: Date;
 }
 
 export type FilterType = "all" | "not-read" | "newest" | "oldest";
