@@ -150,15 +150,6 @@ export default function UserProfileScreen() {
 
                     <ProfileStat
                         stats={user.stats}
-                        onPressItem={(key) => {
-                            router.push({
-                                pathname: 'profile/follow/[userId]',
-                                params: {
-                                    userId: user.id,
-                                    initialTab: key
-                                }
-                            })
-                        }}
                     />
 
                     <ProfileActivity limit={3} userId={user.id} />

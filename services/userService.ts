@@ -83,24 +83,29 @@ export const getFullUserProfile = async (
 
     const data = userDoc.data() as FirebaseUserData;
 
-    const profile: UserProfile = {
-      id: userId,
-      name: data.fullName || "",
-      username: data.username || "",
-      avatarUrl: data.profilePicture || null,
-      bio: data.bio || "",
-      isMe: currentUserId === userId,
-      followStats: {
-        followers: data.followersCount || 0,
-        following: data.followingCount || 0,
-      },
-      stats: {
-        hostedRooms: data.hostedRoomsCount || 0,
-        totalJoined: data.totalJoinedCount || 0,
-        activeRooms: data.activeRoomsCount || 0,
-        rating: data.rating || 0,
-      },
-    };
+        const profile: UserProfile = {
+            id: userId,
+            name: data.fullName || "",
+            username: data.username || "",
+            avatarUrl: data.profilePicture || null,
+            bio: data.bio || "",
+            university: data.university || "",
+            major: data.major || "",
+            studentID: data.studentID || "",
+            enrollYear: data.enrollYear || "",
+            gradYear: data.gradYear || "",
+            isMe: currentUserId === userId,
+            followStats: {
+                followers: data.followersCount || 0,
+                following: data.followingCount || 0,
+            },
+            stats: {
+                hostedRooms: data.hostedRoomsCount || 0,
+                totalJoined: data.totalJoinedCount || 0,
+                activeRooms: data.activeRoomsCount || 0,
+                rating: data.rating || 0,
+            },
+        }
 
     if (currentUserId && currentUserId !== userId) {
       profile.relationship = await getUserRelationship(currentUserId, userId);

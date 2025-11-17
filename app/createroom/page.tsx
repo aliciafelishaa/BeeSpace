@@ -192,7 +192,7 @@ export default function CreateRoomPage() {
               <ImagePicker
                 label="Cover"
                 imageUrl={image || formData.cover || undefined}
-                onChangeImage={() => pickPhoto("gallery")}
+                onChangeImage={(uri) => handleChange("cover", uri)}
                 size={120}
                 onEdit={false}
               />
