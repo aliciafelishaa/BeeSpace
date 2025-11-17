@@ -1,15 +1,6 @@
 import { COLORS } from "@/constants/utils/colors"
 import React, { useEffect, useRef } from "react"
 import {
-<<<<<<< HEAD
-  Animated,
-  Image,
-  Modal,
-  Pressable,
-  Text,
-  TouchableOpacity,
-  View
-=======
     Animated,
     Image,
     Modal,
@@ -17,7 +8,6 @@ import {
     Text,
     TouchableOpacity,
     View
->>>>>>> 76b36b96420efd8165941003d3e0349f82a29b8e
 } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
@@ -212,8 +202,4 @@ export const ProfileMenuModal: React.FC<ProfileMenuModalProps> = ({
             </Animated.View>
         </Modal>
     )
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 76b36b96420efd8165941003d3e0349f82a29b8e

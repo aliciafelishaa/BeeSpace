@@ -1,29 +1,16 @@
 import {
-<<<<<<< HEAD
-  ProfileMenuModal,
-  type ProfileMenuKey,
-=======
     ProfileMenuModal,
     type ProfileMenuKey,
->>>>>>> 76b36b96420efd8165941003d3e0349f82a29b8e
 } from "@/components/profile/ProfileMenuModal"
 import { COLORS } from "@/constants/utils/colors"
 import { router } from "expo-router"
 import React, { useState } from "react"
 import {
-<<<<<<< HEAD
-  Image,
-  Platform,
-  Text,
-  TouchableOpacity,
-  View
-=======
     Image,
     Platform,
     Text,
     TouchableOpacity,
     View
->>>>>>> 76b36b96420efd8165941003d3e0349f82a29b8e
 } from "react-native"
 
 export interface ProfileTopBarProps {
