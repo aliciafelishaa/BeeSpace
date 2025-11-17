@@ -16,14 +16,16 @@ type FilterOption = {
 type ModalFilteringDynamicProps = {
   visible: boolean;
   onClose: () => void;
-  filters: FilterOption[]; // contoh: [{ title: "Price", options: ["Free","Paid"] }]
-  initialValues?: Record<string, string>; // optional default values
+  filters: FilterOption[];
+  initialValues?: Record<string, string>;
+  onApply?: (selected: Record<string, string>) => void;
 };
 
 export default function ModalFilteringDynamic({
   visible,
   onClose,
   filters,
+  onApply,
   initialValues = {},
 }: ModalFilteringDynamicProps) {
   // Dynamically create state for each filter
@@ -110,7 +112,10 @@ export default function ModalFilteringDynamic({
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={onClose}
+            onPress={() => {
+              onApply?.(selected); 
+              onClose();
+            }}
             className="flex-1 bg-primary2nd py-3 rounded-[8px]"
           >
             <Text className="text-center text-white font-medium font-inter">
