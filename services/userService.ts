@@ -1,5 +1,5 @@
-import { db } from "@/config/firebaseConfig";
-import { UserProfile } from "@/types/profile/profile";
+import { db } from "@/config/firebaseConfig"
+import { UserProfile } from "@/types/profile/profile"
 import {
   collection,
   deleteDoc,
@@ -80,7 +80,29 @@ export const getFullUserProfile = async (
       return null;
     }
 
-    const data = userDoc.data() as FirebaseUserData;
+        const profile: UserProfile = {
+            id: userId,
+            name: data.fullName || "",
+            username: data.username || "",
+            avatarUrl: data.profilePicture || null,
+            bio: data.bio || "",
+            university: data.university || "",
+            major: data.major || "",
+            studentID: data.studentID || "",
+            enrollYear: data.enrollYear || "",
+            gradYear: data.gradYear || "",
+            isMe: currentUserId === userId,
+            followStats: {
+                followers: data.followersCount || 0,
+                following: data.followingCount || 0,
+            },
+            stats: {
+                hostedRooms: data.hostedRoomsCount || 0,
+                totalJoined: data.totalJoinedCount || 0,
+                activeRooms: data.activeRoomsCount || 0,
+                rating: data.rating || 0,
+            },
+        }
 
         const profile: UserProfile = {
             id: userId,
@@ -110,56 +132,50 @@ export const getFullUserProfile = async (
       profile.relationship = await getUserRelationship(currentUserId, userId);
     }
 
-    return profile;
-  } catch (error) {
-    console.error("Error fetching full profile:", error);
-    return null;
-  }
-};
-
 export const checkUsernameExists = async (
-  username: string
+    username: string
 ): Promise<boolean> => {
-  try {
-    const q = query(collection(db, "users"), where("username", "==", username));
-    const querySnapshot = await getDocs(q);
-    return !querySnapshot.empty;
-  } catch (error) {
-    console.error("Error checking username:", error);
-    return false;
-  }
-};
+    try {
+        const q = query(collection(db, "users"), where("username", "==", username))
+        const querySnapshot = await getDocs(q)
+        return !querySnapshot.empty
+    } catch (error) {
+        console.error("Error checking username:", error)
+        return false
+    }
+}
 
 export const updateUserProfile = async (
   firebaseUid: string,
   profileData: any
 ) => {
-  try {
-    const userRef = doc(db, "users", firebaseUid);
+    try {
+        const userRef = doc(db, "users", firebaseUid)
+
+        console.log("🔵 Firebase updateDoc called for:", firebaseUid)
+        console.log("🔵 Data:", profileData)
+
+        await updateDoc(userRef, {
+            ...profileData,
+            updatedAt: new Date(),
+        })
 
     console.log("🔵 Firebase updateDoc called for:", firebaseUid);
     console.log("🔵 Data:", profileData);
 
-    await updateDoc(userRef, {
-      ...profileData,
-      updatedAt: new Date(),
-    });
-
-    console.log("✅ Firebase update successful");
-  } catch (error: any) {
-    console.error("❌ Firebase update error:", error);
-    throw error;
-  }
-};
-
 export const checkUserProfileCompletion = async (
-  firebaseUid: string
+    firebaseUid: string
 ): Promise<boolean> => {
-  try {
-    const userRef = doc(db, "users", firebaseUid);
-    const userDoc = await getDoc(userRef);
-    if (userDoc.exists()) {
-      return userDoc.data().profileCompleted === true;
+    try {
+        const userRef = doc(db, "users", firebaseUid)
+        const userDoc = await getDoc(userRef)
+        if (userDoc.exists()) {
+            return userDoc.data().profileCompleted === true
+        }
+        return false
+    } catch (error) {
+        console.error("Error checking profile completion:", error)
+        return false
     }
     return false;
   } catch (error) {
@@ -250,7 +266,21 @@ export const updateUserRating = async (userId: string, newRating: number) => {
 export const getUserRelationship = async (
     currentUserId: string,
     targetUserId: string
+    currentUserId: string,
+    targetUserId: string
 ) => {
+    try {
+        const followDoc = await getDoc(
+            doc(db, "users", currentUserId, "following", targetUserId)
+        )
+        return {
+            isFollowing: followDoc.exists(),
+        }
+    } catch (error) {
+        console.error("Error getting relationship:", error)
+        return { isFollowing: false }
+    }
+}
     try {
         const followDoc = await getDoc(
             doc(db, "users", currentUserId, "following", targetUserId)
@@ -267,7 +297,24 @@ export const getUserRelationship = async (
 export const followUser = async (
     currentUserId: string,
     targetUserId: string
+    currentUserId: string,
+    targetUserId: string
 ) => {
+    try {
+        await setDoc(doc(db, "users", currentUserId, "following", targetUserId), {
+            createdAt: new Date(),
+        })
+        await setDoc(doc(db, "users", targetUserId, "followers", currentUserId), {
+            createdAt: new Date(),
+        })
+        await incrementFollowingCount(currentUserId)
+        await incrementFollowersCount(targetUserId)
+        console.log("✅ Followed user")
+    } catch (error) {
+        console.error("❌ Error following user:", error)
+        throw error
+    }
+}
     try {
         await setDoc(doc(db, "users", currentUserId, "following", targetUserId), {
             createdAt: new Date(),
@@ -287,7 +334,20 @@ export const followUser = async (
 export const unfollowUser = async (
     currentUserId: string,
     targetUserId: string
+    currentUserId: string,
+    targetUserId: string
 ) => {
+    try {
+        await deleteDoc(doc(db, "users", currentUserId, "following", targetUserId))
+        await deleteDoc(doc(db, "users", targetUserId, "followers", currentUserId))
+        await decrementFollowingCount(currentUserId)
+        await decrementFollowersCount(targetUserId)
+        console.log("✅ Unfollowed user")
+    } catch (error) {
+        console.error("❌ Error unfollowing user:", error)
+        throw error
+    }
+}
     try {
         await deleteDoc(doc(db, "users", currentUserId, "following", targetUserId))
         await deleteDoc(doc(db, "users", targetUserId, "followers", currentUserId))
@@ -301,36 +361,36 @@ export const unfollowUser = async (
 }
 
 export const getFollowersList = async (userId: string) => {
-  try {
-    const followersSnap = await getDocs(
-      collection(db, "users", userId, "followers")
-    );
-    const followerIds = followersSnap.docs.map((doc) => doc.id);
-    const followers = await Promise.all(
-      followerIds.map((id) => getUserById(id))
-    );
-    return followers.filter((f) => f !== null);
-  } catch (error) {
-    console.error("Error getting followers:", error);
-    return [];
-  }
-};
+    try {
+        const followersSnap = await getDocs(
+            collection(db, "users", userId, "followers")
+        )
+        const followerIds = followersSnap.docs.map((doc) => doc.id)
+        const followers = await Promise.all(
+            followerIds.map((id) => getUserById(id))
+        )
+        return followers.filter((f) => f !== null)
+    } catch (error) {
+        console.error("Error getting followers:", error)
+        return []
+    }
+}
 
 export const getFollowingList = async (userId: string) => {
-  try {
-    const followingSnap = await getDocs(
-      collection(db, "users", userId, "following")
-    );
-    const followingIds = followingSnap.docs.map((doc) => doc.id);
-    const following = await Promise.all(
-      followingIds.map((id) => getUserById(id))
-    );
-    return following.filter((f) => f !== null);
-  } catch (error) {
-    console.error("Error getting following:", error);
-    return [];
-  }
-};
+    try {
+        const followingSnap = await getDocs(
+            collection(db, "users", userId, "following")
+        )
+        const followingIds = followingSnap.docs.map((doc) => doc.id)
+        const following = await Promise.all(
+            followingIds.map((id) => getUserById(id))
+        )
+        return following.filter((f) => f !== null)
+    } catch (error) {
+        console.error("Error getting following:", error)
+        return []
+    }
+}
 
 export const incrementFollowersCount = async (userId: string) => {
   try {
@@ -369,30 +429,29 @@ export const incrementFollowingCount = async (userId: string) => {
 };
 
 export const decrementFollowingCount = async (userId: string) => {
-  try {
-    const userRef = doc(db, "users", userId);
-    await updateDoc(userRef, {
-      followingCount: increment(-1),
-      updatedAt: new Date(),
-    });
-  } catch (error) {
-    console.error("Error decrementing following:", error);
-  }
-};
+    try {
+        const userRef = doc(db, "users", userId)
+        await updateDoc(userRef, {
+            followingCount: increment(-1),
+            updatedAt: new Date(),
+        })
+    } catch (error) {
+        console.error("Error decrementing following:", error)
+    }
+}
 
-// Notifcation
 export const updateUserNotificationToken = async (
-  userId: string,
-  token: string
+    userId: string,
+    token: string
 ) => {
-  try {
-    const userRef = doc(db, "users", userId);
-    await updateDoc(userRef, {
-      notificationTokens: arrayUnion(token),
-      updatedAt: new Date(),
-    });
-  } catch (err) {
-    console.error(err);
-    throw err;
-  }
-};
+    try {
+        const userRef = doc(db, "users", userId)
+        await updateDoc(userRef, {
+            notificationTokens: arrayUnion(token),
+            updatedAt: new Date(),
+        })
+    } catch (err) {
+        console.error(err)
+        throw err
+    }
+}

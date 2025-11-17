@@ -141,13 +141,13 @@ function RootContent() {
 }
 
 export default function RootLayout() {
-  return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <AuthContext>
-        <FamilyViewProvider>
-          <RootContent />
-        </FamilyViewProvider>
-      </AuthContext>
-    </GestureHandlerRootView>
-  );
+    return (
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <AuthContext>
+                <FamilyViewProvider>
+                    <RootContent />
+                </FamilyViewProvider>
+            </AuthContext>
+        </GestureHandlerRootView>
+    );
 }
