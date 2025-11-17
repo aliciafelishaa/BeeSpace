@@ -102,15 +102,22 @@ export const ProfileHeader: React.FC<Props> = memo(
 				)}
 
 				{relation === "owner" ? (
-					<TouchableOpacity
-						onPress={onPressEdit}
-						className="px-4 py-2 rounded-[10px] border"
-						style={{ borderColor: COLORS.primary, backgroundColor: COLORS.white }}
-					>
-						<Text className="text-[14px]" style={{ color: COLORS.primary }}>
-							Edit Profile
-						</Text>
-					</TouchableOpacity>
+					<View className="flex flex-row gap-2">
+						<TouchableOpacity
+							onPress={onPressEdit}
+							className="px-4 py-2 rounded-[10px] bg-primary2nd"
+							style={{ borderColor: COLORS.primary }}
+						>
+							<Text className="text-[14px] " style={{ color: COLORS.white }}>Detail Profile</Text>
+						</TouchableOpacity>
+						<TouchableOpacity
+							onPress={() => router.push("/yourroom/yourRoom")}
+							className="px-4 py-2 rounded-[10px] border"
+							style={{ borderColor: COLORS.primary, backgroundColor: COLORS.white }}
+						>
+							<Text className="text-[14px]" style={{ color: COLORS.primary }}>Your Room</Text>
+						</TouchableOpacity>
+					</View>
 				) : (
 					<View className="flex-row items-center gap-3">
 						<TouchableOpacity
@@ -150,9 +157,7 @@ export const ProfileHeader: React.FC<Props> = memo(
 							className="px-4 py-2 rounded-[10px] border"
 							style={{ borderColor: COLORS.neutral300, backgroundColor: COLORS.white }}
 						>
-							<Text className="text-[14px]" style={{ color: COLORS.neutral900 }}>
-								Message
-							</Text>
+							<Text className="text-[14px]" style={{ color: COLORS.neutral900 }}>Message</Text>
 						</TouchableOpacity>
 					</View>
 				)}

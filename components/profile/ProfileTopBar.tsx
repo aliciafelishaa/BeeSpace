@@ -17,23 +17,16 @@ export interface ProfileTopBarProps {
     isOwnProfile?: boolean
     userId?: string
     userName?: string
-
     title?: string
-
     showShare?: boolean
     showMenu?: boolean
-
     onBack?: () => void
-
     onMenuNavigate?: (key: ProfileMenuKey) => void
 }
 
 export const ProfileTopBar: React.FC<ProfileTopBarProps> = ({
     isOwnProfile = true,
-    userId,
-    userName,
     title,
-    showShare = true,
     showMenu = true,
     onBack,
     onMenuNavigate,
@@ -45,7 +38,6 @@ export const ProfileTopBar: React.FC<ProfileTopBarProps> = ({
         router.back()
     }
 
-
     return (
         <>
             <View
@@ -56,7 +48,6 @@ export const ProfileTopBar: React.FC<ProfileTopBarProps> = ({
                 }}
             >
                 <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                    {/* Untuk handle back */}
                     <TouchableOpacity
                         onPress={handleBack}
                         accessibilityLabel="Back"
@@ -76,7 +67,6 @@ export const ProfileTopBar: React.FC<ProfileTopBarProps> = ({
                         />
                     </TouchableOpacity>
 
-                    {/* Title di tengah */}
                     {title ? (
                         <View
                             pointerEvents="none"
@@ -125,7 +115,6 @@ export const ProfileTopBar: React.FC<ProfileTopBarProps> = ({
                 </View>
             </View>
 
-            {/* Modal menu */}
             {isOwnProfile && showMenu && (
                 <ProfileMenuModal
                     isOpen={menuOpen}
