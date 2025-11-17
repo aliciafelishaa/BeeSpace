@@ -18,10 +18,22 @@ function shouldShowBottomNav(
     user: any,
     pathname: string,
 ): boolean {
+<<<<<<< HEAD
     if (!user) return false;
     const hiddenPatterns = [/^\/auth/, /^\/myroom\/detailroom/];
     const isChatPage = pathname === "/directmessage/chat";
     return !hiddenPatterns.some((regex) => regex.test(pathname)) && !isChatPage;
+=======
+  if (!user) return false;
+  const hiddenPatterns = [/^\/auth/, /^\/myroom\/detailroom/];
+  const isChatPage = pathname === "/directmessage/chat";
+
+  if (pathname === "/profile" && isEditing) {
+    return false;
+  }
+
+  return !hiddenPatterns.some((regex) => regex.test(pathname)) && !isChatPage;
+>>>>>>> 76b36b96420efd8165941003d3e0349f82a29b8e
 }
 
 function RootContent() {
@@ -42,7 +54,7 @@ function RootContent() {
     ];
 
     const isMatch = (base: string, p: string) =>
-      p === base || p.startsWith(base + "/");    
+      p === base || p.startsWith(base + "/");
 
     const current =
       [...NAV_ITEMS]
@@ -54,15 +66,6 @@ function RootContent() {
 
     if (current) setActiveTab(current.id);
   }, [pathname]);
-  
-  useEffect(() => {
-    const handleProfileEdit = (event: any) => {
-      setIsProfileEditing(event.detail.editing); 
-    };
-    
-    window.addEventListener('profileEditChange', handleProfileEdit);
-    return () => window.removeEventListener('profileEditChange', handleProfileEdit);
-  }, []);
 
   useEffect(() => {
     const handleProfileEdit = (event: any) => {

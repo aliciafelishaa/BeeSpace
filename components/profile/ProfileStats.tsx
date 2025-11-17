@@ -69,4 +69,8 @@ export const ProfileStat: React.FC<Props> = memo(({ stats, onPressItem }) => {
     )
 })
 
+<<<<<<< HEAD
 export default ProfileStat
+=======
+export default ProfileStat
+>>>>>>> 76b36b96420efd8165941003d3e0349f82a29b8e
