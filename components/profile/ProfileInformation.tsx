@@ -215,41 +215,6 @@ export function ProfileInformation({
                 )}
             </ScrollView>
 
-            {!isEditing && (
-                <View
-                    style={{
-                        position: "absolute",
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        paddingHorizontal: 20,
-                        paddingTop: 12,
-                        paddingBottom: insets.bottom + 12,
-                        backgroundColor: COLORS.white,
-                        borderTopWidth: 1,
-                        borderTopColor: COLORS.neutral100,
-                    }}
-                >
-                    <TouchableOpacity
-                        onPress={() => setIsEditing(true)}
-                        style={{
-                            borderRadius: 16,
-                            paddingVertical: 16,
-                            alignItems: "center",
-                            backgroundColor: COLORS.primary2nd,
-                            shadowColor: "#000",
-                            shadowOpacity: 0.08,
-                            shadowRadius: 6,
-                            shadowOffset: { width: 0, height: 2 },
-                        }}
-                    >
-                        <Text style={{ fontFamily: "Inter_600SemiBold", color: COLORS.white, fontSize: 14 }}>
-                            Edit Profile
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-            )}
-
             {isEditing && (
                 <View
                     onLayout={(event: LayoutChangeEvent) => {
