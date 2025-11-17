@@ -1,11 +1,15 @@
+import { reportRoomApi } from "@/services/room.service";
+import * as Clipboard from "expo-clipboard";
 import React from "react";
 import {
   Alert,
   Image,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   Text,
+  ToastAndroid,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -16,6 +20,7 @@ type ModalFilteringDynamicProps = {
   isJoin: boolean;
   isEdit: boolean;
   isReport: boolean;
+  roomId: string;
   onDelete?: () => void;
 };
 
@@ -26,6 +31,7 @@ export default function ModalEditDelete({
   isEdit = false,
   isReport = false,
   onDelete,
+  roomId,
 }: ModalFilteringDynamicProps) {
   const handleDelete = () => {
     console.log("test");
@@ -34,6 +40,36 @@ export default function ModalEditDelete({
       { text: "Delete", style: "destructive", onPress: onDelete },
     ]);
   };
+
+  const handleCopyLink = async () => {
+    const link = `https://myapp.local/room/${roomId}`;
+    await Clipboard.setStringAsync(link);
+
+    if (Platform.OS === "android") {
+      ToastAndroid.show("Link copied to clipboard!", ToastAndroid.SHORT);
+    } else {
+      Alert.alert("Copied!", "Link copied to clipboard!");
+    }
+  };
+
+  const handleReport = () => {
+    Alert.alert("Report Room", "Are you sure you want to report this room?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Report",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await reportRoomApi(roomId);
+            Alert.alert("Reported!", "Thank you for reporting.");
+          } catch (err) {
+            Alert.alert("Error", "Failed to report room.");
+          }
+        },
+      },
+    ]);
+  };
+
   return (
     <Modal
       transparent
@@ -57,7 +93,10 @@ export default function ModalEditDelete({
         >
           <View className="flex-row items-center justify-center gap-8 mt-4">
             {isJoin && (
-              <TouchableOpacity className="flex flex-col gap-2 items-center justify-center">
+              <TouchableOpacity
+                className="flex flex-col gap-2 items-center justify-center"
+                onPress={handleCopyLink}
+              >
                 <Image
                   source={require("@/assets/images/copylink.png")}
                   className="w-[16px] h-[16px]"
@@ -75,7 +114,10 @@ export default function ModalEditDelete({
               <Text className="font-interMedium font-[16px]">Share</Text>
             </TouchableOpacity>
             {isReport && (
-              <TouchableOpacity className="flex flex-col gap-2 items-center justify-center">
+              <TouchableOpacity
+                className="flex flex-col gap-2 items-center justify-center"
+                onPress={handleReport}
+              >
                 <Image
                   source={require("@/assets/images/report.png")}
                   className="w-[16px] h-[16px] "

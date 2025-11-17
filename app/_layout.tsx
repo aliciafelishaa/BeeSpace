@@ -5,7 +5,6 @@ import { AuthContext } from "@/context/AuthContext";
 import { FamilyViewProvider } from "@/context/FamilyViewContext";
 import "@/global.css";
 import { useAuthState } from "@/hooks/useAuthState";
-import { useNotifications } from "@/hooks/useNotifications";
 import { useFonts } from "expo-font";
 import { Slot, SplashScreen, usePathname, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -29,7 +28,7 @@ function RootContent() {
   const [fontsLoaded] = useFonts({ ...Fonts });
   const [isProfileEditing, setIsProfileEditing] = useState(false);
 
-    useNotifications();
+  useNotifications();
 
   useEffect(() => {
     const yourroomAliases = [
@@ -37,18 +36,35 @@ function RootContent() {
       "/yourroom/yourRoom",
       "/myroom/roomDashboard",
     ];
+    useEffect(() => {
+      const yourroomAliases = [
+        "/yourroom",
+        "/yourroom/yourRoom",
+        "/myroom/roomDashboard",
+      ];
 
-    const isMatch = (base: string, p: string) =>
-      p === base || p.startsWith(base + "/");
+      const isMatch = (base: string, p: string) =>
+        p === base || p.startsWith(base + "/");
+      const isMatch = (base: string, p: string) =>
+        p === base || p.startsWith(base + "/");
 
-    const current =
-      [...NAV_ITEMS]
-        .sort((a, b) => b.route.length - a.route.length)
-        .find((item) => isMatch(item.route, pathname)) ||
-      (yourroomAliases.some((a) => isMatch(a, pathname))
-        ? NAV_ITEMS.find((i) => i.id === "/myroom")
-        : undefined);
+      const current =
+        [...NAV_ITEMS]
+          .sort((a, b) => b.route.length - a.route.length)
+          .find((item) => isMatch(item.route, pathname)) ||
+        (yourroomAliases.some((a) => isMatch(a, pathname))
+          ? NAV_ITEMS.find((i) => i.id === "/myroom")
+          : undefined);
+      const current =
+        [...NAV_ITEMS]
+          .sort((a, b) => b.route.length - a.route.length)
+          .find((item) => isMatch(item.route, pathname)) ||
+        (yourroomAliases.some((a) => isMatch(a, pathname))
+          ? NAV_ITEMS.find((i) => i.id === "/myroom")
+          : undefined);
 
+      if (current) setActiveTab(current.id);
+    }, [pathname]);
     if (current) setActiveTab(current.id);
   }, [pathname]);
 
@@ -56,7 +72,15 @@ function RootContent() {
     const handleProfileEdit = (event: any) => {
       setIsProfileEditing(event.detail.editing);
     };
+    useEffect(() => {
+      const handleProfileEdit = (event: any) => {
+        setIsProfileEditing(event.detail.editing);
+      };
 
+      window.addEventListener("profileEditChange", handleProfileEdit);
+      return () =>
+        window.removeEventListener("profileEditChange", handleProfileEdit);
+    }, []);
     window.addEventListener("profileEditChange", handleProfileEdit);
     return () =>
       window.removeEventListener("profileEditChange", handleProfileEdit);
@@ -65,12 +89,22 @@ function RootContent() {
   useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync();
   }, [fontsLoaded]);
+  useEffect(() => {
+    if (fontsLoaded) SplashScreen.hideAsync();
+  }, [fontsLoaded]);
 
   const handleSelect = (id: string, route: string) => {
     setActiveTab(id);
     router.push(route as any);
   };
+  const handleSelect = (id: string, route: string) => {
+    setActiveTab(id);
+    router.push(route as any);
+  };
 
+  if (initializing || !fontsLoaded) {
+    return <View style={{ flex: 1, backgroundColor: "white" }} />;
+  }
   if (initializing || !fontsLoaded) {
     return <View style={{ flex: 1, backgroundColor: "white" }} />;
   }
@@ -80,7 +114,21 @@ function RootContent() {
       <View style={{ flex: 1, minHeight: 0 }}>
         <Slot />
       </View>
+      return (
+      <View style={{ flex: 1, minHeight: 0 }}>
+        <View style={{ flex: 1, minHeight: 0 }}>
+          <Slot />
+        </View>
 
+        {shouldShowBottomNav(user, pathname, isProfileEditing) && (
+          <BottomNavbar
+            items={NAV_ITEMS}
+            activeId={activeTab}
+            onSelect={handleSelect}
+          />
+        )}
+      </View>
+      );
       {shouldShowBottomNav(user, pathname, isProfileEditing) && (
         <BottomNavbar
           items={NAV_ITEMS}

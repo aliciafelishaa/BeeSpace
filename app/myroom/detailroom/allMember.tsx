@@ -3,38 +3,37 @@ import HeaderBack from "@/components/utils/HeaderBack";
 import SearchBar from "@/components/utils/SearchBar";
 import { FOLLOWSTATUS } from "@/constants/page/followStatus";
 import { COLORS } from "@/constants/utils/colors";
-import React, { useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { getRoomMembers } from "@/services/room.service";
+import { getUserById } from "@/services/userService";
+import { useLocalSearchParams } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
 type Member = {
-  id: number;
+  id: string;
   name: string;
   username: string;
   isFollowed?: boolean;
 };
 
 export default function AllMember() {
+  const { roomId } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
+  const [search, setSearch] = useState("");
+  const [members, setMembers] = useState<Member[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // Contoh data member
-  const [members, setMembers] = useState<Member[]>([
-    {
-      id: 1,
-      name: "Balqis Muharda (Host)",
-      username: "bacica",
-      isFollowed: false,
-    },
-    { id: 2, name: "Alicia Felisha", username: "aliciaf", isFollowed: true },
-    { id: 3, name: "Tasya Pandya", username: "tasya", isFollowed: false },
-    { id: 4, name: "Bryan Cornelius", username: "bryanc", isFollowed: false },
-    { id: 5, name: "Akbar Zaidan", username: "akbarz", isFollowed: true },
-  ]);
-
-  const toggleFollow = (id: number) => {
+  const toggleFollow = (id: string) => {
     setMembers((prev) =>
       prev.map((member) =>
         member.id === id
@@ -43,6 +42,43 @@ export default function AllMember() {
       )
     );
   };
+
+  useEffect(() => {
+    console.log("AllMember useEffect running, roomId:", roomId);
+    const fetchMembers = async () => {
+      setLoading(true);
+      try {
+        const roomMembers = await getRoomMembers(roomId);
+        console.log("roomMembers:", roomMembers);
+
+        const fetchedMembers: Member[] = [];
+
+        for (const user of roomMembers) {
+          const userData = await getUserById(user.id);
+          if (userData) {
+            fetchedMembers.push({
+              id: user.id,
+              name: userData.name,
+              username: userData.username,
+            });
+          }
+        }
+
+        setMembers(fetchedMembers);
+      } catch (err) {
+        console.error("Failed to fetch members:", err);
+        setMembers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMembers();
+  }, [roomId]);
+
+  const filteredMembers = members.filter((member) =>
+    member.username.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <SafeAreaView
@@ -74,48 +110,54 @@ export default function AllMember() {
           <View className="px-[15px] py-[35px]">
             <SearchBar
               placeholder="Search Username"
-              onChangeText={(text) => console.log(text)}
               containerStyle={{ marginRight: 8 }}
+              onChangeText={(text) => setSearch(text)}
+              value={search}
+              onSearch={setSearch}
             />
 
-            <View className="gap-[32px] mt-6">
-              {members.map((member) => (
-                <View
-                  key={member.id}
-                  className="justify-between flex-row items-center"
-                >
-                  <View className="flex-row gap-4 items-center">
-                    <View className="w-[36px] h-[36px] rounded-full bg-primary2nd" />
-                    <View className="gap-1">
-                      <Text className="font-inter font-normal text-[14px]">
-                        {member.name}
-                      </Text>
-                      <Text className="font-inter font-normal text-[12px] text-neutral-500">
-                        {member.username}
-                      </Text>
-                    </View>
-                  </View>
-                  <TouchableOpacity
-                    onPress={() => toggleFollow(member.id)}
-                    className={`w-[90px] h-[40px] items-center justify-center rounded-[8px] border-2 ${
-                      member.isFollowed
-                        ? "bg-white border-primary2nd"
-                        : "bg-primary2nd border-primary2nd"
-                    }`}
+            {loading ? (
+              <View className="items-center justify-center mt-8">
+                <ActivityIndicator size="large" color={COLORS.primary2nd} />
+              </View>
+            ) : (
+              <View className="gap-[32px] mt-6">
+                {filteredMembers.map((member) => (
+                  <View
+                    key={member.id}
+                    className="justify-between flex-row items-center"
                   >
-                    <Text
-                      className={`${
-                        member.isFollowed ? "text-primary2nd" : "text-white"
+                    <View className="flex-row gap-4 items-center">
+                      <View className="w-[36px] h-[36px] rounded-full bg-primary2nd" />
+                      <View className="gap-1">
+                        <Text className="font-inter font-normal text-[14px]">
+                          {member.name}
+                        </Text>
+                        <Text className="font-inter font-normal text-[12px] text-neutral-500">
+                          {member.username}
+                        </Text>
+                      </View>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => toggleFollow(member.id)}
+                      className={`w-[90px] h-[40px] items-center justify-center rounded-[8px] border-2 ${
+                        member.isFollowed
+                          ? "bg-white border-primary2nd"
+                          : "bg-primary2nd border-primary2nd"
                       }`}
                     >
-                      {member.isFollowed
-                        ? FOLLOWSTATUS.FOLLOWING
-                        : FOLLOWSTATUS.FOLLOW}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              ))}
-            </View>
+                      <Text
+                        className={`${member.isFollowed ? "text-primary2nd" : "text-white"}`}
+                      >
+                        {member.isFollowed
+                          ? FOLLOWSTATUS.FOLLOWING
+                          : FOLLOWSTATUS.FOLLOW}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
           </View>
         </View>
       </ScrollView>

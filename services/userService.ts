@@ -1,7 +1,6 @@
 import { db } from "@/config/firebaseConfig";
 import { UserProfile } from "@/types/profile/profile";
 import {
-  arrayUnion,
   collection,
   deleteDoc,
   doc,
