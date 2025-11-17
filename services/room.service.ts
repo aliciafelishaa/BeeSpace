@@ -17,29 +17,30 @@ import {
 import { updateRoomStats } from "./userService";
 
 export const createRoom = async (payload: RoomEntry) => {
-  if (!payload.fromUid) {
-    throw new Error("Missing user UID");
-  }
-  try {
-    const roomData = {
-      fromUid: payload.fromUid,
-      cover: payload.cover,
-      category: payload.category,
-      date: payload.date,
-      description: payload.description,
-      enableChat: payload.enableChat,
-      locationDetail: payload.locationDetail,
-      maxMember: payload.maxMember,
-      minMember: payload.minMember,
-      openPublic: payload.openPublic,
-      place: payload.place,
-      planName: payload.planName,
-      timeEnd: payload.timeEnd,
-      timeStart: payload.timeStart,
-      joinedUids: [],
-      status: "active",
-      userUniv: payload.userUniv,
-    };
+    if (!payload.fromUid) {
+        throw new Error("Missing user UID");
+    }
+    try {
+        const roomData = {
+            fromUid: payload.fromUid,
+            cover: payload.cover,
+            category: payload.category,
+            date: payload.date,
+            description: payload.description,
+            enableChat: payload.enableChat,
+            locationDetail: payload.locationDetail,
+            maxMember: payload.maxMember,
+            minMember: payload.minMember,
+            openPublic: payload.openPublic,
+            place: payload.place,
+            planName: payload.planName,
+            timeEnd: payload.timeEnd,
+            timeStart: payload.timeStart,
+            joinedUids: [],
+            status: "active",
+            userUniv: payload.userUniv,
+        };
+
 
     console.log("payload:", roomData);
     const reqRef = await addDoc(collection(db, "roomEvents"), roomData);
