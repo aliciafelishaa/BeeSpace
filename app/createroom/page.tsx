@@ -11,7 +11,8 @@ import { COLORS } from "@/constants/utils/colors";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useRoom } from "@/hooks/useRoom";
 import { useRoomCover } from "@/hooks/useRoomCover";
-import { router } from "expo-router";
+import { useUserData } from "@/hooks/useUserData";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { ScrollView, TouchableOpacity, View } from "react-native";
 import {
@@ -23,11 +24,14 @@ export default function CreateRoomPage() {
   const [step, setStep] = useState(1);
   const handleBack = () => router.back();
   const insets = useSafeAreaInsets();
-  const { user } = useAuthState();
   const { addRoom } = useRoom();
   const { image, uploading, pickPhoto } = useRoomCover(undefined, (url) => {
     handleChange("cover", url);
   });
+  const { user } = useAuthState();
+  const { uid: paramUid } = useLocalSearchParams();
+  const uid = paramUid || user?.uid;
+  const { userData } = useUserData(uid);
   // const { data, setField } = useSignupContext();
 
   const [showError, setShowError] = useState(false);
@@ -95,11 +99,11 @@ export default function CreateRoomPage() {
       setShowError(true);
       return;
     }
-    console.log("testing2");
     const inputRoom = {
       fromUid: user?.uid,
       ...formData,
       date: new Date(formData.date),
+      userUniv: userData?.university,
     };
 
     const result = await addRoom(inputRoom);
@@ -230,22 +234,22 @@ export default function CreateRoomPage() {
                 }}
                 placeholder="Select Category"
                 options={[
-                  { label: "Sport & Fitness", value: "Sport & Fitness" },
+                  { label: "Sport", value: "Sport" },
                   {
-                    label: "Transportation Sharing",
-                    value: "Transportation Sharing",
+                    label: "Transportation",
+                    value: "Transportation",
                   },
-                  { label: "Academic & Study", value: "Academic & Study" },
+                  { label: "Academic", value: "Academic" },
                   {
-                    label: "Events & Activities",
-                    value: "Events & Activities",
+                    label: "Events",
+                    value: "Events",
                   },
-                  { label: "Food & Hangout", value: "Food & Hangout" },
-                  { label: "Community & Hobby", value: "Community & Hobby" },
-                  { label: "Health & Wellness", value: "Health & Wellness" },
+                  { label: "Hangout", value: "Hangout" },
+                  { label: "Community", value: "Community" },
+                  { label: "Wellness", value: "Wellness" },
                   {
-                    label: "Competition & Challenge",
-                    value: "Competition & Challenge",
+                    label: "Competition",
+                    value: "Competition",
                   },
                   { label: "Other", value: "Other" },
                 ]}
