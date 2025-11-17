@@ -1,14 +1,23 @@
 import CardRoom from "@/components/myroom/CardRoom"
 import EmptyState from "@/components/myroom/EmptyState"
+import { db } from "@/config/firebaseConfig"
 import { COLORS } from "@/constants/utils/colors"
+import { useAuth } from "@/context/AuthContext"
+import { getUserById } from "@/services/userService"
 import { RoomEntry } from "@/types/myroom/room"
+import { collection, DocumentData, getDocs, query, Timestamp, where } from "firebase/firestore"
 import React, { useEffect, useMemo, useState } from "react"
 import { ActivityIndicator, Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+<<<<<<< HEAD
+
+type RoomWithHost = RoomEntry & { id: string; hostName?: string }
+=======
 import { useAuth } from "@/context/AuthContext"
 import { collection, query, where, getDocs, Timestamp, DocumentData } from "firebase/firestore"
 import { db } from "@/config/firebaseConfig"
 import { getUserById } from "@/services/userService"
+>>>>>>> 76b36b96420efd8165941003d3e0349f82a29b8e
 
 type RoomWithHost = RoomEntry & { id: string; hostName?: string }
 
@@ -181,4 +190,8 @@ export const ProfileActivity: React.FC<Props> = ({
     )
 }
 
+<<<<<<< HEAD
 export default ProfileActivity
+=======
+export default ProfileActivity
+>>>>>>> 76b36b96420efd8165941003d3e0349f82a29b8e

@@ -47,10 +47,20 @@ const defaultUserProfile = (email: string, displayName = "") => {
     }
 }
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+export const registerWithEmail = async (email: string, password: string): Promise<User> => {
+=======
+=======
+>>>>>>> 76b36b96420efd8165941003d3e0349f82a29b8e
 export const registerWithEmail = async (
     email: string,
     password: string
 ): Promise<User> => {
+<<<<<<< HEAD
+>>>>>>> 8fb58e969169e14a47365fa4140599191f851798
+=======
+>>>>>>> 76b36b96420efd8165941003d3e0349f82a29b8e
     const { user } = await createUserWithEmailAndPassword(auth, email, password)
     await setDoc(doc(db, "users", user.uid), defaultUserProfile(email))
     const now = new Date()
@@ -73,9 +83,19 @@ export const sendResetPasswordEmail = async (email: string) => {
     const querySnap = await getDocs(q)
     if (querySnap.empty) throw new Error("EMAIL_NOT_REGISTERED")
     try {
+<<<<<<< HEAD
+<<<<<<< HEAD
+        await sendPasswordResetEmail(auth, email, { url: "http://localhost:8081/auth/reset-pass" })
+=======
         await sendPasswordResetEmail(auth, email, {
             url: "http://localhost:8081/auth/reset-pass",
         })
+>>>>>>> 8fb58e969169e14a47365fa4140599191f851798
+=======
+        await sendPasswordResetEmail(auth, email, {
+            url: "http://localhost:8081/auth/reset-pass",
+        })
+>>>>>>> 76b36b96420efd8165941003d3e0349f82a29b8e
         return true
     } catch (error: any) {
         if (error.code === "auth/invalid-email") throw new Error("INVALID_EMAIL")
@@ -83,6 +103,37 @@ export const sendResetPasswordEmail = async (email: string) => {
     }
 }
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+export function useGoogleAuth() {
+    const redirectUri = makeRedirectUri({ useProxy: true, scheme: "beespace" })
+    const [request, response, promptAsync] = Google.useAuthRequest({
+        webClientId: process.env.EXPO_PUBLIC_FIREBASE_WEB_CLIENT_ID,
+        iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID,
+        androidClientId: process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID,
+        redirectUri,
+        scopes: ["profile", "email"],
+    })
+
+    const handleGoogleResponse = async () => {
+        if (response?.type === "success" && response.authentication?.idToken) {
+            const credential = GoogleAuthProvider.credential(response.authentication.idToken)
+            const { user } = await signInWithCredential(auth, credential)
+            const q = query(collection(db, "users"), where("email", "==", user.email))
+            const querySnap = await getDocs(q)
+            if (querySnap.empty) await setDoc(doc(db, "users", user.uid), defaultUserProfile(user.email!, user.displayName ?? ""))
+            return { uid: user.uid, email: user.email }
+        } else if (response?.type === "error") {
+            throw new Error(`Google login failed: ${response.error?.message || "Unknown error"}`)
+        }
+        return null
+    }
+
+    return { request, response, promptAsync: () => promptAsync({ useProxy: true }), handleGoogleResponse }
+}
+=======
+=======
+>>>>>>> 76b36b96420efd8165941003d3e0349f82a29b8e
 export const getCurrentUser = () => {
     return auth.currentUser
 }
@@ -160,4 +211,9 @@ export const logout = async (): Promise<boolean> => {
         console.error("❌ Logout error:", error)
         return false
     }
+<<<<<<< HEAD
 }
+>>>>>>> 8fb58e969169e14a47365fa4140599191f851798
+=======
+}
+>>>>>>> 76b36b96420efd8165941003d3e0349f82a29b8e
