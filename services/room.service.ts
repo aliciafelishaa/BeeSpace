@@ -265,6 +265,7 @@ export const leaveRoom = async (
 
     await updateRoomStats(userId, {
       totalJoined: -1,
+      activeRooms: -1,
     });
 
     console.log("✅ User left room successfully");
