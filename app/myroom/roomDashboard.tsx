@@ -46,7 +46,6 @@ export default function MyRoomDash() {
 
         const roomsWithHost = await Promise.all(
           roomsData.map(async (room: RoomEntry) => {
-            console.log(room.fromUid);
             const userRes = await getUserById(room.fromUid);
             return {
               ...room,
@@ -83,7 +82,9 @@ export default function MyRoomDash() {
       const roomDate = new Date(room.date);
 
       // --- category ---
-      if (activeTab !== "all" && room.category !== activeTab) return false;
+      if (activeTab !== "all" && room.category !== activeTab) {
+        return null;
+      }
 
       // --- time filters ---
       if (activeFilter === "today") {
@@ -115,17 +116,13 @@ export default function MyRoomDash() {
 
       if (activeFilter === "mycampus") {
         if (!userData?.university) return false;
+        if (!room.userUniv) return false;
 
-        const sameCampus =
-          room.place
-            ?.toLowerCase()
-            .includes(userData.university.toLowerCase()) ||
-          userData.university.toLowerCase().includes(room.place?.toLowerCase());
-
-        if (!sameCampus) return false;
+        return (
+          room.userUniv.toLowerCase() === userData.university.toLowerCase()
+        );
       }
 
-      // --- search ---
       if (search.trim() !== "") {
         const q = search.toLowerCase();
         const match =
@@ -143,9 +140,15 @@ export default function MyRoomDash() {
 
   return (
     <SafeAreaView
+      className="bg-neutral-100"
       style={{
         backgroundColor: COLORS.white,
         flex: 1,
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
       }}
     >
       <ScrollView
@@ -161,7 +164,7 @@ export default function MyRoomDash() {
             <View className="flex-row items-center justify-between">
               <View className="gap-[10px]">
                 <Text className="text-neutral-500 text-[12px] font-interRegular">
-                  Activities Near
+                  My Campus
                 </Text>
                 <View className="flex-row gap-2 items-center">
                   <Image
@@ -171,7 +174,7 @@ export default function MyRoomDash() {
                   <Text className="text-neutral-700  text-[14px] font-interSemiBold">
                     {userData?.university || "-"}
                   </Text>
-                   </View>
+                </View>
               </View>
               <View>
                 <TouchableOpacity

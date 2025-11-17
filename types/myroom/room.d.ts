@@ -1,4 +1,5 @@
 export interface RoomEntry {
+  userUniv: any;
   fromUid: string;
   id?: string;
   cover?: string;
