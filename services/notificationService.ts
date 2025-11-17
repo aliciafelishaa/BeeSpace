@@ -1,5 +1,6 @@
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
+import { Platform } from "react-native";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -13,6 +14,10 @@ Notifications.setNotificationHandler({
 
 export class NotificationService {
   static async registerForPushNotificationsAsync(): Promise<string | null> {
+    if (Platform.OS === "web") {
+      return null;
+    }
+
     if (!Device.isDevice) {
       return null;
     }
