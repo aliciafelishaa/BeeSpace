@@ -1,27 +1,28 @@
 import { ProfileActivity } from "@/components/profile/ProfileActivity"
-import { ProfileForm } from "@/components/profile/ProfileForm"
+import { ProfileInformation } from "@/components/profile/ProfileInformation"
 import { ProfileHeader } from "@/components/profile/ProfileHeader"
 import { ProfileStat } from "@/components/profile/ProfileStats"
 import { ProfileTopBar } from "@/components/profile/ProfileTopBar"
-import { StudentInformationForm } from "@/components/profile/StudentInformationForm"
+import ChangePassword from "@/components/profile/ChangePassword"
 import { COLORS } from "@/constants/utils/colors"
 import { router, Redirect } from "expo-router"
 import React, { useState, useEffect } from "react"
 import { Alert, ScrollView, View, ActivityIndicator } from "react-native"
 import { useAuth } from "@/context/AuthContext"
-import { SafeAreaView } from "react-native-safe-area-context"
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { getFullUserProfile, updateUserProfile } from "@/services/userService"
 import { logout } from "@/services/authService"
 import { UserProfile } from "@/types/profile/profile"
 import Text from "@/components/ui/Text"
 
-type Mode = "view" | "edit_profile" | "personal_info"
+type Mode = "view" | "profile" | "password"
 
 export default function MyProfileScreen() {
     const { user: authUser } = useAuth()
     const [user, setUser] = useState<UserProfile | null>(null)
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
+    const insets = useSafeAreaInsets();
     const [mode, setMode] = useState<Mode>("view")
 
     useEffect(() => {
@@ -59,6 +60,7 @@ export default function MyProfileScreen() {
                 fullName: payload.fullName,
                 username: payload.username,
                 bio: payload.bio || "",
+                profilePicture: payload.avatar,  // ✅ TAMBAHKAN INI!
             })
 
             console.log("✅ Profile saved to Firebase")
@@ -118,12 +120,12 @@ export default function MyProfileScreen() {
         )
     }
 
-    const isEditing = mode === "edit_profile" || mode === "personal_info"
+    const isEditing = mode !== "view"
 
     const changeMode = (newMode: Mode) => {
         setMode(newMode)
 
-        const isEditing = newMode === "edit_profile" || newMode === "personal_info"
+        const isEditing = newMode !== "view"
 
         if (typeof window !== 'undefined') {
             window.dispatchEvent(new CustomEvent('profileEditChange', {
@@ -133,8 +135,8 @@ export default function MyProfileScreen() {
     }
 
     const getTitle = () => {
-        if (mode === 'edit_profile') return 'Edit Profile'
-        if (mode === 'personal_info') return 'Personal Information'
+        if (mode === 'profile') return 'Profile'
+        if (mode === 'password') return 'Change Password'
         return undefined
     }
 
@@ -148,10 +150,16 @@ export default function MyProfileScreen() {
                 top: 0,
                 left: 0,
                 right: 0,
-                bottom: 100,
             }}
         >
-            <View style={{ flex: 1, backgroundColor: COLORS.white }}>
+            <ScrollView
+                    contentContainerStyle={{
+                      flexGrow: 1,
+                      paddingBottom: insets.bottom + 100,
+                    }}
+                    showsVerticalScrollIndicator={false}
+                    className="bg-[#FAFAFA]"
+                  >
                 <ProfileTopBar
                     isOwnProfile
                     userId={user.id}
@@ -161,11 +169,11 @@ export default function MyProfileScreen() {
                     showShare={!isEditing}
                     onBack={isEditing ? () => changeMode("view") : undefined}
                     onMenuNavigate={(key) => {
-                        if (key === "edit") {
-                            changeMode("edit_profile")
+                        if (key === "profile") {
+                            changeMode("profile")
                         }
-                        else if (key === "personal") {
-                            changeMode("personal_info")
+                        else if (key === "password") {
+                            changeMode("password")
                         }
                         else if (key === "logout") {
                             handleLogout()
@@ -180,34 +188,28 @@ export default function MyProfileScreen() {
                     >
                         <ProfileHeader
                             user={user}
-                            onPressEdit={() => changeMode("edit_profile")}
+                            onPressEdit={() => changeMode("profile")}
                         />
 
-                        <ProfileStat
-                            stats={user.stats}
-                            onPressItem={(key) => {
-                                router.push({
-                                    pathname: 'profile/follow/[userId]',
-                                    params: {
-                                        userId: user.id,
-                                        initialTab: key
-                                    }
-                                })
-                            }}
-                        />
+                        <ProfileStat stats={user.stats} />
 
                         <ProfileActivity limit={3} userId={user.id} />
-                    </ScrollView>   
+                    </ScrollView>
                 )}
 
-                {mode === 'edit_profile' && (
-                    <ProfileForm
+                {mode === 'profile' && (
+                    <ProfileInformation
                         initial={{
                             avatar: user.avatarUrl as any,
                             username: user.username ?? "",
                             fullName: user.name ?? "",
                             email: authUser.email ?? "",
                             bio: user.bio ?? "",
+                            universityName: "Bina Nusantara University",
+                            major: "Computer Science",
+                            studentId: "2702336478",
+                            enrollmentYear: "2023",
+                            graduationYear: "2027",
                         }}
                         onPickImage={() => {
                             console.log("Edit avatar clicked")
@@ -219,25 +221,11 @@ export default function MyProfileScreen() {
                     />
                 )}
 
-                {mode === 'personal_info' && (
-                    <StudentInformationForm
-                        initial={{
-                            universityName: "Bina Nusantara University",
-                            major: "Computer Science",
-                            studentId: "2702336478",
-                            enrollmentYear: "2023",
-                            graduationYear: "2027",
-                            studentIdCard: null,
-                        }}
-                        onSave={(payload) => {
-                            console.log("SAVE PERSONAL INFO:", payload)
-                            Alert.alert("Saved (mock)", "Check console")
-                            setMode("view")
-                        }}
-                        onCancel={() => setMode("view")}
-                    />
+                {mode === 'password' && (
+                    <ChangePassword email={authUser.email || ""} />
                 )}
-            </View>
+
+            </ScrollView>
         </SafeAreaView>
     )
 }

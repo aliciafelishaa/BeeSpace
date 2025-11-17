@@ -39,21 +39,45 @@ export function ProfileAvatarPicker({
   return (
     <View className="items-center mt-2">
       <View className="relative">
-        <Image
-          source={source}
-          onError={() => setFailed(true)}
-          style={{
-            width: size,
-            height: size,
-            borderRadius: radius,
-            backgroundColor: COLORS.neutral300,
-            borderWidth: 1,
-            borderColor: COLORS.neutral300,  
-          }}
-          resizeMode="cover"               
-        />
+        {/* Bungkus Image dengan TouchableOpacity jika editable */}
+        {editable && onPick ? (
+          <TouchableOpacity 
+            onPress={onPick}
+            activeOpacity={0.9}
+            accessibilityLabel="Change avatar"
+          >
+            <Image
+              source={source}
+              onError={() => setFailed(true)}
+              style={{
+                width: size,
+                height: size,
+                borderRadius: radius,
+                backgroundColor: COLORS.neutral300,
+                borderWidth: 1,
+                borderColor: COLORS.neutral300,  
+              }}
+              resizeMode="cover"               
+            />
+          </TouchableOpacity>
+        ) : (
+          <Image
+            source={source}
+            onError={() => setFailed(true)}
+            style={{
+              width: size,
+              height: size,
+              borderRadius: radius,
+              backgroundColor: COLORS.neutral300,
+              borderWidth: 1,
+              borderColor: COLORS.neutral300,  
+            }}
+            resizeMode="cover"               
+          />
+        )}
 
-        {editable && (
+        {/* Hanya tampilkan tombol edit jika editable = true DAN onPick tersedia */}
+        {editable && onPick && (
           <TouchableOpacity
             onPress={onPick}
             accessibilityLabel="Edit avatar"
@@ -75,7 +99,7 @@ export function ProfileAvatarPicker({
               shadowRadius: 6,
               shadowOffset: { width: 0, height: 2 },
               // elevation Android
-              ...(Platform.OS === "android" ? { elevation: 3 } : null),
+              ...(Platform.OS === "android" ? { elevation: 3 } : {}),
             }}
           >
             <View
@@ -88,15 +112,14 @@ export function ProfileAvatarPicker({
                 backgroundColor: COLORS.white,
               }}
             >
-              {/* Placeholder ikon edit */}
               <Image
                 source={require('@/assets/profile/icon-edit.png')}
                 style={{
-                width: 20,  
-                height: 20, 
+                  width: 20,  
+                  height: 20, 
                 }}
                 resizeMode="contain" 
-                />
+              />
             </View>
           </TouchableOpacity>
         )}
@@ -104,4 +127,3 @@ export function ProfileAvatarPicker({
     </View>
   );
 }
-

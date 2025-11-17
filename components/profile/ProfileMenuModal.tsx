@@ -12,9 +12,8 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export type ProfileMenuKey =
-  | "edit"
+  | "profile"
   | "personal"
-  | "history"
   | "password"
   | "logout";
 
@@ -73,19 +72,9 @@ export const ProfileMenuModal: React.FC<ProfileMenuModalProps> = ({
 
   const menu: MenuItem[] = [
     {
-      key: "edit",
-      label: "Edit Profile",
-      icon: require("@/assets/profile/icon-gears.png"),
-    },
-    {
-      key: "personal",
-      label: "Personal Information",
+      key: "profile",
+      label: "Profile",
       icon: require("@/assets/profile/icon-user.png"),
-    },
-    {
-      key: "history",
-      label: "History",
-      icon: require("@/assets/profile/icon-history.png"),
     },
     {
       key: "password",

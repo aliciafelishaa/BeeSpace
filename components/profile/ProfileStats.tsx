@@ -1,4 +1,3 @@
-// components/profile/ProfileStatsStrip.tsx
 import { COLORS } from "@/constants/utils/colors";
 import { ProfileStats } from "@/types/profile/profile";
 import React, { memo } from "react";
@@ -55,7 +54,7 @@ export const ProfileStat: React.FC<Props> = memo(({ stats, onPressItem }) => {
 
       {/* Items */}
       <View className="flex-row items-start justify-between">
-        <StatItem
+        {/* <StatItem
           label="Rating"
           value={ratingText}
           onPress={onPressItem ? () => onPressItem("rating") : undefined}
@@ -66,7 +65,7 @@ export const ProfileStat: React.FC<Props> = memo(({ stats, onPressItem }) => {
               resizeMode="contain"
             />
           }
-        />
+        /> */}
         <StatItem
           label="Active Room"
           value={stats.activeRooms}
