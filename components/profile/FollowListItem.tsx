@@ -1,7 +1,7 @@
 import { COLORS } from "@/constants/utils/colors"
 import { router } from "expo-router"
 import React from "react"
-import { Image, Text, TouchableOpacity, View, ActivityIndicator } from "react-native"
+import { ActivityIndicator, Image, Text, TouchableOpacity, View } from "react-native"
 
 export type FollowUser = {
     id: string

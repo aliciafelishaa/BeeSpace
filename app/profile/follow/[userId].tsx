@@ -1,18 +1,18 @@
 import { FollowListItem, FollowUser } from "@/components/profile/FollowListItem"
 import SearchBar from "@/components/utils/SearchBar"
 import { COLORS } from "@/constants/utils/colors"
-import { router, useLocalSearchParams } from "expo-router"
-import React, { useEffect, useState } from "react"
-import { FlatList, Image, Text, TouchableOpacity, View, ActivityIndicator, Alert } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
 import { useAuth } from "@/context/AuthContext"
 import {
-    getFollowersList,
-    getFollowingList,
-    followUser,
-    unfollowUser,
-    getUserRelationship
+  followUser,
+  getFollowersList,
+  getFollowingList,
+  getUserRelationship,
+  unfollowUser
 } from "@/services/userService"
+import { router, useLocalSearchParams } from "expo-router"
+import React, { useEffect, useState } from "react"
+import { ActivityIndicator, Alert, FlatList, Image, Text, TouchableOpacity, View } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 type TabType = 'followers' | 'following'
 

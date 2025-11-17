@@ -81,6 +81,7 @@ export const getFullUserProfile = async (
         }
 
         const data = userDoc.data() as FirebaseUserData
+>>>>>>> 76b36b96420efd8165941003d3e0349f82a29b8e
 
         const profile: UserProfile = {
             id: userId,
@@ -113,6 +114,7 @@ export const getFullUserProfile = async (
 }
 
 export const checkUsernameExists = async (username: string): Promise<boolean> => {
+>>>>>>> 76b36b96420efd8165941003d3e0349f82a29b8e
     try {
         const q = query(collection(db, "users"), where("username", "==", username))
         const querySnapshot = await getDocs(q)
@@ -152,12 +154,25 @@ export const checkUserProfileCompletion = async (firebaseUid: string): Promise<b
         if (userDoc.exists()) {
             return userDoc.data().profileCompleted === true
         }
+>>>>>>> 76b36b96420efd8165941003d3e0349f82a29b8e
         return false
     } catch (error) {
         console.error("Error checking profile completion:", error)
         return false
     }
+<<<<<<< HEAD
+<<<<<<< HEAD
 }
+=======
+    return false;
+  } catch (error) {
+    console.error("Error checking profile completion:", error);
+    return false;
+  }
+};
+=======
+}
+>>>>>>> 76b36b96420efd8165941003d3e0349f82a29b8e
 
 export const createUserDocument = async (
     userId: string,
