@@ -29,7 +29,7 @@ function RootContent() {
   const [fontsLoaded] = useFonts({ ...Fonts });
   const [isProfileEditing, setIsProfileEditing] = useState(false);
 
-  useNotifications();
+    useNotifications();
 
   useEffect(() => {
     const yourroomAliases = [

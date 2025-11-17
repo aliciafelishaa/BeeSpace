@@ -249,57 +249,57 @@ export const updateUserRating = async (userId: string, newRating: number) => {
 };
 
 export const getUserRelationship = async (
-  currentUserId: string,
-  targetUserId: string
+    currentUserId: string,
+    targetUserId: string
 ) => {
-  try {
-    const followDoc = await getDoc(
-      doc(db, "users", currentUserId, "following", targetUserId)
-    );
-    return {
-      isFollowing: followDoc.exists(),
-    };
-  } catch (error) {
-    console.error("Error getting relationship:", error);
-    return { isFollowing: false };
-  }
-};
+    try {
+        const followDoc = await getDoc(
+            doc(db, "users", currentUserId, "following", targetUserId)
+        )
+        return {
+            isFollowing: followDoc.exists(),
+        }
+    } catch (error) {
+        console.error("Error getting relationship:", error)
+        return { isFollowing: false }
+    }
+}
 
 export const followUser = async (
-  currentUserId: string,
-  targetUserId: string
+    currentUserId: string,
+    targetUserId: string
 ) => {
-  try {
-    await setDoc(doc(db, "users", currentUserId, "following", targetUserId), {
-      createdAt: new Date(),
-    });
-    await setDoc(doc(db, "users", targetUserId, "followers", currentUserId), {
-      createdAt: new Date(),
-    });
-    await incrementFollowingCount(currentUserId);
-    await incrementFollowersCount(targetUserId);
-    console.log("✅ Followed user");
-  } catch (error) {
-    console.error("❌ Error following user:", error);
-    throw error;
-  }
-};
+    try {
+        await setDoc(doc(db, "users", currentUserId, "following", targetUserId), {
+            createdAt: new Date(),
+        })
+        await setDoc(doc(db, "users", targetUserId, "followers", currentUserId), {
+            createdAt: new Date(),
+        })
+        await incrementFollowingCount(currentUserId)
+        await incrementFollowersCount(targetUserId)
+        console.log("✅ Followed user")
+    } catch (error) {
+        console.error("❌ Error following user:", error)
+        throw error
+    }
+}
 
 export const unfollowUser = async (
-  currentUserId: string,
-  targetUserId: string
+    currentUserId: string,
+    targetUserId: string
 ) => {
-  try {
-    await deleteDoc(doc(db, "users", currentUserId, "following", targetUserId));
-    await deleteDoc(doc(db, "users", targetUserId, "followers", currentUserId));
-    await decrementFollowingCount(currentUserId);
-    await decrementFollowersCount(targetUserId);
-    console.log("✅ Unfollowed user");
-  } catch (error) {
-    console.error("❌ Error unfollowing user:", error);
-    throw error;
-  }
-};
+    try {
+        await deleteDoc(doc(db, "users", currentUserId, "following", targetUserId))
+        await deleteDoc(doc(db, "users", targetUserId, "followers", currentUserId))
+        await decrementFollowingCount(currentUserId)
+        await decrementFollowersCount(targetUserId)
+        console.log("✅ Unfollowed user")
+    } catch (error) {
+        console.error("❌ Error unfollowing user:", error)
+        throw error
+    }
+}
 
 export const getFollowersList = async (userId: string) => {
   try {
