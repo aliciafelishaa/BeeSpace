@@ -25,53 +25,39 @@ function shouldShowBottomNav(
 }
 
 function RootContent() {
-    const { user, initializing } = useAuthState();
-    const router = useRouter();
-    const pathname = usePathname();
-    const [activeTab, setActiveTab] = useState("home");
-    const [fontsLoaded] = useFonts({ ...Fonts });
-    const [isProfileEditing, setIsProfileEditing] = useState(false);
+  const { user, initializing } = useAuthState();
+  const router = useRouter();
+  const pathname = usePathname();
+  const [activeTab, setActiveTab] = useState("home");
+  const [fontsLoaded] = useFonts({ ...Fonts });
+  const [isProfileEditing, setIsProfileEditing] = useState(false);
 
-    useNotifications();
+  useNotifications();
 
-    useEffect(() => {
-        const yourroomAliases = [
-            "/yourroom",
-            "/yourroom/yourRoom",
-            "/myroom/roomDashboard",
-        ];
+  useEffect(() => {
+    const yourroomAliases = [
+      "/yourroom",
+      "/yourroom/yourRoom",
+      "/myroom/roomDashboard",
+    ];
 
-        const isMatch = (base: string, p: string) =>
-            p === base || p.startsWith(base + "/");
+    const isMatch = (base: string, p: string) =>
+      p === base || p.startsWith(base + "/");
 
-        const current =
-            [...NAV_ITEMS]
-                .sort((a, b) => b.route.length - a.route.length)
-                .find((item) => isMatch(item.route, pathname)) ||
-            (yourroomAliases.some((a) => isMatch(a, pathname))
-                ? NAV_ITEMS.find((i) => i.id === "/myroom")
-                : undefined);
+    const current =
+      [...NAV_ITEMS]
+        .sort((a, b) => b.route.length - a.route.length)
+        .find((item) => isMatch(item.route, pathname)) ||
+      (yourroomAliases.some((a) => isMatch(a, pathname))
+        ? NAV_ITEMS.find((i) => i.id === "/myroom")
+        : undefined);
 
-        if (current) setActiveTab(current.id);
-    }, [pathname]);
+    if (current) setActiveTab(current.id);
+  }, [pathname]);
 
-    useEffect(() => {
-        const handleProfileEdit = (event: any) => {
-            setIsProfileEditing(event.detail.editing);
-        };
-
-        window.addEventListener("profileEditChange", handleProfileEdit);
-        return () =>
-            window.removeEventListener("profileEditChange", handleProfileEdit);
-    }, []);
-
-    useEffect(() => {
-        if (fontsLoaded) SplashScreen.hideAsync();
-    }, [fontsLoaded]);
-
-    const handleSelect = (id: string, route: string) => {
-        setActiveTab(id);
-        router.push(route as any);
+  useEffect(() => {
+    const handleProfileEdit = (event: any) => {
+      setIsProfileEditing(event.detail.editing);
     };
 
     if (initializing || !fontsLoaded) {
