@@ -234,22 +234,22 @@ export default function CreateRoomPage() {
                 }}
                 placeholder="Select Category"
                 options={[
-                  { label: "Sport & Fitness", value: "Sport & Fitness" },
+                  { label: "Sport", value: "Sport" },
                   {
-                    label: "Transportation Sharing",
-                    value: "Transportation Sharing",
+                    label: "Transportation",
+                    value: "Transportation",
                   },
-                  { label: "Academic & Study", value: "Academic & Study" },
+                  { label: "Academic", value: "Academic" },
                   {
-                    label: "Events & Activities",
-                    value: "Events & Activities",
+                    label: "Events",
+                    value: "Events",
                   },
-                  { label: "Food & Hangout", value: "Food & Hangout" },
-                  { label: "Community & Hobby", value: "Community & Hobby" },
-                  { label: "Health & Wellness", value: "Health & Wellness" },
+                  { label: "Hangout", value: "Hangout" },
+                  { label: "Community", value: "Community" },
+                  { label: "Wellness", value: "Wellness" },
                   {
-                    label: "Competition & Challenge",
-                    value: "Competition & Challenge",
+                    label: "Competition",
+                    value: "Competition",
                   },
                   { label: "Other", value: "Other" },
                 ]}

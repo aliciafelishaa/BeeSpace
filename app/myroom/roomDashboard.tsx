@@ -34,6 +34,8 @@ export default function MyRoomDash() {
   const [filteredRooms, setFilteredRooms] = useState<RoomEntry[]>([]);
   const [search, setSearch] = useState("");
   const { userData } = useUserData(uid);
+  const [extraFilter, setExtraFilter] = useState<Record<string, string>>({});
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchRoom = async () => {
@@ -82,8 +84,8 @@ export default function MyRoomDash() {
       const roomDate = new Date(room.date);
 
       // --- category ---
-      if (activeTab !== "all" && room.category !== activeTab) {
-        return null;
+      if (activeTab !== "all" && room.category.toLowerCase() !== activeTab) {
+        return false;
       }
 
       // --- time filters ---
@@ -123,6 +125,7 @@ export default function MyRoomDash() {
         );
       }
 
+      // sorting
       if (search.trim() !== "") {
         const q = search.toLowerCase();
         const match =
@@ -132,11 +135,45 @@ export default function MyRoomDash() {
         if (!match) return false;
       }
 
+      // // --- EXTRA FILTER: Event Type ---
+      // if (extraFilter["Event Type"] && extraFilter["Event Type"] !== "All") {
+      //   const isOnline = extraFilter["Event Type"] === "Online";
+
+      //   if (isOnline && room.place !== "online") return false;
+      //   if (!isOnline && room.place !== "onsite") return false;
+      // }
+
       return true;
     });
 
+    // //Filtering
+    // if (extraFilter["Sort By"] === "Descending") {
+    //   result = result.sort(
+    //     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    //   );
+    // }
+
+    // // Sort berdasarkan event yang akan datang (waktu mulai paling dekat)
+    // if (extraFilter["Sort By"] === "Ascending") {
+    //   result = result.sort(
+    //     (a, b) =>
+    //       new Date(a.timeStart).getTime() - new Date(b.timeStart).getTime()
+    //   );
+    // }
+
     setFilteredRooms(result);
-  }, [rooms, activeTab, activeFilter, userData, search]);
+  }, [rooms, activeTab, activeFilter, userData, search, extraFilter]);
+
+  useEffect(() => {
+    if (!rooms || rooms.length === 0) return;
+
+    const uniqueCategories = [
+      "all",
+      ...Array.from(new Set(rooms.map((r) => r.category.toLowerCase()))),
+    ];
+
+    setAvailableCategories(uniqueCategories);
+  }, [rooms]);
 
   return (
     <SafeAreaView
@@ -201,7 +238,7 @@ export default function MyRoomDash() {
               </View>
 
               {/* Filtering */}
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 onPress={() => setModalVisible(true)}
                 className="border border-neutral-300 p-2 w-[80px] h-[44px] items-center justify-center rounded-[8px]"
               >
@@ -209,7 +246,7 @@ export default function MyRoomDash() {
                   source={require("@/assets/utils/setting-icon.png")}
                   className="w-[16px] h-[16px]"
                 />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
 
             {/* Pilihan Category */}
@@ -219,48 +256,16 @@ export default function MyRoomDash() {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={{ gap: 8 }}
               >
-                <TabButton
-                  title="All"
-                  icon={require("@/assets/utils/passive-icon/globe.png")}
-                  activeIcon={require("@/assets/utils/active-icon/globe.png")}
-                  active={activeTab === "all"}
-                  onPress={() => setActiveTab("all")}
-                />
-                <TabButton
-                  title="Sport"
-                  icon={require("@/assets/utils/passive-icon/running.png")}
-                  activeIcon={require("@/assets/utils/active-icon/running.png")}
-                  active={activeTab === "sport"}
-                  onPress={() => setActiveTab("sport")}
-                />
-                <TabButton
-                  title="Hangout"
-                  icon={require("@/assets/utils/passive-icon/hangout.png")}
-                  activeIcon={require("@/assets/utils/active-icon/hangout.png")}
-                  active={activeTab === "hangout"}
-                  onPress={() => setActiveTab("hangout")}
-                />
-                <TabButton
-                  title="Learning"
-                  icon={require("@/assets/utils/passive-icon/learning.png")}
-                  activeIcon={require("@/assets/utils/active-icon/learning.png")}
-                  active={activeTab === "learning"}
-                  onPress={() => setActiveTab("learning")}
-                />
-                <TabButton
-                  title="Events"
-                  icon={require("@/assets/utils/passive-icon/events.png")}
-                  activeIcon={require("@/assets/utils/active-icon/events.png")}
-                  active={activeTab === "events"}
-                  onPress={() => setActiveTab("events")}
-                />
-                <TabButton
-                  title="Hobby"
-                  icon={require("@/assets/utils/passive-icon/hobby.png")}
-                  activeIcon={require("@/assets/utils/active-icon/hobby.png")}
-                  active={activeTab === "hobby"}
-                  onPress={() => setActiveTab("hobby")}
-                />
+                {availableCategories.map((cat) => (
+                  <TabButton
+                    key={cat}
+                    title={cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    icon={require("@/assets/utils/passive-icon/globe.png")} 
+                    activeIcon={require("@/assets/utils/active-icon/globe.png")}
+                    active={activeTab === cat}
+                    onPress={() => setActiveTab(cat as RoomCategory)}
+                  />
+                ))}
               </ScrollView>
             </View>
 
@@ -339,16 +344,11 @@ export default function MyRoomDash() {
         filters={[
           {
             title: "Sort By",
-            options: [
-              "Earliest Time",
-              "Nearest Location",
-              "Most Popular",
-              "Recently Added",
-            ],
+            options: ["Ascending", "Descending"],
           },
-          { title: "Price", options: ["Free", "Paid"] },
-          { title: "Event Type", options: ["Online", "Onsite"] },
+          { title: "Event Type", options: ["All", "Online", "Onsite"] },
         ]}
+        onApply={(selected) => setExtraFilter(selected)}
       />
     </SafeAreaView>
   );
