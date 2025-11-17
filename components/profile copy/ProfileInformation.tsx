@@ -176,7 +176,7 @@ export function ProfileInformation({
     );
 
     return (
-        <View style={{ flex: 1, minHeight: 0, position: "relative" }} >
+        <View style={{ flex: 1, minHeight: 0, position: "relative", backgroundColor: COLORS.primary2nd }} >
             <ScrollView
                 style={{
                     position: "absolute",

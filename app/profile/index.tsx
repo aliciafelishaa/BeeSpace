@@ -142,7 +142,7 @@ export default function MyProfileScreen() {
 
     return (
         <SafeAreaView
-            className="bg-neutral-100"
+            className="bg-[#FAFAFA]"
             style={{
                 backgroundColor: COLORS.white,
                 flex: 1,
@@ -150,16 +150,17 @@ export default function MyProfileScreen() {
                 top: 0,
                 left: 0,
                 right: 0,
+                bottom: 0,
             }}
         >
             <ScrollView
-                    contentContainerStyle={{
-                      flexGrow: 1,
-                      paddingBottom: insets.bottom + 100,
-                    }}
-                    showsVerticalScrollIndicator={false}
-                    className="bg-[#FAFAFA]"
-                  >
+                contentContainerStyle={{
+                    flexGrow: 1,
+                    paddingBottom: insets.bottom + 100,
+                }}
+                showsVerticalScrollIndicator={false}
+                className="bg-[#FAFAFA]"
+            >
                 <ProfileTopBar
                     isOwnProfile
                     userId={user.id}
@@ -182,9 +183,8 @@ export default function MyProfileScreen() {
                 />
 
                 {mode === 'view' && (
-                    <ScrollView
-                        className="flex-1"
-                        showsVerticalScrollIndicator={false}
+                    <View
+                        style={{ flex: 1 }}
                     >
                         <ProfileHeader
                             user={user}
@@ -194,7 +194,7 @@ export default function MyProfileScreen() {
                         <ProfileStat stats={user.stats} />
 
                         <ProfileActivity limit={3} userId={user.id} />
-                    </ScrollView>
+                    </View>
                 )}
 
                 {mode === 'profile' && (
@@ -205,15 +205,11 @@ export default function MyProfileScreen() {
                             fullName: user.name ?? "",
                             email: authUser.email ?? "",
                             bio: user.bio ?? "",
-                            universityName: "Bina Nusantara University",
-                            major: "Computer Science",
-                            studentId: "2702336478",
-                            enrollmentYear: "2023",
-                            graduationYear: "2027",
-                        }}
-                        onPickImage={() => {
-                            console.log("Edit avatar clicked")
-                            Alert.alert("Coming Soon", "Image upload will be available soon")
+                            universityName: user.university ?? "",
+                            major: user.major ?? "",
+                            studentId: user.studentID ?? "",
+                            enrollmentYear: user.enrollYear ?? "",
+                            graduationYear: user.gradYear ?? "",
                         }}
                         onSave={handleSaveProfile}
                         onCancel={() => setMode("view")}
@@ -224,7 +220,6 @@ export default function MyProfileScreen() {
                 {mode === 'password' && (
                     <ChangePassword email={authUser.email || ""} />
                 )}
-
             </ScrollView>
         </SafeAreaView>
     )

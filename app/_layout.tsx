@@ -23,10 +23,6 @@ function shouldShowBottomNav(
     const hiddenPatterns = [/^\/auth/, /^\/myroom\/detailroom/];
     const isChatPage = pathname === "/directmessage/chat";
 
-    if (pathname === "/profile" && isEditing) {
-        return false;
-    }
-
     return !hiddenPatterns.some((regex) => regex.test(pathname)) && !isChatPage;
 }
 

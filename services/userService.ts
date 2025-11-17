@@ -88,6 +88,13 @@ export const getFullUserProfile = async (
             username: data.username || "",
             avatarUrl: data.profilePicture || null,
             bio: data.bio || "",
+            // ✅ TAMBAHKAN INI!
+            university: data.university || "",
+            major: data.major || "",
+            studentID: data.studentID || "",
+            enrollYear: data.enrollYear || "",
+            gradYear: data.gradYear || "",
+            // ✅ SAMPAI SINI
             isMe: currentUserId === userId,
             followStats: {
                 followers: data.followersCount || 0,
