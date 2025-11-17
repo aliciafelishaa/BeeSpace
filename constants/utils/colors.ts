@@ -25,4 +25,5 @@ export const COLORS = {
   // Other Neutrals
   white: "#FFFFFF",
   black: "#181818",
+  red: "#D73D3D",
 };
