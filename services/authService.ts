@@ -9,9 +9,18 @@ import {
     signInWithCredential,
     signInWithEmailAndPassword,
 } from "firebase/auth"
-import { collection, doc, getDocs, query, setDoc, where } from "firebase/firestore"
+import {
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    query,
+    setDoc,
+    where,
+} from "firebase/firestore"
+import { signOut } from "firebase/auth"
 
-WebBrowser.maybeCompleteAuthSession()
+// WebBrowser.maybeCompleteAuthSession()
 
 export interface User {
     uid: string
@@ -38,7 +47,14 @@ const defaultUserProfile = (email: string, displayName = "") => {
     }
 }
 
+<<<<<<< HEAD
 export const registerWithEmail = async (email: string, password: string): Promise<User> => {
+=======
+export const registerWithEmail = async (
+    email: string,
+    password: string
+): Promise<User> => {
+>>>>>>> 8fb58e969169e14a47365fa4140599191f851798
     const { user } = await createUserWithEmailAndPassword(auth, email, password)
     await setDoc(doc(db, "users", user.uid), defaultUserProfile(email))
     const now = new Date()
@@ -61,7 +77,13 @@ export const sendResetPasswordEmail = async (email: string) => {
     const querySnap = await getDocs(q)
     if (querySnap.empty) throw new Error("EMAIL_NOT_REGISTERED")
     try {
+<<<<<<< HEAD
         await sendPasswordResetEmail(auth, email, { url: "http://localhost:8081/auth/reset-pass" })
+=======
+        await sendPasswordResetEmail(auth, email, {
+            url: "http://localhost:8081/auth/reset-pass",
+        })
+>>>>>>> 8fb58e969169e14a47365fa4140599191f851798
         return true
     } catch (error: any) {
         if (error.code === "auth/invalid-email") throw new Error("INVALID_EMAIL")
@@ -69,6 +91,7 @@ export const sendResetPasswordEmail = async (email: string) => {
     }
 }
 
+<<<<<<< HEAD
 export function useGoogleAuth() {
     const redirectUri = makeRedirectUri({ useProxy: true, scheme: "beespace" })
     const [request, response, promptAsync] = Google.useAuthRequest({
@@ -95,3 +118,83 @@ export function useGoogleAuth() {
 
     return { request, response, promptAsync: () => promptAsync({ useProxy: true }), handleGoogleResponse }
 }
+=======
+export const getCurrentUser = () => {
+    return auth.currentUser
+}
+
+export const getCurrentUserData = async () => {
+    try {
+        const user = auth.currentUser
+        if (!user) return null
+
+        const userDoc = await getDoc(doc(db, "users", user.uid))
+        if (userDoc.exists()) {
+            const data = userDoc.data()
+            return {
+                id: user.uid,
+                email: user.email,
+                ...data,
+            }
+        }
+        return null
+    } catch (err) {
+        console.error("Error:", err)
+        return null
+    }
+}
+
+// export function useGoogleAuth() {
+//     const redirectUri = makeRedirectUri({ useProxy: true, scheme: "beespace" })
+//     const [request, response, promptAsync] = Google.useAuthRequest({
+//         webClientId: process.env.EXPO_PUBLIC_FIREBASE_WEB_CLIENT_ID,
+//         iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID,
+//         androidClientId: process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID,
+//         redirectUri,
+//         scopes: ["profile", "email"],
+//     })
+
+//     const handleGoogleResponse = async () => {
+//         if (response?.type === "success" && response.authentication?.idToken) {
+//             const credential = GoogleAuthProvider.credential(
+//                 response.authentication.idToken
+//             )
+//             const { user } = await signInWithCredential(auth, credential)
+//             const q = query(
+//                 collection(db, "users"),
+//                 where("email", "==", user.email)
+//             )
+//             const querySnap = await getDocs(q)
+//             if (querySnap.empty)
+//                 await setDoc(
+//                     doc(db, "users", user.uid),
+//                     defaultUserProfile(user.email!, user.displayName ?? "")
+//                 )
+//             return { uid: user.uid, email: user.email }
+//         } else if (response?.type === "error") {
+//             throw new Error(
+//                 `Google login failed: ${response.error?.message || "Unknown error"}`
+//             )
+//         }
+//         return null
+//     }
+
+//     return {
+//         request,
+//         response,
+//         promptAsync: () => promptAsync({ useProxy: true }),
+//         handleGoogleResponse,
+//     }
+// }
+
+export const logout = async (): Promise<boolean> => {
+    try {
+        await signOut(auth)
+        console.log("✅ Logout successful")
+        return true
+    } catch (error) {
+        console.error("❌ Logout error:", error)
+        return false
+    }
+}
+>>>>>>> 8fb58e969169e14a47365fa4140599191f851798

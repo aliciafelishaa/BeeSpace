@@ -2,12 +2,14 @@ export interface User {
   id: string;
   name: string;
   avatar?: string;
+  email?: string;
+  username?: string;
 }
 
 export interface Message {
   id: string;
   text: string;
-  timestamp: Date;
+  timestamp: Date | any;
   senderId: string;
   read: boolean;
   type: "text" | "image";
@@ -16,13 +18,32 @@ export interface Message {
   fileSize?: number;
   replyTo?: string;
   status?: "sent" | "delivered" | "read";
+  senderName?: string;
 }
 
 export interface Chat {
   id: string;
-  user?: User;
+  userId: string;
   lastMessage: Message;
   unreadCount: number;
+  user?: User;
+  isGroupChat?: boolean;
+  muteSettings?: {
+    [userId: string]: ChatMuteSettings;
+  };
+  groupData?: {
+    name: string;
+    memberUids: string[];
+    roomId: string;
+    profilePicture?: string;
+    cover?: string;
+    description?: string;
+  };
+}
+
+export interface ChatMuteSettings {
+  muted: boolean;
+  mutedAt?: Date;
 }
 
 export type FilterType = "all" | "not-read" | "newest" | "oldest";
@@ -34,4 +55,27 @@ export interface SearchFilters {
     start: Date;
     end: Date;
   };
+}
+
+export interface GroupChatDocument {
+  name: string;
+  memberUids: string[];
+  adminUids: string[];
+  roomId: string;
+  profilePicture?: string;
+  cover?: string;
+  description?: string;
+  lastMessage?: {
+    text: string;
+    timestamp: any;
+    senderId: string;
+    senderName?: string;
+    read: boolean;
+    type: "text" | "image";
+  };
+  lastUpdated: any;
+  unreadCount: {
+    [userId: string]: number;
+  };
+  createdAt: any;
 }

@@ -1,7 +1,6 @@
 import { CardRoomProps } from "@/types/myroom/cardroom";
-import { RoomEntry } from "@/types/myroom/room";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 
 export default function CardRoom({
@@ -13,14 +12,19 @@ export default function CardRoom({
   slotTotal,
   hostName,
   imageSource,
-  isEdit
+  imageAvatar,
+  isEdit,
+  timeStart,
+  timeEnd,
 }: CardRoomProps) {
   const formattedDate = date.toLocaleDateString("id-ID", {
     day: "2-digit",
     month: "long",
     year: "numeric",
+    timeZone: "Asia/Jakarta",
   });
-  const [rooms, setRooms] = useState<RoomEntry[]>([]);
+  const formattedTime =
+    timeStart && timeEnd ? `${timeStart} - ${timeEnd} WIB` : "-";
 
   return (
     <TouchableOpacity
@@ -53,6 +57,15 @@ export default function CardRoom({
                 {formattedDate}
               </Text>
             </View>
+            <View className="flex-row items-center gap-2 mt-1">
+              <Image
+                source={require("@/assets/page/myroom/calendar.png")}
+                className="w-3 h-3"
+              />
+              <Text className="text-[12px] font-interRegular text-neutral-700">
+                {formattedTime}
+              </Text>
+            </View>
 
             <View className="flex-row items-center gap-2 mt-1">
               <Image
@@ -73,7 +86,15 @@ export default function CardRoom({
 
             <View className="flex-row items-center gap-1">
               <Text className="text-[10px] font-interRegular">Host by</Text>
-              <View className="w-4 h-4 rounded-full bg-yellow-500" />
+              {imageAvatar ? (
+                <Image
+                  source={imageAvatar}
+                  className="w-4 h-4 rounded-[8px]"
+                  resizeMode="cover"
+                />
+              ) : (
+                <View className="w-4 h-4 bg-primary rounded-[8px] " />
+              )}
               <Text className="text-[10px] font-interRegular">{hostName}</Text>
             </View>
           </View>

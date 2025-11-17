@@ -1,5 +1,6 @@
 export interface RoomEntry {
-  fromUid?: string | "null";
+  userUniv: any;
+  fromUid: string;
   id?: string;
   cover?: string;
   category: string;
@@ -14,4 +15,7 @@ export interface RoomEntry {
   planName: string;
   timeEnd: string;
   timeStart: string;
+  hostName?: string;
+  imageAvatar?: ImageSourcePropType;
+  joinedUids?: string[];
 }

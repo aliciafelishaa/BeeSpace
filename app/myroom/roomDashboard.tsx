@@ -4,10 +4,13 @@ import CardRoom from "@/components/myroom/CardRoom";
 import ModalFilteringDynamic from "@/components/utils/ModalFiltering";
 import SearchBar from "@/components/utils/SearchBar";
 import { COLORS } from "@/constants/utils/colors";
+import { useAuthState } from "@/hooks/useAuthState";
 import { useRoom } from "@/hooks/useRoom";
+import { useUserData } from "@/hooks/useUserData";
+import { getUserById } from "@/services/userService";
 import { RoomCategory, TimeCategory } from "@/types/myroom/myroom";
 import { RoomEntry } from "@/types/myroom/room";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
@@ -24,23 +27,153 @@ export default function MyRoomDash() {
   const [rooms, setRooms] = useState<RoomEntry[]>([]);
   const { getRoom } = useRoom();
   const [loading, setLoading] = useState(false);
+  const { user } = useAuthState();
+  const { uid: paramUid } = useLocalSearchParams();
+  const uid = paramUid || user?.uid;
+  const [userDatas, setUserDatas] = useState<any>(null);
+  const [filteredRooms, setFilteredRooms] = useState<RoomEntry[]>([]);
+  const [search, setSearch] = useState("");
+  const { userData } = useUserData(uid);
+  const [extraFilter, setExtraFilter] = useState<Record<string, string>>({});
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchRoom = async () => {
+      if (!uid) return;
       setLoading(true);
-      const res = await getRoom();
-      console.log("Test");
-      console.log(res.data);
+      const res = await getRoom(uid);
+
       if (res.success && res.data) {
-        setRooms(res.data);
+        const roomsData = res.data;
+
+        const roomsWithHost = await Promise.all(
+          roomsData.map(async (room: RoomEntry) => {
+            const userRes = await getUserById(room.fromUid);
+            return {
+              ...room,
+              hostName: userRes?.name || "Unknown",
+              avatar: userRes?.avatar || "",
+            };
+          })
+        );
+
+        setRooms(roomsWithHost);
       } else {
         setRooms([]);
       }
       setLoading(false);
     };
     fetchRoom();
-    console.log(rooms);
-  }, []);
+  }, [uid]);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!uid) return;
+      const userRes = await getUserById(uid);
+      setUserDatas(userRes);
+    };
+    fetchUserData();
+  }, [uid]);
+
+  useEffect(() => {
+    if (!rooms) return;
+
+    const now = new Date();
+
+    let result = rooms.filter((room) => {
+      const roomDate = new Date(room.date);
+
+      // --- category ---
+      if (activeTab !== "all" && room.category.toLowerCase() !== activeTab) {
+        return false;
+      }
+
+      // --- time filters ---
+      if (activeFilter === "today") {
+        const isToday =
+          roomDate.getDate() === now.getDate() &&
+          roomDate.getMonth() === now.getMonth() &&
+          roomDate.getFullYear() === now.getFullYear();
+
+        if (!isToday) return false;
+      }
+
+      if (activeFilter === "thisweek") {
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay());
+
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 7);
+
+        const isThisWeek = roomDate >= startOfWeek && roomDate <= endOfWeek;
+        if (!isThisWeek) return false;
+      }
+
+      if (activeFilter === "thismonth") {
+        const isThisMonth =
+          roomDate.getMonth() === now.getMonth() &&
+          roomDate.getFullYear() === now.getFullYear();
+        if (!isThisMonth) return false;
+      }
+
+      if (activeFilter === "mycampus") {
+        if (!userData?.university) return false;
+        if (!room.userUniv) return false;
+
+        return (
+          room.userUniv.toLowerCase() === userData.university.toLowerCase()
+        );
+      }
+
+      // sorting
+      if (search.trim() !== "") {
+        const q = search.toLowerCase();
+        const match =
+          room.planName?.toLowerCase().includes(q) ||
+          room.place?.toLowerCase().includes(q) ||
+          room.hostName?.toLowerCase().includes(q);
+        if (!match) return false;
+      }
+
+      // // --- EXTRA FILTER: Event Type ---
+      // if (extraFilter["Event Type"] && extraFilter["Event Type"] !== "All") {
+      //   const isOnline = extraFilter["Event Type"] === "Online";
+
+      //   if (isOnline && room.place !== "online") return false;
+      //   if (!isOnline && room.place !== "onsite") return false;
+      // }
+
+      return true;
+    });
+
+    // //Filtering
+    // if (extraFilter["Sort By"] === "Descending") {
+    //   result = result.sort(
+    //     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    //   );
+    // }
+
+    // // Sort berdasarkan event yang akan datang (waktu mulai paling dekat)
+    // if (extraFilter["Sort By"] === "Ascending") {
+    //   result = result.sort(
+    //     (a, b) =>
+    //       new Date(a.timeStart).getTime() - new Date(b.timeStart).getTime()
+    //   );
+    // }
+
+    setFilteredRooms(result);
+  }, [rooms, activeTab, activeFilter, userData, search, extraFilter]);
+
+  useEffect(() => {
+    if (!rooms || rooms.length === 0) return;
+
+    const uniqueCategories = [
+      "all",
+      ...Array.from(new Set(rooms.map((r) => r.category.toLowerCase()))),
+    ];
+
+    setAvailableCategories(uniqueCategories);
+  }, [rooms]);
 
   return (
     <SafeAreaView
@@ -68,7 +201,7 @@ export default function MyRoomDash() {
             <View className="flex-row items-center justify-between">
               <View className="gap-[10px]">
                 <Text className="text-neutral-500 text-[12px] font-interRegular">
-                  Activities Near
+                  My Campus
                 </Text>
                 <View className="flex-row gap-2 items-center">
                   <Image
@@ -76,16 +209,14 @@ export default function MyRoomDash() {
                     className="w-[16px] h-[16px]"
                   ></Image>
                   <Text className="text-neutral-700  text-[14px] font-interSemiBold">
-                    Binus Kemanggisan{" "}
+                    {userData?.university || "-"}
                   </Text>
-                  <Image
-                    source={require("@/assets/utils/arrow-down.png")}
-                    className="w-[16px] h-[16px]"
-                  ></Image>
                 </View>
               </View>
               <View>
-                <TouchableOpacity onPress={() => router.push("/notifications/notification")}>
+                <TouchableOpacity
+                  onPress={() => router.push("/notifications/notification")}
+                >
                   <Image
                     source={require("@/assets/utils/notifications.png")}
                     className="w-[40px] h-[40px]"
@@ -98,17 +229,16 @@ export default function MyRoomDash() {
             <View className="flex-row items-center mt-4 gap-2 justify-between">
               {/* SearchBar */}
               <View className="flex-1">
-                <TouchableOpacity
-                  onPress={() => router.push("/myroom/detailroom/searchRoom")}
-                >
-                  <SearchBar
-                    placeholder="Search Activity"
-                    onChangeText={(text) => console.log(text)}
-                  />
-                </TouchableOpacity>
+                <SearchBar
+                  placeholder="Search Activity"
+                  value={search}
+                  onSearch={setSearch}
+                  onChangeText={(text) => setSearch(text)}
+                />
               </View>
+
               {/* Filtering */}
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 onPress={() => setModalVisible(true)}
                 className="border border-neutral-300 p-2 w-[80px] h-[44px] items-center justify-center rounded-[8px]"
               >
@@ -116,7 +246,7 @@ export default function MyRoomDash() {
                   source={require("@/assets/utils/setting-icon.png")}
                   className="w-[16px] h-[16px]"
                 />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
 
             {/* Pilihan Category */}
@@ -126,48 +256,16 @@ export default function MyRoomDash() {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={{ gap: 8 }}
               >
-                <TabButton
-                  title="All"
-                  icon={require("@/assets/utils/passive-icon/globe.png")}
-                  activeIcon={require("@/assets/utils/active-icon/globe.png")}
-                  active={activeTab === "all"}
-                  onPress={() => setActiveTab("all")}
-                />
-                <TabButton
-                  title="Sport"
-                  icon={require("@/assets/utils/passive-icon/running.png")}
-                  activeIcon={require("@/assets/utils/active-icon/running.png")}
-                  active={activeTab === "sport"}
-                  onPress={() => setActiveTab("sport")}
-                />
-                <TabButton
-                  title="Hangout"
-                  icon={require("@/assets/utils/passive-icon/hangout.png")}
-                  activeIcon={require("@/assets/utils/active-icon/hangout.png")}
-                  active={activeTab === "hangout"}
-                  onPress={() => setActiveTab("hangout")}
-                />
-                <TabButton
-                  title="Learning"
-                  icon={require("@/assets/utils/passive-icon/learning.png")}
-                  activeIcon={require("@/assets/utils/active-icon/learning.png")}
-                  active={activeTab === "learning"}
-                  onPress={() => setActiveTab("learning")}
-                />
-                <TabButton
-                  title="Events"
-                  icon={require("@/assets/utils/passive-icon/events.png")}
-                  activeIcon={require("@/assets/utils/active-icon/events.png")}
-                  active={activeTab === "events"}
-                  onPress={() => setActiveTab("events")}
-                />
-                <TabButton
-                  title="Hobby"
-                  icon={require("@/assets/utils/passive-icon/hobby.png")}
-                  activeIcon={require("@/assets/utils/active-icon/hobby.png")}
-                  active={activeTab === "hobby"}
-                  onPress={() => setActiveTab("hobby")}
-                />
+                {availableCategories.map((cat) => (
+                  <TabButton
+                    key={cat}
+                    title={cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    icon={require("@/assets/utils/passive-icon/globe.png")} 
+                    activeIcon={require("@/assets/utils/active-icon/globe.png")}
+                    active={activeTab === cat}
+                    onPress={() => setActiveTab(cat as RoomCategory)}
+                  />
+                ))}
               </ScrollView>
             </View>
 
@@ -214,20 +312,22 @@ export default function MyRoomDash() {
               <Text className="text-center text-neutral-500">
                 Loading rooms...
               </Text>
-            ) : rooms.length > 0 ? (
-              rooms.map((room) => (
+            ) : filteredRooms.length > 0 ? (
+              filteredRooms.map((room) => (
                 <CardRoom
-                  key={room.fromUid}
+                  key={room.id}
                   id={room.id}
                   title={room.planName}
-                  // date={`${room.date} ${room.timeStart} - ${room.timeEnd}`}
                   date={new Date(room.date)}
                   location={room.place}
                   slotRemaining={room.minMember}
+                  timeStart={room.timeStart}
+                  timeEnd={room.timeEnd}
                   slotTotal={room.maxMember}
-                  hostName={room.fromUid ? room.fromUid : "Ano"}
+                  hostName={room.hostName || "Anonymous"}
                   imageSource={room.cover ? { uri: room.cover } : false}
                   isEdit={false}
+                  imageAvatar={room.imageAvatar}
                 />
               ))
             ) : (
@@ -244,16 +344,11 @@ export default function MyRoomDash() {
         filters={[
           {
             title: "Sort By",
-            options: [
-              "Earliest Time",
-              "Nearest Location",
-              "Most Popular",
-              "Recently Added",
-            ],
+            options: ["Ascending", "Descending"],
           },
-          { title: "Price", options: ["Free", "Paid"] },
-          { title: "Event Type", options: ["Online", "Onsite"] },
+          { title: "Event Type", options: ["All", "Online", "Onsite"] },
         ]}
+        onApply={(selected) => setExtraFilter(selected)}
       />
     </SafeAreaView>
   );

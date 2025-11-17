@@ -1,9 +1,11 @@
 import CardRoom from "@/components/myroom/CardRoom";
 import EmptyState from "@/components/myroom/EmptyState";
+import { useAuthState } from "@/hooks/useAuthState";
 import { useRoom } from "@/hooks/useRoom";
+import { getUserById } from "@/services/userService";
 import { SectionTab } from "@/types/myroom/myroom";
 import { RoomEntry } from "@/types/myroom/room";
-import { usePathname } from "expo-router";
+import { useLocalSearchParams, usePathname } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
@@ -70,14 +72,33 @@ export default function MyRoomDash({
   const [rooms, setRooms] = useState<RoomEntry[]>([]);
   const { getRoom } = useRoom();
   const [loading, setLoading] = useState(false);
+  const { user } = useAuthState();
+  const { uid: paramUid } = useLocalSearchParams();
+  const uid = paramUid || user?.uid;
 
   useEffect(() => {
+    if (!uid) {
+      console.warn("UID not found. User not logged in or invalid param.");
+      return;
+    }
     const fetchRoom = async () => {
       setLoading(true);
-      const res = await getRoom();
+      const res = await getRoom(uid);
       console.log(res.data);
       if (res.success && res.data) {
-        setRooms(res.data);
+        const roomsData = res.data;
+        const roomsWithHost = await Promise.all(
+          roomsData.map(async (room: RoomEntry) => {
+            console.log(room.fromUid);
+            const userRes = await getUserById(room.fromUid);
+            return {
+              ...room,
+              hostName: userRes?.name || "Unknown",
+            };
+          })
+        );
+
+        setRooms(roomsWithHost);
       } else {
         setRooms([]);
       }
@@ -85,15 +106,21 @@ export default function MyRoomDash({
     };
     fetchRoom();
     console.log(rooms);
-  }, []);
+  }, [uid]);
 
   return (
     <SafeAreaView
       className="bg-neutral-100"
-      style={{ flex: 1, paddingBottom: insets.top }}
+      style={{
+        flex: 1,
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+      }}
     >
       <ScrollView
-        className=" px-[13px] pt-[35px]"
         contentContainerStyle={{
           flexGrow: 1,
           paddingBottom: insets.bottom + 100,
@@ -132,17 +159,19 @@ export default function MyRoomDash({
               ) : rooms.length > 0 ? (
                 rooms.map((room) => (
                   <CardRoom
-                    key={room.fromUid}
+                    key={room.id}
                     id={room.id}
                     title={room.planName}
-                    // date={`${room.date} ${room.timeStart} - ${room.timeEnd}`}
                     date={new Date(room.date)}
                     location={room.place}
                     slotRemaining={room.minMember}
+                    timeStart={room.timeStart}
+                    timeEnd={room.timeEnd}
                     slotTotal={room.maxMember}
-                    hostName={room.fromUid ? room.fromUid : "Ano"}
+                    hostName={room.hostName || "Anonymous"}
                     imageSource={room.cover ? { uri: room.cover } : false}
-                    isEdit={true}
+                    isEdit={false}
+                    imageAvatar={room.imageAvatar}
                   />
                 ))
               ) : (

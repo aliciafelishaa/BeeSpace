@@ -28,6 +28,7 @@ export default function ModalEditDelete({
   onDelete,
 }: ModalFilteringDynamicProps) {
   const handleDelete = () => {
+    console.log("test");
     Alert.alert("Delete Room", "Are you sure you want to delete this room?", [
       { text: "Cancel", style: "cancel" },
       { text: "Delete", style: "destructive", onPress: onDelete },
