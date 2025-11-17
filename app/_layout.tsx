@@ -15,19 +15,13 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 SplashScreen.preventAutoHideAsync();
 
 function shouldShowBottomNav(
-  user: any,
-  pathname: string,
-  isEditing: boolean
+    user: any,
+    pathname: string,
 ): boolean {
-  if (!user) return false;
-  const hiddenPatterns = [/^\/auth/, /^\/myroom\/detailroom/];
-  const isChatPage = pathname === "/directmessage/chat";
-
-  if (pathname === "/profile" && isEditing) {
-    return false;
-  }
-
-  return !hiddenPatterns.some((regex) => regex.test(pathname)) && !isChatPage;
+    if (!user) return false;
+    const hiddenPatterns = [/^\/auth/, /^\/myroom\/detailroom/];
+    const isChatPage = pathname === "/directmessage/chat";
+    return !hiddenPatterns.some((regex) => regex.test(pathname)) && !isChatPage;
 }
 
 function RootContent() {
@@ -66,49 +60,35 @@ function RootContent() {
       setIsProfileEditing(event.detail.editing);
     };
 
-    window.addEventListener("profileEditChange", handleProfileEdit);
-    return () =>
-      window.removeEventListener("profileEditChange", handleProfileEdit);
-  }, []);
+    if (initializing || !fontsLoaded) {
+        return <View style={{ flex: 1, backgroundColor: "white" }} />;
+    }
 
-  useEffect(() => {
-    if (fontsLoaded) SplashScreen.hideAsync();
-  }, [fontsLoaded]);
+    return (
+        <View style={{ flex: 1, minHeight: 0 }}>
+            <View style={{ flex: 1, minHeight: 0 }}>
+                <Slot />
+            </View>
 
-  const handleSelect = (id: string, route: string) => {
-    setActiveTab(id);
-    router.push(route as any);
-  };
-
-  if (initializing || !fontsLoaded) {
-    return <View style={{ flex: 1, backgroundColor: "white" }} />;
-  }
-
-  return (
-    <View style={{ flex: 1, minHeight: 0 }}>
-      <View style={{ flex: 1, minHeight: 0 }}>
-        <Slot />
-      </View>
-
-      {shouldShowBottomNav(user, pathname, isProfileEditing) && (
-        <BottomNavbar
-          items={NAV_ITEMS}
-          activeId={activeTab}
-          onSelect={handleSelect}
-        />
-      )}
-    </View>
-  );
+            {shouldShowBottomNav(user, pathname, isProfileEditing) && (
+                <BottomNavbar
+                    items={NAV_ITEMS}
+                    activeId={activeTab}
+                    onSelect={handleSelect}
+                />
+            )}
+        </View>
+    );
 }
 
 export default function RootLayout() {
-  return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <AuthContext>
-        <FamilyViewProvider>
-          <RootContent />
-        </FamilyViewProvider>
-      </AuthContext>
-    </GestureHandlerRootView>
-  );
+    return (
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <AuthContext>
+                <FamilyViewProvider>
+                    <RootContent />
+                </FamilyViewProvider>
+            </AuthContext>
+        </GestureHandlerRootView>
+    );
 }

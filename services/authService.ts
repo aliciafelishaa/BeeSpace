@@ -20,7 +20,7 @@ import {
 } from "firebase/firestore"
 import { signOut } from "firebase/auth"
 
-WebBrowser.maybeCompleteAuthSession()
+// WebBrowser.maybeCompleteAuthSession()
 
 export interface User {
     uid: string
@@ -108,48 +108,48 @@ export const getCurrentUserData = async () => {
     }
 }
 
-export function useGoogleAuth() {
-    const redirectUri = makeRedirectUri({ useProxy: true, scheme: "beespace" })
-    const [request, response, promptAsync] = Google.useAuthRequest({
-        webClientId: process.env.EXPO_PUBLIC_FIREBASE_WEB_CLIENT_ID,
-        iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID,
-        androidClientId: process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID,
-        redirectUri,
-        scopes: ["profile", "email"],
-    })
+// export function useGoogleAuth() {
+//     const redirectUri = makeRedirectUri({ useProxy: true, scheme: "beespace" })
+//     const [request, response, promptAsync] = Google.useAuthRequest({
+//         webClientId: process.env.EXPO_PUBLIC_FIREBASE_WEB_CLIENT_ID,
+//         iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID,
+//         androidClientId: process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID,
+//         redirectUri,
+//         scopes: ["profile", "email"],
+//     })
 
-    const handleGoogleResponse = async () => {
-        if (response?.type === "success" && response.authentication?.idToken) {
-            const credential = GoogleAuthProvider.credential(
-                response.authentication.idToken
-            )
-            const { user } = await signInWithCredential(auth, credential)
-            const q = query(
-                collection(db, "users"),
-                where("email", "==", user.email)
-            )
-            const querySnap = await getDocs(q)
-            if (querySnap.empty)
-                await setDoc(
-                    doc(db, "users", user.uid),
-                    defaultUserProfile(user.email!, user.displayName ?? "")
-                )
-            return { uid: user.uid, email: user.email }
-        } else if (response?.type === "error") {
-            throw new Error(
-                `Google login failed: ${response.error?.message || "Unknown error"}`
-            )
-        }
-        return null
-    }
+//     const handleGoogleResponse = async () => {
+//         if (response?.type === "success" && response.authentication?.idToken) {
+//             const credential = GoogleAuthProvider.credential(
+//                 response.authentication.idToken
+//             )
+//             const { user } = await signInWithCredential(auth, credential)
+//             const q = query(
+//                 collection(db, "users"),
+//                 where("email", "==", user.email)
+//             )
+//             const querySnap = await getDocs(q)
+//             if (querySnap.empty)
+//                 await setDoc(
+//                     doc(db, "users", user.uid),
+//                     defaultUserProfile(user.email!, user.displayName ?? "")
+//                 )
+//             return { uid: user.uid, email: user.email }
+//         } else if (response?.type === "error") {
+//             throw new Error(
+//                 `Google login failed: ${response.error?.message || "Unknown error"}`
+//             )
+//         }
+//         return null
+//     }
 
-    return {
-        request,
-        response,
-        promptAsync: () => promptAsync({ useProxy: true }),
-        handleGoogleResponse,
-    }
-}
+//     return {
+//         request,
+//         response,
+//         promptAsync: () => promptAsync({ useProxy: true }),
+//         handleGoogleResponse,
+//     }
+// }
 
 export const logout = async (): Promise<boolean> => {
     try {

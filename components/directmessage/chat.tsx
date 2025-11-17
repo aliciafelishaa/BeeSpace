@@ -63,7 +63,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       if (isGroupChat) {
         setChatUser({
           name: chat.groupData?.name || "Group Chat",
-          avatar: null,
+          avatar: chat.groupData?.cover || null,
           isGroup: true,
         });
       } else {

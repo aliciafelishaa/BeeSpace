@@ -60,10 +60,10 @@ export const ChatList: React.FC<ChatListProps> = ({
 
   const getChatAvatar = (chat: Chat) => {
     if (chat.isGroupChat) {
-      if (chat.groupData?.profilePicture) {
+      if (chat.groupData?.cover) {
         return (
           <Image
-            source={{ uri: chat.groupData.profilePicture }}
+            source={{ uri: chat.groupData.cover }}
             className="w-14 h-14 rounded-full"
           />
         );
