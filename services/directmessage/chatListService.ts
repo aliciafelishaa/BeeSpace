@@ -5,6 +5,7 @@ import {
   arrayRemove,
   collection,
   doc,
+  doc as firestoreDoc,
   getDoc,
   getDocs,
   onSnapshot,
@@ -171,10 +172,24 @@ export const listenUserGroupChats = (
 
   const unsubscribe = onSnapshot(
     q,
-    (querySnapshot) => {
+    async (querySnapshot) => {
       const chats: Chat[] = [];
-      querySnapshot.forEach((doc) => {
+
+      for (const doc of querySnapshot.docs) {
         const data = doc.data();
+
+        let coverUrl = null;
+        if (data.roomId) {
+          try {
+            const roomDoc = await getDoc(
+              firestoreDoc(db, "roomEvents", data.roomId)
+            );
+            const roomData = roomDoc.data();
+            coverUrl = roomData?.cover || null;
+          } catch (err) {
+            console.error(err);
+          }
+        }
 
         chats.push({
           id: doc.id,
@@ -193,10 +208,12 @@ export const listenUserGroupChats = (
             name: data.name,
             memberUids: data.memberUids || [],
             roomId: data.roomId,
+            cover: coverUrl,
+            profilePicture: coverUrl,
           },
           muteSettings: data.muteSettings || {},
         });
-      });
+      }
 
       callback(chats);
     },

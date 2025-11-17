@@ -156,9 +156,9 @@ export const getRoombyId = async (id: string, uid: string) => {
 };
 
 export const updateRoomService = async (
-    id: string,
-    updatedData: Partial<RoomEntry>,
-    uid: string
+  id: string,
+  updatedData: Partial<RoomEntry>,
+  uid: string
 ) => {
     try {
         const docRef = doc(db, "roomEvents", id);
@@ -212,8 +212,8 @@ export const deleteRoomService = async (id: string, uid: string) => {
 };
 
 export const joinRoom = async (
-    roomId: string,
-    userId: string
+  roomId: string,
+  userId: string
 ): Promise<boolean> => {
     try {
         const roomRef = doc(db, "roomEvents", roomId);
@@ -248,8 +248,8 @@ export const joinRoom = async (
 };
 
 export const leaveRoom = async (
-    roomId: string,
-    userId: string
+  roomId: string,
+  userId: string
 ): Promise<boolean> => {
     try {
         const roomRef = doc(db, "roomEvents", roomId);

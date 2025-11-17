@@ -15,73 +15,71 @@ import {
 } from "firebase/firestore"
 
 export interface StudentProfile {
-    fullName: string
-    username: string
-    university: string
-    major: string
-    enrollYear: string
-    gradYear: string
-    studentID: string
-    studentCard: string | null
-    profilePicture: string | null
+  fullName: string;
+  username: string;
+  university: string;
+  major: string;
+  enrollYear: string;
+  gradYear: string;
+  studentID: string;
+  studentCard: string | null;
+  profilePicture: string | null;
 }
 
 export interface FirebaseUserData {
-    fullName: string
-    username: string
-    email: string
-    profilePicture: string | null
-    bio: string
-    university: string
-    major: string
-    enrollYear: string
-    gradYear: string
-    studentID: string
-    studentCard: string | null
-    followersCount: number
-    followingCount: number
-    hostedRoomsCount: number
-    totalJoinedCount: number
-    activeRoomsCount: number
-    rating: number
-    profileCompleted: boolean
-    createdAt: Date
-    updatedAt: Date
+  fullName: string;
+  username: string;
+  email: string;
+  profilePicture: string | null;
+  bio: string;
+  university: string;
+  major: string;
+  enrollYear: string;
+  gradYear: string;
+  studentID: string;
+  studentCard: string | null;
+  followersCount: number;
+  followingCount: number;
+  hostedRoomsCount: number;
+  totalJoinedCount: number;
+  activeRoomsCount: number;
+  rating: number;
+  profileCompleted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const getUserById = async (userId: string) => {
-    try {
-        const userDoc = await getDoc(doc(db, "users", userId))
-        if (userDoc.exists()) {
-            const data = userDoc.data()
-            return {
-                id: userId,
-                name: data.fullName || "",
-                avatar: data.profilePicture || null,
-                university: data.university || "",
-                username: data.username || "",
-            }
-        }
-        return null
-    } catch (error) {
-        console.error("Error getting user:", error)
-        return null
+  try {
+    const userDoc = await getDoc(doc(db, "users", userId));
+    if (userDoc.exists()) {
+      const data = userDoc.data();
+      return {
+        id: userId,
+        name: data.fullName || "",
+        avatar: data.profilePicture || null,
+        university: data.university || "",
+        username: data.username || "",
+      };
     }
-}
+    return null;
+  } catch (error) {
+    console.error("Error getting user:", error);
+    return null;
+  }
+};
 
 export const getFullUserProfile = async (
-    userId: string,
-    currentUserId?: string
+  userId: string,
+  currentUserId?: string
 ): Promise<UserProfile | null> => {
-    try {
-        const userDoc = await getDoc(doc(db, "users", userId))
+  try {
+    const userDoc = await getDoc(doc(db, "users", userId));
 
-        if (!userDoc.exists()) {
-            console.log("User not found:", userId)
-            return null
-        }
-
-        const data = userDoc.data() as FirebaseUserData
+    if (!userDoc.exists()) {
+      console.log("User not found:", userId);
+      return null;
+    }
 
         const profile: UserProfile = {
             id: userId,
@@ -107,16 +105,28 @@ export const getFullUserProfile = async (
             },
         }
 
-        if (currentUserId && currentUserId !== userId) {
-            profile.relationship = await getUserRelationship(currentUserId, userId)
-        }
+    const profile: UserProfile = {
+      id: userId,
+      name: data.fullName || "",
+      username: data.username || "",
+      avatarUrl: data.profilePicture || null,
+      bio: data.bio || "",
+      isMe: currentUserId === userId,
+      followStats: {
+        followers: data.followersCount || 0,
+        following: data.followingCount || 0,
+      },
+      stats: {
+        hostedRooms: data.hostedRoomsCount || 0,
+        totalJoined: data.totalJoinedCount || 0,
+        activeRooms: data.activeRoomsCount || 0,
+        rating: data.rating || 0,
+      },
+    };
 
-        return profile
-    } catch (error) {
-        console.error("Error fetching full profile:", error)
-        return null
+    if (currentUserId && currentUserId !== userId) {
+      profile.relationship = await getUserRelationship(currentUserId, userId);
     }
-}
 
 export const checkUsernameExists = async (
     username: string
@@ -132,8 +142,8 @@ export const checkUsernameExists = async (
 }
 
 export const updateUserProfile = async (
-    firebaseUid: string,
-    profileData: any
+  firebaseUid: string,
+  profileData: any
 ) => {
     try {
         const userRef = doc(db, "users", firebaseUid)
@@ -146,12 +156,8 @@ export const updateUserProfile = async (
             updatedAt: new Date(),
         })
 
-        console.log("✅ Firebase update successful")
-    } catch (error: any) {
-        console.error("❌ Firebase update error:", error)
-        throw error
-    }
-}
+    console.log("🔵 Firebase updateDoc called for:", firebaseUid);
+    console.log("🔵 Data:", profileData);
 
 export const checkUserProfileCompletion = async (
     firebaseUid: string
@@ -167,86 +173,91 @@ export const checkUserProfileCompletion = async (
         console.error("Error checking profile completion:", error)
         return false
     }
-}
+    return false;
+  } catch (error) {
+    console.error("Error checking profile completion:", error);
+    return false;
+  }
+};
 
 export const createUserDocument = async (
-    userId: string,
-    userData: {
-        email: string
-        fullName?: string
-        username?: string
-    }
+  userId: string,
+  userData: {
+    email: string;
+    fullName?: string;
+    username?: string;
+  }
 ) => {
-    try {
-        const userRef = doc(db, "users", userId)
-        await setDoc(userRef, {
-            fullName: userData.fullName || "",
-            username: userData.username || "",
-            email: userData.email,
-            profilePicture: null,
-            bio: "",
-            university: "",
-            major: "",
-            enrollYear: "",
-            gradYear: "",
-            studentID: "",
-            studentCard: null,
-            followersCount: 0,
-            followingCount: 0,
-            hostedRoomsCount: 0,
-            totalJoinedCount: 0,
-            activeRoomsCount: 0,
-            rating: 0,
-            profileCompleted: false,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        })
-        console.log("✅ User document created")
-    } catch (error) {
-        console.error("❌ Error creating user document:", error)
-        throw error
-    }
-}
+  try {
+    const userRef = doc(db, "users", userId);
+    await setDoc(userRef, {
+      fullName: userData.fullName || "",
+      username: userData.username || "",
+      email: userData.email,
+      profilePicture: null,
+      bio: "",
+      university: "",
+      major: "",
+      enrollYear: "",
+      gradYear: "",
+      studentID: "",
+      studentCard: null,
+      followersCount: 0,
+      followingCount: 0,
+      hostedRoomsCount: 0,
+      totalJoinedCount: 0,
+      activeRoomsCount: 0,
+      rating: 0,
+      profileCompleted: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    console.log("✅ User document created");
+  } catch (error) {
+    console.error("❌ Error creating user document:", error);
+    throw error;
+  }
+};
 
 export const updateRoomStats = async (
-    userId: string,
-    updates: {
-        hostedRooms?: number
-        totalJoined?: number
-        activeRooms?: number
-    }
+  userId: string,
+  updates: {
+    hostedRooms?: number;
+    totalJoined?: number;
+    activeRooms?: number;
+  }
 ) => {
-    try {
-        const userRef = doc(db, "users", userId)
-        const updateData: any = { updatedAt: new Date() }
+  try {
+    const userRef = doc(db, "users", userId);
+    const updateData: any = { updatedAt: new Date() };
 
-        if (updates.hostedRooms !== undefined) {
-            updateData.hostedRoomsCount = increment(updates.hostedRooms)
-        }
-        if (updates.totalJoined !== undefined) {
-            updateData.totalJoinedCount = increment(updates.totalJoined)
-        }
-        if (updates.activeRooms !== undefined) {
-            updateData.activeRoomsCount = increment(updates.activeRooms)
-        }
-
-        await updateDoc(userRef, updateData)
-    } catch (error) {
-        console.error("Error updating room stats:", error)
+    if (updates.hostedRooms !== undefined) {
+      updateData.hostedRoomsCount = increment(updates.hostedRooms);
     }
-}
+    if (updates.totalJoined !== undefined) {
+      updateData.totalJoinedCount = increment(updates.totalJoined);
+    }
+    if (updates.activeRooms !== undefined) {
+      updateData.activeRoomsCount = increment(updates.activeRooms);
+    }
+
+    await updateDoc(userRef, updateData);
+  } catch (error) {
+    console.error("Error updating room stats:", error);
+  }
+};
 
 export const updateUserRating = async (userId: string, newRating: number) => {
-    try {
-        const userRef = doc(db, "users", userId)
-        await updateDoc(userRef, {
-            rating: newRating,
-            updatedAt: new Date(),
-        })
-    } catch (error) {
-        console.error("Error updating rating:", error)
-    }
-}
+  try {
+    const userRef = doc(db, "users", userId);
+    await updateDoc(userRef, {
+      rating: newRating,
+      updatedAt: new Date(),
+    });
+  } catch (error) {
+    console.error("Error updating rating:", error);
+  }
+};
 
 export const getUserRelationship = async (
     currentUserId: string,
@@ -334,40 +345,40 @@ export const getFollowingList = async (userId: string) => {
 }
 
 export const incrementFollowersCount = async (userId: string) => {
-    try {
-        const userRef = doc(db, "users", userId)
-        await updateDoc(userRef, {
-            followersCount: increment(1),
-            updatedAt: new Date(),
-        })
-    } catch (error) {
-        console.error("Error incrementing followers:", error)
-    }
-}
+  try {
+    const userRef = doc(db, "users", userId);
+    await updateDoc(userRef, {
+      followersCount: increment(1),
+      updatedAt: new Date(),
+    });
+  } catch (error) {
+    console.error("Error incrementing followers:", error);
+  }
+};
 
 export const decrementFollowersCount = async (userId: string) => {
-    try {
-        const userRef = doc(db, "users", userId)
-        await updateDoc(userRef, {
-            followersCount: increment(-1),
-            updatedAt: new Date(),
-        })
-    } catch (error) {
-        console.error("Error decrementing followers:", error)
-    }
-}
+  try {
+    const userRef = doc(db, "users", userId);
+    await updateDoc(userRef, {
+      followersCount: increment(-1),
+      updatedAt: new Date(),
+    });
+  } catch (error) {
+    console.error("Error decrementing followers:", error);
+  }
+};
 
 export const incrementFollowingCount = async (userId: string) => {
-    try {
-        const userRef = doc(db, "users", userId)
-        await updateDoc(userRef, {
-            followingCount: increment(1),
-            updatedAt: new Date(),
-        })
-    } catch (error) {
-        console.error("Error incrementing following:", error)
-    }
-}
+  try {
+    const userRef = doc(db, "users", userId);
+    await updateDoc(userRef, {
+      followingCount: increment(1),
+      updatedAt: new Date(),
+    });
+  } catch (error) {
+    console.error("Error incrementing following:", error);
+  }
+};
 
 export const decrementFollowingCount = async (userId: string) => {
     try {
