@@ -3,4 +3,5 @@ export interface ButtonDecisionProps {
   hasJoined?: boolean;
   isEnded?: boolean;
   onDeleteRoom?: () => void;
+  onJoinRoom?: () => void;
 }

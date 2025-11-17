@@ -3,7 +3,11 @@ import { FilterModal } from "@/components/directmessage/filter-bar";
 import { SearchBar } from "@/components/directmessage/search-bar";
 import { COLORS } from "@/constants/utils/colors";
 import { getCurrentUserData } from "@/services/authService";
-import { listenAllUserChats } from "@/services/directmessage/chatListService";
+import {
+  deleteChatForUser,
+  listenAllUserChats,
+} from "@/services/directmessage/chatListService";
+import { muteChat } from "@/services/directmessage/chatMuteService";
 import { Chat, FilterType, SearchFilters } from "@/types/directmessage/dm";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
@@ -98,6 +102,30 @@ export default function MessagesPage() {
     setFilters((prev) => ({ ...prev, category }));
   };
 
+  // Delete Chat
+  const handleDeleteChat = async (chatId: string) => {
+    try {
+      if (!currentUser?.id) {
+        return;
+      }
+      await deleteChatForUser(chatId, currentUser.id);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Mute Chat
+  const handleMuteChat = async (chatId: string) => {
+    try {
+      if (!currentUser?.id) {
+        return;
+      }
+      await muteChat(chatId, currentUser.id);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (loading) {
     return (
       <View
@@ -148,6 +176,9 @@ export default function MessagesPage() {
           chats={filteredChats}
           selectedChat={null}
           onSelectChat={handleSelectChat}
+          onDeleteChat={handleDeleteChat}
+          onMuteChat={handleMuteChat}
+          currentUserId={currentUser?.id}
         />
 
         <FilterModal

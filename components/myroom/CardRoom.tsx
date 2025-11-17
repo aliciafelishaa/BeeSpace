@@ -16,6 +16,8 @@ export default function CardRoom({
   isEdit,
   timeStart,
   timeEnd,
+  hostUid,
+  currentUserId,
 }: CardRoomProps) {
   const formattedDate = date.toLocaleDateString("id-ID", {
     day: "2-digit",
@@ -25,6 +27,7 @@ export default function CardRoom({
   });
   const formattedTime =
     timeStart && timeEnd ? `${timeStart} - ${timeEnd} WIB` : "-";
+  const isHost = hostUid === currentUserId;
 
   return (
     <TouchableOpacity
@@ -84,19 +87,29 @@ export default function CardRoom({
               Slot Remaining: {slotRemaining}/{slotTotal}
             </Text>
 
-            <View className="flex-row items-center gap-1">
-              <Text className="text-[10px] font-interRegular">Host by</Text>
-              {imageAvatar ? (
-                <Image
-                  source={imageAvatar}
-                  className="w-4 h-4 rounded-[8px]"
-                  resizeMode="cover"
-                />
-              ) : (
-                <View className="w-4 h-4 bg-primary rounded-[8px] " />
-              )}
-              <Text className="text-[10px] font-interRegular">{hostName}</Text>
-            </View>
+            {!isHost ? (
+              <View className="flex-row items-center gap-1">
+                <Text className="text-[10px] font-interRegular">Host by</Text>
+                {imageAvatar ? (
+                  <Image
+                    source={imageAvatar}
+                    className="w-4 h-4 rounded-[8px]"
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View className="w-4 h-4 bg-primary rounded-[8px] " />
+                )}
+                <Text className="text-[10px] font-interRegular">
+                  {hostName}
+                </Text>
+              </View>
+            ) : (
+              <View className="flex-row items-center gap-1 bg-primary4th border border-primary2nd px-3 py-2  rounded-[4px]">
+                <Text className="text-[10px] font-interMedium text-primary2nd">
+                  Host by You
+                </Text>
+              </View>
+            )}
           </View>
         </View>
       </View>

@@ -41,7 +41,6 @@ export const createRoom = async (payload: RoomEntry) => {
       userUniv: payload.userUniv,
     };
 
-    
     console.log("payload:", roomData);
     const reqRef = await addDoc(collection(db, "roomEvents"), roomData);
 
@@ -54,6 +53,12 @@ export const createRoom = async (payload: RoomEntry) => {
   } catch (err) {
     return { success: false, message: err };
   }
+};
+export const reportRoomApi = async (roomId: string) => {
+  const res = await fetch(`https://myapp.local/rooms/${roomId}/report`, {
+    method: "POST",
+  });
+  return res.json();
 };
 
 export const getAllRoom = async (uid: string) => {
@@ -267,5 +272,37 @@ export const leaveRoom = async (
   } catch (err) {
     console.error("Error leaving room:", err);
     return false;
+  }
+};
+
+export const getRoomMembers = async (roomId: string) => {
+  try {
+    const roomDoc = await getDoc(doc(db, "roomEvents", roomId));
+    console.log("test");
+    console.log("roomDoc exists:", roomDoc.exists());
+    console.log("room data:", roomDoc.data());
+
+    if (!roomDoc.exists()) return [];
+
+    const joinedUids = roomDoc.data().joinedUids || [];
+    console.log("joinedUids:", joinedUids);
+    if (joinedUids.length === 0) return [];
+
+    const usersQuery = query(
+      collection(db, "users"),
+      where("__name__", "in", joinedUids)
+    );
+
+    const usersSnapshot = await getDocs(usersQuery);
+    const members = usersSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    console.log("members fetched:", members);
+    return members;
+  } catch (err) {
+    console.error(err);
+    return [];
   }
 };
