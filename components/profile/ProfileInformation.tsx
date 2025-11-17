@@ -8,13 +8,11 @@ import {
     TouchableOpacity,
     View,
     Image,
-    Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ProfileAvatarPicker } from "./ProfileAvatarPicker";
 import { ProfileField } from "./ProfileField";
 import * as ExpoImagePicker from "expo-image-picker";
-import handleUpData from "@/hooks/useCloudinary";
 
 export type ProfileInformationValues = {
     avatar?: string | any;
@@ -58,7 +56,7 @@ export function ProfileInformation({
         graduationYear: initial?.graduationYear ?? "",
     });
 
-    const [footerHeight, setFooterHeight] = useState(0);
+    const [footerHeight, setFooterHeight] = useState(180);
 
     const update =
         (k: keyof ProfileInformationValues) =>
@@ -90,56 +88,10 @@ export function ProfileInformation({
         }
     };
 
-    const handleSave = async () => {
-        if (loading) return;
-
-        try {
-            let finalAvatar = form.avatar;
-            
-            const isNewImage = typeof form.avatar === 'string' && 
-                (form.avatar.startsWith('file://') || form.avatar.startsWith('blob:'));
-
-            if (isNewImage) {
-                console.log('🔄 Uploading new avatar to Cloudinary...');
-                
-                try {
-
-                    const fileObj = { 
-                        uri: form.avatar, 
-                        name: "profile-picture.jpg", 
-                        type: "image/jpeg" 
-                    };
-                    
-                    finalAvatar = await handleUpData(fileObj);
-                    console.log('✅ Avatar uploaded:', finalAvatar);
-                } catch (uploadError) {
-                    console.error('❌ Upload error:', uploadError);
-                    Alert.alert(
-                        'Upload Failed', 
-                        'Failed to upload avatar. Please try again.',
-                        [{ text: 'OK' }]
-                    );
-                    return;
-                }
-            } else {
-                console.log('ℹ️ Using existing avatar URL');
-            }
-
-            const updatedProfile = {
-                ...form,
-                avatar: finalAvatar
-            };
-
-            console.log('💾 Calling onSave with:', updatedProfile);
-            onSave?.(updatedProfile);
+    const handleSave = () => {
+        if (!loading) {
+            onSave?.(form);
             setIsEditing(false);
-        } catch (error) {
-            console.error('❌ Error saving profile:', error);
-            Alert.alert(
-                'Error', 
-                'Failed to save profile. Please try again.',
-                [{ text: 'OK' }]
-            );
         }
     };
 
@@ -172,24 +124,15 @@ export function ProfileInformation({
     );
 
     return (
-        <View style={{ flex: 1, minHeight: 0, position: "relative" }} >
+        <View style={{ flex: 1 }}>
             <ScrollView
-                style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: isEditing ? footerHeight : 0,
-                    ...(Platform.OS === "web" ? { overflowY: "auto" as any } : {}),
-                }}
                 contentContainerStyle={{
                     paddingHorizontal: 20,
                     paddingTop: 12,
-                    paddingBottom: 24,
+                    paddingBottom: isEditing ? footerHeight + 40 : 24,
                 }}
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
-                bounces={false}
             >
                 {!isEditing && (
                     <TouchableOpacity
@@ -209,7 +152,6 @@ export function ProfileInformation({
                     </TouchableOpacity>
                 )}
 
-                {/* Pass isEditing sebagai editable prop */}
                 <ProfileAvatarPicker
                     uri={form.avatar as any}
                     onPick={handlePickImage}
@@ -241,10 +183,9 @@ export function ProfileInformation({
                                 <InfoRow label="Year of Graduation" value={form.graduationYear} />
                             </View>
                         </View>
-
                     </View>
                 ) : (
-                    <View style={{ marginTop: 24, gap: 16 }}>
+                    <View style={{ marginTop: 24, gap: 16}}>
                         <ProfileField
                             label="Username"
                             required
@@ -273,6 +214,41 @@ export function ProfileInformation({
                     </View>
                 )}
             </ScrollView>
+
+            {!isEditing && (
+                <View
+                    style={{
+                        position: "absolute",
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        paddingHorizontal: 20,
+                        paddingTop: 12,
+                        paddingBottom: insets.bottom + 12,
+                        backgroundColor: COLORS.white,
+                        borderTopWidth: 1,
+                        borderTopColor: COLORS.neutral100,
+                    }}
+                >
+                    <TouchableOpacity
+                        onPress={() => setIsEditing(true)}
+                        style={{
+                            borderRadius: 16,
+                            paddingVertical: 16,
+                            alignItems: "center",
+                            backgroundColor: COLORS.primary2nd,
+                            shadowColor: "#000",
+                            shadowOpacity: 0.08,
+                            shadowRadius: 6,
+                            shadowOffset: { width: 0, height: 2 },
+                        }}
+                    >
+                        <Text style={{ fontFamily: "Inter_600SemiBold", color: COLORS.white, fontSize: 14 }}>
+                            Edit Profile
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            )}
 
             {isEditing && (
                 <View
