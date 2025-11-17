@@ -274,3 +274,35 @@ export const leaveRoom = async (
     return false;
   }
 };
+
+export const getRoomMembers = async (roomId: string) => {
+  try {
+    const roomDoc = await getDoc(doc(db, "roomEvents", roomId));
+    console.log("test");
+    console.log("roomDoc exists:", roomDoc.exists());
+    console.log("room data:", roomDoc.data());
+
+    if (!roomDoc.exists()) return [];
+
+    const joinedUids = roomDoc.data().joinedUids || [];
+    console.log("joinedUids:", joinedUids);
+    if (joinedUids.length === 0) return [];
+
+    const usersQuery = query(
+      collection(db, "users"),
+      where("__name__", "in", joinedUids)
+    );
+
+    const usersSnapshot = await getDocs(usersQuery);
+    const members = usersSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    console.log("members fetched:", members);
+    return members;
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+};

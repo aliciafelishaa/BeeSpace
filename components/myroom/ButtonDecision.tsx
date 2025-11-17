@@ -15,6 +15,7 @@ export default function ButtonDecision({
   isOwner = false,
   hasJoined = false,
   isEnded = false,
+  onJoinRoom,
   onDeleteRoom,
   room,
   currentUser,
@@ -23,16 +24,8 @@ export default function ButtonDecision({
   const [joined, setJoined] = useState(hasJoined);
   const { uid, id } = useLocalSearchParams();
 
-  // useEffect(() => {
-  //   console.log("isOwner:", isOwner);
-  //   console.log("hasJoined:", hasJoined);
-  //   console.log("isEnded:", isEnded);
-  //   console.log("room:", room);
-  //   console.log("currentUser:", currentUser);
-  // }, [isOwner, hasJoined, isEnded, room, currentUser]);
-
   if (!room || !currentUser) {
-    return null; // atau tampilkan loading
+    return null;
   }
   useEffect(() => {
     if (room?.joinedUids && currentUser?.id) {

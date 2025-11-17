@@ -5,6 +5,7 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { useRoom } from "@/hooks/useRoom";
 import { getCurrentUserData } from "@/services/authService";
 import { initiateChat } from "@/services/directmessage/chatListService";
+import { joinRoom } from "@/services/room.service";
 import { getUserById } from "@/services/userService";
 import { RoomEntry } from "@/types/myroom/room";
 import { router, useLocalSearchParams } from "expo-router";
@@ -35,7 +36,7 @@ export default function DetailRoom() {
   const [hostName, setHostName] = useState<string>("");
   const { getRoom, deleteRoom } = useRoom();
   const isOwner = true;
-  const hasJoined = false;
+  const [hasJoined, setHasJoined] = useState(false);
   const isEnded = false;
 
   // Fetch Data User
@@ -129,18 +130,6 @@ export default function DetailRoom() {
     }
   };
 
-  // Tentukan kondisi tombol
-  // const currentUser = auth().currentUser;
-  // const userId = currentUser?.uid;
-
-  // 1️⃣ User adalah pembuat room
-  // const isOwner = room?.fromUid === userId;
-
-  // 2️⃣ Cek apakah sudah lewat waktunya
-  // const roomDateTime = new Date(`${room?.date}T${room?.timeEnd}`);
-  // const now = new Date();
-  // const isEnded = now > roomDateTime;
-
   const actualIsOwner = room?.fromUid === currentUser?.id;
 
   if (loading) {
@@ -153,6 +142,21 @@ export default function DetailRoom() {
       </SafeAreaView>
     );
   }
+  const handleJoinRoom = async () => {
+    if (!room || !currentUser?.id) return;
+
+    try {
+      if (!room?.id || !currentUser?.id) return;
+
+      await joinRoom(room.id, currentUser.id);
+      setHasJoined(true);
+
+      alert("You have joined the room!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to join room");
+    }
+  };
 
   return (
     <SafeAreaView
@@ -260,7 +264,12 @@ export default function DetailRoom() {
                   </View>
 
                   <TouchableOpacity
-                    onPress={() => router.push("/myroom/detailroom/allMember")}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/myroom/detailroom/allMember",
+                        params: { roomId: room?.id },
+                      })
+                    }
                   >
                     <Text className="text-[12px] text-primary font-medium font-inter">
                       View All
@@ -313,7 +322,6 @@ export default function DetailRoom() {
                           </Text>
                         </View>
                       </View>
-                      
                     </View>
                   </View>
                 </View>
@@ -373,6 +381,7 @@ export default function DetailRoom() {
       <ButtonDecision
         isOwner={actualIsOwner}
         hasJoined={hasJoined}
+        onJoinRoom={handleJoinRoom}
         isEnded={isEnded}
         onDeleteRoom={handleDeleteRoom}
         room={room}
