@@ -2,7 +2,9 @@ import { RoomEntry } from "@/types/myroom/room";
 
 export interface Room extends RoomEntry {
   id: string;
-  notificationSent?: boolean;
+  notificationSent30min?: boolean;
+  notificationSent15min?: boolean;
+  notificationSent5min?: boolean;
   muteSettings?: {
     [userId: string]: {
       muted: boolean;
