@@ -5,6 +5,7 @@ import { AuthContext } from "@/context/AuthContext";
 import { FamilyViewProvider } from "@/context/FamilyViewContext";
 import "@/global.css";
 import { useAuthState } from "@/hooks/useAuthState";
+import { useNotifications } from "@/hooks/useNotifications";
 import { useFonts } from "expo-font";
 import { Slot, SplashScreen, usePathname, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -36,6 +37,8 @@ function RootContent() {
   const [activeTab, setActiveTab] = useState("home");
   const [fontsLoaded] = useFonts({ ...Fonts });
   const [isProfileEditing, setIsProfileEditing] = useState(false);
+
+  useNotifications();
 
   useEffect(() => {
     const yourroomAliases = [
