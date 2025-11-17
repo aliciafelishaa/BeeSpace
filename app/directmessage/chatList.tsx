@@ -3,11 +3,19 @@ import { FilterModal } from "@/components/directmessage/filter-bar";
 import { SearchBar } from "@/components/directmessage/search-bar";
 import { COLORS } from "@/constants/utils/colors";
 import { getCurrentUserData } from "@/services/authService";
-import { listenAllUserChats } from "@/services/directmessage/chatListService";
+import {
+  deleteChatForUser,
+  listenAllUserChats,
+} from "@/services/directmessage/chatListService";
+import { muteChat } from "@/services/directmessage/chatMuteService";
 import { Chat, FilterType, SearchFilters } from "@/types/directmessage/dm";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 export default function MessagesPage() {
   const router = useRouter();
@@ -20,6 +28,7 @@ export default function MessagesPage() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const insets = useSafeAreaInsets();
 
   // Fetch User
   useEffect(() => {
@@ -93,6 +102,30 @@ export default function MessagesPage() {
     setFilters((prev) => ({ ...prev, category }));
   };
 
+  // Delete Chat
+  const handleDeleteChat = async (chatId: string) => {
+    try {
+      if (!currentUser?.id) {
+        return;
+      }
+      await deleteChatForUser(chatId, currentUser.id);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Mute Chat
+  const handleMuteChat = async (chatId: string) => {
+    try {
+      if (!currentUser?.id) {
+        return;
+      }
+      await muteChat(chatId, currentUser.id);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (loading) {
     return (
       <View
@@ -105,34 +138,56 @@ export default function MessagesPage() {
   }
 
   return (
-    <View className="flex-1" style={{ backgroundColor: COLORS.white }}>
-      <View className="justify-between items-start mt-8 px-4">
-        <Text className="text-lg font-semibold py-3 text-neutral-900">
-          Direct Message
-        </Text>
-      </View>
+    <SafeAreaView
+      className="bg-neutral-100"
+      style={{
+        backgroundColor: COLORS.white,
+        flex: 1,
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+      }}
+    >
+      <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: insets.bottom + 100,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="justify-between items-start mt-8 px-4">
+          <Text className="text-lg font-semibold py-3 text-neutral-900">
+            Direct Message
+          </Text>
+        </View>
 
-      <View>
-        <SearchBar
-          value={searchValue}
-          onChange={handleSearchChange}
-          onFilterPress={() => setIsFilterModalOpen(true)}
-          selectedFilter={filters.category}
+        <View>
+          <SearchBar
+            value={searchValue}
+            onChange={handleSearchChange}
+            onFilterPress={() => setIsFilterModalOpen(true)}
+            selectedFilter={filters.category}
+          />
+        </View>
+
+        <ChatList
+          chats={filteredChats}
+          selectedChat={null}
+          onSelectChat={handleSelectChat}
+          onDeleteChat={handleDeleteChat}
+          onMuteChat={handleMuteChat}
+          currentUserId={currentUser?.id}
         />
-      </View>
 
-      <ChatList
-        chats={filteredChats}
-        selectedChat={null}
-        onSelectChat={handleSelectChat}
-      />
-
-      <FilterModal
-        isOpen={isFilterModalOpen}
-        onClose={() => setIsFilterModalOpen(false)}
-        selectedFilter={filters.category}
-        onFilterChange={handleFilterChange}
-      />
-    </View>
+        <FilterModal
+          isOpen={isFilterModalOpen}
+          onClose={() => setIsFilterModalOpen(false)}
+          selectedFilter={filters.category}
+          onFilterChange={handleFilterChange}
+        />
+      </ScrollView>
+    </SafeAreaView>
   );
 }

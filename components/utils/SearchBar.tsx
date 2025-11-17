@@ -13,6 +13,7 @@ type SearchBarProps = {
   placeholder?: string;
   containerStyle?: ViewStyle;
   onChangeText?: (text: string) => void;
+  onSearch: (text: string) => void;
   value?: string;
 };
 
@@ -20,6 +21,7 @@ export default function SearchBar({
   placeholder = "Search",
   containerStyle,
   onChangeText,
+  onSearch,
   value,
 }: SearchBarProps) {
   return (
@@ -48,10 +50,12 @@ export default function SearchBar({
           height: 40,
           borderRadius: 8,
         }}
-        onChangeText={onChangeText}
         value={value}
+        onChangeText={(text) => {
+          onChangeText?.(text);
+        }}
       />
-      <TouchableOpacity>
+      <TouchableOpacity onPress={() => onSearch(value || "")}>
         <Image
           source={require("@/assets/utils/search-icon.png")}
           style={{ width: 16, height: 16 }}

@@ -6,6 +6,7 @@ import SearchBar from "@/components/utils/SearchBar";
 import { COLORS } from "@/constants/utils/colors";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useRoom } from "@/hooks/useRoom";
+import { useUserData } from "@/hooks/useUserData";
 import { getUserById } from "@/services/userService";
 import { RoomCategory, TimeCategory } from "@/types/myroom/myroom";
 import { RoomEntry } from "@/types/myroom/room";
@@ -29,8 +30,12 @@ export default function MyRoomDash() {
   const { user } = useAuthState();
   const { uid: paramUid } = useLocalSearchParams();
   const uid = paramUid || user?.uid;
+  const [userDatas, setUserDatas] = useState<any>(null);
   const [filteredRooms, setFilteredRooms] = useState<RoomEntry[]>([]);
-  const [userData, setUserData] = useState<any>(null);
+  const [search, setSearch] = useState("");
+  const { userData } = useUserData(uid);
+  const [extraFilter, setExtraFilter] = useState<Record<string, string>>({});
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchRoom = async () => {
@@ -40,9 +45,9 @@ export default function MyRoomDash() {
 
       if (res.success && res.data) {
         const roomsData = res.data;
+
         const roomsWithHost = await Promise.all(
           roomsData.map(async (room: RoomEntry) => {
-            console.log(room.fromUid);
             const userRes = await getUserById(room.fromUid);
             return {
               ...room,
@@ -65,71 +70,110 @@ export default function MyRoomDash() {
     const fetchUserData = async () => {
       if (!uid) return;
       const userRes = await getUserById(uid);
-      setUserData(userRes);
+      setUserDatas(userRes);
     };
     fetchUserData();
   }, [uid]);
 
   useEffect(() => {
-    const applyFilter = async () => {
-      const now = new Date();
+    if (!rooms) return;
 
-      const filtered = await Promise.all(
-        rooms.map(async (room) => {
-          const roomDate = new Date(room.date);
+    const now = new Date();
 
-          // --- filter kategori ---
-          if (activeTab !== "all" && room.category !== activeTab) {
-            return null;
-          }
+    let result = rooms.filter((room) => {
+      const roomDate = new Date(room.date);
 
-          // --- filter waktu ---
-          if (activeFilter === "today") {
-            const isToday =
-              roomDate.getDate() === now.getDate() &&
-              roomDate.getMonth() === now.getMonth() &&
-              roomDate.getFullYear() === now.getFullYear();
-            if (!isToday) return null;
-          }
+      // --- category ---
+      if (activeTab !== "all" && room.category.toLowerCase() !== activeTab) {
+        return false;
+      }
 
-          if (activeFilter === "thisweek") {
-            const startOfWeek = new Date(now);
-            startOfWeek.setDate(now.getDate() - now.getDay());
-            const endOfWeek = new Date(startOfWeek);
-            endOfWeek.setDate(startOfWeek.getDate() + 7);
+      // --- time filters ---
+      if (activeFilter === "today") {
+        const isToday =
+          roomDate.getDate() === now.getDate() &&
+          roomDate.getMonth() === now.getMonth() &&
+          roomDate.getFullYear() === now.getFullYear();
 
-            const isThisWeek = roomDate >= startOfWeek && roomDate <= endOfWeek;
-            if (!isThisWeek) return null;
-          }
+        if (!isToday) return false;
+      }
 
-          if (activeFilter === "thismonth") {
-            const isThisMonth =
-              roomDate.getMonth() === now.getMonth() &&
-              roomDate.getFullYear() === now.getFullYear();
-            if (!isThisMonth) return null;
-          }
-          if (activeFilter === "mycampus") {
-            if (!userData?.university) return null;
-            const sameCampus =
-              room.place
-                ?.toLowerCase()
-                .includes(userData.university.toLowerCase()) ||
-              userData.university
-                .toLowerCase()
-                .includes(room.place?.toLowerCase());
-            if (!sameCampus) return null;
-          }
+      if (activeFilter === "thisweek") {
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay());
 
-          return room;
-        })
-      );
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 7);
 
-      // hapus nilai null dari hasil filter
-      setFilteredRooms(filtered.filter((r) => r !== null) as RoomEntry[]);
-    };
+        const isThisWeek = roomDate >= startOfWeek && roomDate <= endOfWeek;
+        if (!isThisWeek) return false;
+      }
 
-    applyFilter();
-  }, [rooms, activeTab, activeFilter, userData]);
+      if (activeFilter === "thismonth") {
+        const isThisMonth =
+          roomDate.getMonth() === now.getMonth() &&
+          roomDate.getFullYear() === now.getFullYear();
+        if (!isThisMonth) return false;
+      }
+
+      if (activeFilter === "mycampus") {
+        if (!userData?.university) return false;
+        if (!room.userUniv) return false;
+
+        return (
+          room.userUniv.toLowerCase() === userData.university.toLowerCase()
+        );
+      }
+
+      // sorting
+      if (search.trim() !== "") {
+        const q = search.toLowerCase();
+        const match =
+          room.planName?.toLowerCase().includes(q) ||
+          room.place?.toLowerCase().includes(q) ||
+          room.hostName?.toLowerCase().includes(q);
+        if (!match) return false;
+      }
+
+      // // --- EXTRA FILTER: Event Type ---
+      // if (extraFilter["Event Type"] && extraFilter["Event Type"] !== "All") {
+      //   const isOnline = extraFilter["Event Type"] === "Online";
+
+      //   if (isOnline && room.place !== "online") return false;
+      //   if (!isOnline && room.place !== "onsite") return false;
+      // }
+
+      return true;
+    });
+
+    // //Filtering
+    // if (extraFilter["Sort By"] === "Descending") {
+    //   result = result.sort(
+    //     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    //   );
+    // }
+
+    // // Sort berdasarkan event yang akan datang (waktu mulai paling dekat)
+    // if (extraFilter["Sort By"] === "Ascending") {
+    //   result = result.sort(
+    //     (a, b) =>
+    //       new Date(a.timeStart).getTime() - new Date(b.timeStart).getTime()
+    //   );
+    // }
+
+    setFilteredRooms(result);
+  }, [rooms, activeTab, activeFilter, userData, search, extraFilter]);
+
+  useEffect(() => {
+    if (!rooms || rooms.length === 0) return;
+
+    const uniqueCategories = [
+      "all",
+      ...Array.from(new Set(rooms.map((r) => r.category.toLowerCase()))),
+    ];
+
+    setAvailableCategories(uniqueCategories);
+  }, [rooms]);
 
   return (
     <SafeAreaView
@@ -157,7 +201,7 @@ export default function MyRoomDash() {
             <View className="flex-row items-center justify-between">
               <View className="gap-[10px]">
                 <Text className="text-neutral-500 text-[12px] font-interRegular">
-                  Activities Near
+                  My Campus
                 </Text>
                 <View className="flex-row gap-2 items-center">
                   <Image
@@ -165,12 +209,8 @@ export default function MyRoomDash() {
                     className="w-[16px] h-[16px]"
                   ></Image>
                   <Text className="text-neutral-700  text-[14px] font-interSemiBold">
-                    Binus Kemanggisan{" "}
+                    {userData?.university || "-"}
                   </Text>
-                  <Image
-                    source={require("@/assets/utils/arrow-down.png")}
-                    className="w-[16px] h-[16px]"
-                  ></Image>
                 </View>
               </View>
               <View>
@@ -189,17 +229,16 @@ export default function MyRoomDash() {
             <View className="flex-row items-center mt-4 gap-2 justify-between">
               {/* SearchBar */}
               <View className="flex-1">
-                <TouchableOpacity
-                  onPress={() => router.push("/myroom/detailroom/searchRoom")}
-                >
-                  <SearchBar
-                    placeholder="Search Activity"
-                    onChangeText={(text) => console.log(text)}
-                  />
-                </TouchableOpacity>
+                <SearchBar
+                  placeholder="Search Activity"
+                  value={search}
+                  onSearch={setSearch}
+                  onChangeText={(text) => setSearch(text)}
+                />
               </View>
+
               {/* Filtering */}
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 onPress={() => setModalVisible(true)}
                 className="border border-neutral-300 p-2 w-[80px] h-[44px] items-center justify-center rounded-[8px]"
               >
@@ -207,7 +246,7 @@ export default function MyRoomDash() {
                   source={require("@/assets/utils/setting-icon.png")}
                   className="w-[16px] h-[16px]"
                 />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
 
             {/* Pilihan Category */}
@@ -217,48 +256,16 @@ export default function MyRoomDash() {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={{ gap: 8 }}
               >
-                <TabButton
-                  title="All"
-                  icon={require("@/assets/utils/passive-icon/globe.png")}
-                  activeIcon={require("@/assets/utils/active-icon/globe.png")}
-                  active={activeTab === "all"}
-                  onPress={() => setActiveTab("all")}
-                />
-                <TabButton
-                  title="Sport"
-                  icon={require("@/assets/utils/passive-icon/running.png")}
-                  activeIcon={require("@/assets/utils/active-icon/running.png")}
-                  active={activeTab === "sport"}
-                  onPress={() => setActiveTab("sport")}
-                />
-                <TabButton
-                  title="Hangout"
-                  icon={require("@/assets/utils/passive-icon/hangout.png")}
-                  activeIcon={require("@/assets/utils/active-icon/hangout.png")}
-                  active={activeTab === "hangout"}
-                  onPress={() => setActiveTab("hangout")}
-                />
-                <TabButton
-                  title="Learning"
-                  icon={require("@/assets/utils/passive-icon/learning.png")}
-                  activeIcon={require("@/assets/utils/active-icon/learning.png")}
-                  active={activeTab === "learning"}
-                  onPress={() => setActiveTab("learning")}
-                />
-                <TabButton
-                  title="Events"
-                  icon={require("@/assets/utils/passive-icon/events.png")}
-                  activeIcon={require("@/assets/utils/active-icon/events.png")}
-                  active={activeTab === "events"}
-                  onPress={() => setActiveTab("events")}
-                />
-                <TabButton
-                  title="Hobby"
-                  icon={require("@/assets/utils/passive-icon/hobby.png")}
-                  activeIcon={require("@/assets/utils/active-icon/hobby.png")}
-                  active={activeTab === "hobby"}
-                  onPress={() => setActiveTab("hobby")}
-                />
+                {availableCategories.map((cat) => (
+                  <TabButton
+                    key={cat}
+                    title={cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    icon={require("@/assets/utils/passive-icon/globe.png")} 
+                    activeIcon={require("@/assets/utils/active-icon/globe.png")}
+                    active={activeTab === cat}
+                    onPress={() => setActiveTab(cat as RoomCategory)}
+                  />
+                ))}
               </ScrollView>
             </View>
 
@@ -337,16 +344,11 @@ export default function MyRoomDash() {
         filters={[
           {
             title: "Sort By",
-            options: [
-              "Earliest Time",
-              "Nearest Location",
-              "Most Popular",
-              "Recently Added",
-            ],
+            options: ["Ascending", "Descending"],
           },
-          { title: "Price", options: ["Free", "Paid"] },
-          { title: "Event Type", options: ["Online", "Onsite"] },
+          { title: "Event Type", options: ["All", "Online", "Onsite"] },
         ]}
+        onApply={(selected) => setExtraFilter(selected)}
       />
     </SafeAreaView>
   );
