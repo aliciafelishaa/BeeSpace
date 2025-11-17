@@ -1,7 +1,7 @@
 import { COLORS } from "@/constants/utils/colors"
 import { ProfileStats } from "@/types/profile/profile"
 import React, { memo } from "react"
-import { Image, Text, TouchableOpacity, View } from "react-native"
+import { Text, TouchableOpacity, View } from "react-native"
 
 type Props = {
     stats: ProfileStats

@@ -1,11 +1,19 @@
 import { COLORS } from "@/constants/utils/colors"
 import React, { useState } from "react"
 import {
+<<<<<<< HEAD
+  Image,
+  ImageSourcePropType,
+  Platform,
+  TouchableOpacity,
+  View,
+=======
     Image,
     ImageSourcePropType,
     Platform,
     TouchableOpacity,
     View,
+>>>>>>> 76b36b96420efd8165941003d3e0349f82a29b8e
 } from "react-native"
 
 type Props = {
@@ -120,4 +128,8 @@ export function ProfileAvatarPicker({
             </View>
         </View>
     )
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 76b36b96420efd8165941003d3e0349f82a29b8e

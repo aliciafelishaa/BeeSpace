@@ -2,7 +2,7 @@ import { COLORS } from "@/constants/utils/colors"
 import { RelationshipState, UserProfile } from "@/types/profile/profile"
 import { router } from "expo-router"
 import React, { memo, useMemo } from "react"
-import { Image, Text, TouchableOpacity, View, ActivityIndicator } from "react-native"
+import { ActivityIndicator, Image, Text, TouchableOpacity, View } from "react-native"
 
 const toImageSource = (src: any) => {
 	if (!src) return undefined

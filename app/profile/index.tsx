@@ -1,3 +1,21 @@
+<<<<<<< HEAD
+import ChangePassword from "@/components/profile/ChangePassword"
+import { ProfileActivity } from "@/components/profile/ProfileActivity"
+import { ProfileHeader } from "@/components/profile/ProfileHeader"
+import { ProfileInformation } from "@/components/profile/ProfileInformation"
+import { ProfileStat } from "@/components/profile/ProfileStats"
+import { ProfileTopBar } from "@/components/profile/ProfileTopBar"
+import Text from "@/components/ui/Text"
+import { COLORS } from "@/constants/utils/colors"
+import { useAuth } from "@/context/AuthContext"
+import { logout } from "@/services/authService"
+import { getFullUserProfile, updateUserProfile } from "@/services/userService"
+import { UserProfile } from "@/types/profile/profile"
+import { Redirect, router } from "expo-router"
+import React, { useEffect, useState } from "react"
+import { ActivityIndicator, Alert, ScrollView, View } from "react-native"
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
+=======
 import { ProfileActivity } from "@/components/profile/ProfileActivity"
 import { ProfileInformation } from "@/components/profile/ProfileInformation"
 import { ProfileHeader } from "@/components/profile/ProfileHeader"
@@ -14,6 +32,7 @@ import { getFullUserProfile, updateUserProfile } from "@/services/userService"
 import { logout } from "@/services/authService"
 import { UserProfile } from "@/types/profile/profile"
 import Text from "@/components/ui/Text"
+>>>>>>> 76b36b96420efd8165941003d3e0349f82a29b8e
 
 type Mode = "view" | "profile" | "password"
 
