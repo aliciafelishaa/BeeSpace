@@ -29,8 +29,9 @@ export default function MyRoomDash() {
   const { user } = useAuthState();
   const { uid: paramUid } = useLocalSearchParams();
   const uid = paramUid || user?.uid;
-  const [filteredRooms, setFilteredRooms] = useState<RoomEntry[]>([]);
   const [userData, setUserData] = useState<any>(null);
+  const [filteredRooms, setFilteredRooms] = useState<RoomEntry[]>([]);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     const fetchRoom = async () => {
@@ -40,6 +41,7 @@ export default function MyRoomDash() {
 
       if (res.success && res.data) {
         const roomsData = res.data;
+
         const roomsWithHost = await Promise.all(
           roomsData.map(async (room: RoomEntry) => {
             console.log(room.fromUid);
@@ -71,77 +73,77 @@ export default function MyRoomDash() {
   }, [uid]);
 
   useEffect(() => {
-    const applyFilter = async () => {
-      const now = new Date();
+    if (!rooms) return;
 
-      const filtered = await Promise.all(
-        rooms.map(async (room) => {
-          const roomDate = new Date(room.date);
+    const now = new Date();
 
-          // --- filter kategori ---
-          if (activeTab !== "all" && room.category !== activeTab) {
-            return null;
-          }
+    let result = rooms.filter((room) => {
+      const roomDate = new Date(room.date);
 
-          // --- filter waktu ---
-          if (activeFilter === "today") {
-            const isToday =
-              roomDate.getDate() === now.getDate() &&
-              roomDate.getMonth() === now.getMonth() &&
-              roomDate.getFullYear() === now.getFullYear();
-            if (!isToday) return null;
-          }
+      // --- category ---
+      if (activeTab !== "all" && room.category !== activeTab) return false;
 
-          if (activeFilter === "thisweek") {
-            const startOfWeek = new Date(now);
-            startOfWeek.setDate(now.getDate() - now.getDay());
-            const endOfWeek = new Date(startOfWeek);
-            endOfWeek.setDate(startOfWeek.getDate() + 7);
+      // --- time filters ---
+      if (activeFilter === "today") {
+        const isToday =
+          roomDate.getDate() === now.getDate() &&
+          roomDate.getMonth() === now.getMonth() &&
+          roomDate.getFullYear() === now.getFullYear();
 
-            const isThisWeek = roomDate >= startOfWeek && roomDate <= endOfWeek;
-            if (!isThisWeek) return null;
-          }
+        if (!isToday) return false;
+      }
 
-          if (activeFilter === "thismonth") {
-            const isThisMonth =
-              roomDate.getMonth() === now.getMonth() &&
-              roomDate.getFullYear() === now.getFullYear();
-            if (!isThisMonth) return null;
-          }
-          if (activeFilter === "mycampus") {
-            if (!userData?.university) return null;
-            const sameCampus =
-              room.place
-                ?.toLowerCase()
-                .includes(userData.university.toLowerCase()) ||
-              userData.university
-                .toLowerCase()
-                .includes(room.place?.toLowerCase());
-            if (!sameCampus) return null;
-          }
+      if (activeFilter === "thisweek") {
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay());
 
-          return room;
-        })
-      );
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 7);
 
-      // hapus nilai null dari hasil filter
-      setFilteredRooms(filtered.filter((r) => r !== null) as RoomEntry[]);
-    };
+        const isThisWeek = roomDate >= startOfWeek && roomDate <= endOfWeek;
+        if (!isThisWeek) return false;
+      }
 
-    applyFilter();
-  }, [rooms, activeTab, activeFilter, userData]);
+      if (activeFilter === "thismonth") {
+        const isThisMonth =
+          roomDate.getMonth() === now.getMonth() &&
+          roomDate.getFullYear() === now.getFullYear();
+        if (!isThisMonth) return false;
+      }
+
+      if (activeFilter === "mycampus") {
+        if (!userData?.university) return false;
+
+        const sameCampus =
+          room.place
+            ?.toLowerCase()
+            .includes(userData.university.toLowerCase()) ||
+          userData.university.toLowerCase().includes(room.place?.toLowerCase());
+
+        if (!sameCampus) return false;
+      }
+
+      // --- search ---
+      if (search.trim() !== "") {
+        const q = search.toLowerCase();
+        const match =
+          room.planName?.toLowerCase().includes(q) ||
+          room.place?.toLowerCase().includes(q) ||
+          room.hostName?.toLowerCase().includes(q);
+        if (!match) return false;
+      }
+
+      return true;
+    });
+
+    setFilteredRooms(result);
+  }, [rooms, activeTab, activeFilter, userData, search]);
 
   return (
     <SafeAreaView
-      className="bg-neutral-100"
       style={{
         backgroundColor: COLORS.white,
         flex: 1,
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
       }}
     >
       <ScrollView
@@ -189,15 +191,14 @@ export default function MyRoomDash() {
             <View className="flex-row items-center mt-4 gap-2 justify-between">
               {/* SearchBar */}
               <View className="flex-1">
-                <TouchableOpacity
-                  onPress={() => router.push("/myroom/detailroom/searchRoom")}
-                >
-                  <SearchBar
-                    placeholder="Search Activity"
-                    onChangeText={(text) => console.log(text)}
-                  />
-                </TouchableOpacity>
+                <SearchBar
+                  placeholder="Search Activity"
+                  value={search}
+                  onSearch={setSearch}
+                  onChangeText={(text) => setSearch(text)}
+                />
               </View>
+
               {/* Filtering */}
               <TouchableOpacity
                 onPress={() => setModalVisible(true)}
