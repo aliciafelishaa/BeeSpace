@@ -41,7 +41,6 @@ export const createRoom = async (payload: RoomEntry) => {
       userUniv: payload.userUniv,
     };
 
-    
     console.log("payload:", roomData);
     const reqRef = await addDoc(collection(db, "roomEvents"), roomData);
 
@@ -54,6 +53,12 @@ export const createRoom = async (payload: RoomEntry) => {
   } catch (err) {
     return { success: false, message: err };
   }
+};
+export const reportRoomApi = async (roomId: string) => {
+  const res = await fetch(`https://myapp.local/rooms/${roomId}/report`, {
+    method: "POST",
+  });
+  return res.json();
 };
 
 export const getAllRoom = async (uid: string) => {

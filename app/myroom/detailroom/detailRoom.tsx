@@ -308,11 +308,12 @@ export default function DetailRoom() {
                           <Text className="text-neutral-700 font-inter text-[14px] font-medium">
                             {room.place}
                           </Text>
+                          <Text className="text-neutral-700 font-inter text-[14px] font-regular">
+                            Detail: {room.locationDetail}
+                          </Text>
                         </View>
                       </View>
-                      <Text className="text-primary2nd font-inter text-[12px]">
-                        See Map
-                      </Text>
+                      
                     </View>
                   </View>
                 </View>

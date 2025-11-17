@@ -11,4 +11,6 @@ export type CardRoomProps = {
   isEdit: boolean;
   timeEnd: string;
   timeStart: string;
+  hostUid: string;
+  currentUserId: string;
 };

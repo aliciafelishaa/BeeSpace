@@ -260,7 +260,7 @@ export default function MyRoomDash() {
                   <TabButton
                     key={cat}
                     title={cat.charAt(0).toUpperCase() + cat.slice(1)}
-                    icon={require("@/assets/utils/passive-icon/globe.png")} 
+                    icon={require("@/assets/utils/passive-icon/globe.png")}
                     activeIcon={require("@/assets/utils/active-icon/globe.png")}
                     active={activeTab === cat}
                     onPress={() => setActiveTab(cat as RoomCategory)}
@@ -328,6 +328,8 @@ export default function MyRoomDash() {
                   imageSource={room.cover ? { uri: room.cover } : false}
                   isEdit={false}
                   imageAvatar={room.imageAvatar}
+                  hostUid={room.fromUid}
+                  currentUserId={uid || ""}
                 />
               ))
             ) : (
