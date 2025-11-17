@@ -13,6 +13,7 @@ import { UserProfile } from "@/types/profile/profile";
 import { Redirect, router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, ScrollView, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type Mode = "view" | "edit_profile" | "personal_info";
 
@@ -142,7 +143,7 @@ export default function MyProfileScreen() {
   };
 
   return (
-    <ScrollView
+    <SafeAreaView
       className="bg-neutral-100"
       style={{
         backgroundColor: COLORS.white,
@@ -236,6 +237,6 @@ export default function MyProfileScreen() {
           />
         )}
       </View>
-    </ScrollView>
+    </SafeAreaView>
   );
 }
