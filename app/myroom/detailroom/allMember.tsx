@@ -124,7 +124,7 @@ export default function AllMember() {
                 )
             );
         } catch (err) {
-            console.error("❌ Follow/Unfollow error:", err);
+            console.error("Follow/Unfollow error:", err);
             Alert.alert("Error", "Failed to update follow status. Please try again.");
         } finally {
             setUpdatingFollowIds((prev) => {
