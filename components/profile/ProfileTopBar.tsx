@@ -33,7 +33,7 @@ export const ProfileTopBar: React.FC<ProfileTopBarProps> = ({
     if (router.canGoBack()) {
       router.back();
     } else {
-      router.replace("/home");
+      router.replace("/profile");
     }
   };
 
