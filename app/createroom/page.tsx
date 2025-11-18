@@ -14,7 +14,13 @@ import { useRoomCover } from "@/hooks/useRoomCover";
 import { useUserData } from "@/hooks/useUserData";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
-import { Image, ScrollView, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -25,9 +31,11 @@ export default function CreateRoomPage() {
   const handleBack = () => router.back();
   const insets = useSafeAreaInsets();
   const { addRoom } = useRoom();
+  const [localImage, setLocalImage] = useState<string | null>(null);
 
   const { image, uploading, pickPhoto } = useRoomCover(undefined, (url) => {
     handleChange("cover", url);
+    setLocalImage(url);
   });
 
   const { user } = useAuthState();
@@ -59,6 +67,11 @@ export default function CreateRoomPage() {
   };
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  const handleRemovePhoto = () => {
+    handleChange("cover", "");
+    setLocalImage(null);
+  };
 
   const handleNext = () => {
     let errors: Record<string, string> = {};
@@ -109,7 +122,16 @@ export default function CreateRoomPage() {
 
     const result = await addRoom(inputRoom);
     if (result.success) {
-      router.back();
+      try {
+        if (router.canGoBack()) {
+          router.back();
+        } else {
+          router.replace("/myroom/roomDashboard");
+        }
+      } catch (err) {
+        console.log(err);
+        router.replace("/myroom/roomDashboard");
+      }
     } else {
       setErrorMessage(result.message || "Failed to create room");
       setShowError(true);
@@ -198,17 +220,20 @@ export default function CreateRoomPage() {
                   onPress={() => pickPhoto("gallery")}
                   disabled={uploading}
                 >
-                  {image ? (
+                  {uploading ? (
+                    <View className="border border-gray-300 rounded-lg py-12 flex items-center justify-center">
+                      <ActivityIndicator size="large" color="#FCBC03" />
+                      <Text className="text-[#737373] mt-3">Uploading...</Text>
+                    </View>
+                  ) : localImage || image ? (
                     <View className="relative">
                       <Image
-                        source={{ uri: image }}
+                        source={{ uri: (localImage || image) as string }}
                         className="w-full h-48 rounded-lg mb-2"
                         resizeMode="cover"
                       />
                       <TouchableOpacity
-                        onPress={() => {
-                          handleChange("cover", "");
-                        }}
+                        onPress={handleRemovePhoto}
                         className="absolute top-2 right-2 bg-black/50 px-2 py-1 rounded-md"
                       >
                         <Text className="text-white text-sm">Remove</Text>

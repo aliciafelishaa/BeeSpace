@@ -9,6 +9,11 @@ export function useRoomCover(
 ): CoverProps {
   const [image, setImage] = useState<string | null>(initialImageUrl || null);
   const [uploading, setUploading] = useState(false);
+  
+  const removeImage = () => {
+  setImage(null);
+  setUploading(false);
+};
 
   useEffect(() => {
     if (initialImageUrl) setImage(initialImageUrl);
@@ -63,5 +68,7 @@ export function useRoomCover(
     }
   };
 
-  return { image, uploading, pickPhoto };
+  
+
+  return { image, uploading, pickPhoto, removeImage };
 }
