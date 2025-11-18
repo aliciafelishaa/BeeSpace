@@ -213,7 +213,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           >
             {isGroupChat
               ? `${chat?.groupData?.memberUids?.length || 0} members`
-              : "Online"}
+              : ""} 
+              {/* Online */}
           </Text>
         </View>
       </View>

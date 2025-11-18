@@ -10,6 +10,7 @@ import { ProfileTopBar } from "@/components/profile/ProfileTopBar";
 import Text from "@/components/ui/Text";
 import { COLORS } from "@/constants/utils/colors";
 import { useAuth } from "@/context/AuthContext";
+import { useProfileEdit } from "@/context/ProfileContext";
 import { logout } from "@/services/authService";
 import { getFullUserProfile, updateUserProfile } from "@/services/userService";
 import { UserProfile } from "@/types/profile/profile";
@@ -30,6 +31,7 @@ export default function MyProfileScreen() {
   const [saving, setSaving] = useState(false);
   const insets = useSafeAreaInsets();
   const [mode, setMode] = useState<Mode>("view");
+  const { setIsEditing } = useProfileEdit();
 
   useEffect(() => {
     if (authUser?.uid) {
@@ -79,7 +81,18 @@ export default function MyProfileScreen() {
       await updateUserProfile(authUser.uid, updateData);
 
       setUser(null);
-      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      setUser((prev) =>
+        prev
+          ? {
+              ...prev,
+              name: updateData.fullName,
+              username: updateData.username,
+              bio: updateData.bio,
+              avatarUrl: updateData.profilePicture || undefined,
+            }
+          : null
+      );
       await loadProfile();
 
       setMode("view");
@@ -139,16 +152,8 @@ export default function MyProfileScreen() {
 
   const changeMode = (newMode: Mode) => {
     setMode(newMode);
-
     const isEditing = newMode !== "view";
-
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(
-        new CustomEvent("profileEditChange", {
-          detail: { editing: isEditing },
-        })
-      );
-    }
+    setIsEditing(isEditing);
   };
 
   const getTitle = () => {

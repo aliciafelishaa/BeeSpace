@@ -3,6 +3,7 @@ import { Fonts } from "@/constants/utils/fonts";
 import { NAV_ITEMS } from "@/constants/utils/navbarItems";
 import { AuthContext } from "@/context/AuthContext";
 import { FamilyViewProvider } from "@/context/FamilyViewContext";
+import { ProfileEditProvider, useProfileEdit } from "@/context/ProfileContext";
 import "@/global.css";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -36,7 +37,7 @@ function RootContent() {
   const pathname = usePathname();
   const [activeTab, setActiveTab] = useState("home");
   const [fontsLoaded] = useFonts({ ...Fonts });
-  const [isProfileEditing, setIsProfileEditing] = useState(false);
+  const { isEditing: isProfileEditing } = useProfileEdit();
 
   useNotifications();
 
@@ -60,16 +61,6 @@ function RootContent() {
 
     if (current) setActiveTab(current.id);
   }, [pathname]);
-
-  useEffect(() => {
-    const handleProfileEdit = (event: any) => {
-      setIsProfileEditing(event.detail.editing);
-    };
-
-    window.addEventListener("profileEditChange", handleProfileEdit);
-    return () =>
-      window.removeEventListener("profileEditChange", handleProfileEdit);
-  }, []);
 
   useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync();
@@ -106,7 +97,9 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AuthContext>
         <FamilyViewProvider>
-          <RootContent />
+          <ProfileEditProvider>
+            <RootContent />
+          </ProfileEditProvider>
         </FamilyViewProvider>
       </AuthContext>
     </GestureHandlerRootView>
