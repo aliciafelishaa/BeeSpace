@@ -42,19 +42,21 @@ export interface UserProfile {
   id: UserId;
   name: string;
   username: Username;
-  avatarUrl?: any;
+  
+  // ✅ Jadikan optional
+  university?: string;
+  major?: string;
+  studentID?: string;
+  enrollYear?: string;
+  gradYear?: string;
 
   bio?: string;
   tagline?: string;
+  avatarUrl?: Url;
 
-  /** Profil milik current user */
   isMe: boolean;
-
-  /** viewer → profil target (kalau isMe=false) */
   relationship?: Relationship;
-
   followStats: FollowStats;
-
   stats: ProfileStats;
 }
 

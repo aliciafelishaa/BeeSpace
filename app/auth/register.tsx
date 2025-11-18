@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { View, TouchableOpacity, ScrollView } from "react-native";
-import { useForm } from "react-hook-form";
-import { useRouter } from "expo-router";
 import { InputField } from "@/components/auth/InputField";
 import Text from "@/components/ui/Text";
-import IconGoogle from "@/components/ui/IconGoogle";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { ScrollView, TouchableOpacity, View } from "react-native";
+// import IconGoogle from "@/components/ui/IconGoogle";
 import { registerWithEmail } from "@/services/authService";
-import { checkUserProfileCompletion } from "@/services/userService";
-import { useGoogleAuth } from "@/services/googleAuthService";
+// import { checkUserProfileCompletion } from "@/services/userService";
+// import { useGoogleAuth } from "@/services/googleAuthService";
 
 type FormValues = {
     email: string;
@@ -28,41 +28,41 @@ export default function Register() {
         formState: { errors },
     } = useForm<FormValues>();
 
-    const { request, response, signInWithGoogle } = useGoogleAuth();
+    // const { request, response, signInWithGoogle } = useGoogleAuth();
 
-    useEffect(() => {
-        const handleGoogleResponse = async () => {
-            if (!response) return;
-            try {
-                setLoading(true);
-                const result = await signInWithGoogle();
+    // useEffect(() => {
+    //     const handleGoogleResponse = async () => {
+    //         if (!response) return;
+    //         try {
+    //             setLoading(true);
+    //             const result = await signInWithGoogle();
 
-                if (result && result.user?.uid) {
-                    setSuccess("Google sign up successful!");
+    //             if (result && result.user?.uid) {
+    //                 setSuccess("Google sign up successful!");
 
-                    const isProfileComplete = await checkUserProfileCompletion(
-                        result.user.uid
-                    );
+    //                 const isProfileComplete = await checkUserProfileCompletion(
+    //                     result.user.uid
+    //                 );
 
-                    if (isProfileComplete) {
-                        router.replace("/myroom/roomDashboard");
-                    } else {
-                        router.push({
-                            pathname: "/auth/boarding",
-                            params: { uid: result.user.uid },
-                        });
-                    }
-                }
-            } catch (err) {
-                console.error("Google sign up error:", err);
-                setError("Google sign up failed. Please try again.");
-            } finally {
-                setLoading(false);
-            }
-        };
+    //                 if (isProfileComplete) {
+    //                     router.replace("/myroom/roomDashboard");
+    //                 } else {
+    //                     router.push({
+    //                         pathname: "/auth/boarding",
+    //                         params: { uid: result.user.uid },
+    //                     });
+    //                 }
+    //             }
+    //         } catch (err) {
+    //             console.error("Google sign up error:", err);
+    //             setError("Google sign up failed. Please try again.");
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     };
 
-        handleGoogleResponse();
-    }, [response]);
+    //     handleGoogleResponse();
+    // }, [response]);
 
     const onSubmit = async (data: FormValues) => {
         setError("");
@@ -170,15 +170,16 @@ export default function Register() {
             <TouchableOpacity
                 onPress={handleSubmit(onSubmit)}
                 disabled={loading}
-                className={`bg-[#FCBC03] justify-center h-14 rounded-lg mb-4 mt-2 ${loading ? "opacity-60" : ""
-                    }`}
+                className={`bg-[#FCBC03] justify-center h-14 rounded-lg mb-4 mt-2 ${
+                    loading ? "opacity-60" : ""
+                }`}
             >
                 <Text className="text-white text-center text-lg font-bold">
                     {loading ? "Registering..." : "Sign Up"}
                 </Text>
             </TouchableOpacity>
 
-            <View className="flex-row items-center my-4">
+            {/* <View className="flex-row items-center my-4">
                 <View className="flex-1 h-px bg-gray-300" />
                 <Text className="mx-3 text-[#737373] font-semibold">or continue with</Text>
                 <View className="flex-1 h-px bg-gray-300" />
@@ -187,12 +188,13 @@ export default function Register() {
             <TouchableOpacity
                 disabled={!request || loading}
                 onPress={() => signInWithGoogle()}
-                className={`flex-row items-center justify-center border border-gray-300 h-14 rounded-lg mb-4 gap-2 ${loading ? "opacity-60" : ""
-                    }`}
+                className={`flex-row items-center justify-center border border-gray-300 h-14 rounded-lg mb-4 gap-2 ${
+                    loading ? "opacity-60" : ""
+                }`}
             >
                 <IconGoogle />
                 <Text className="text-[#171717] font-bold">Google</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             <View className="flex-row justify-center mt-4 mb-12">
                 <Text weight="SemiBold" className="text-[#737373] font-medium">

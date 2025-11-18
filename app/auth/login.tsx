@@ -1,15 +1,16 @@
-import React, { useEffect, useState } from "react"
-import { View, TouchableOpacity, ScrollView } from "react-native"
-import { useForm } from "react-hook-form"
-import { useRouter } from "expo-router"
 import { InputField } from "@/components/auth/InputField"
 import Text from "@/components/ui/Text"
-import IconGoogle from "@/components/ui/IconGoogle"
+import { useRouter } from "expo-router"
+import React, { useState } from "react"
+import { useForm } from "react-hook-form"
+import { ScrollView, TouchableOpacity, View } from "react-native"
+// import IconGoogle from "@/components/ui/IconGoogle"
 import LogoBeeSpace from "@/components/ui/LogoBeeSpace"
-import { loginWithEmail, useGoogleAuth } from "@/services/authService"
-import * as WebBrowser from "expo-web-browser"
+import { loginWithEmail } from "@/services/authService"
+// import { useGoogleAuth } from "@/services/authService"
+// import * as WebBrowser from "expo-web-browser"
 
-WebBrowser.maybeCompleteAuthSession()
+// WebBrowser.maybeCompleteAuthSession()
 
 type LoginForm = {
     email: string
@@ -29,24 +30,24 @@ export default function Login() {
         formState: { errors },
     } = useForm<LoginForm>()
 
-    const { request, response, promptAsync, handleGoogleResponse } = useGoogleAuth()
+    // const { request, response, promptAsync, handleGoogleResponse } = useGoogleAuth()
 
-    useEffect(() => {
-        const handleResponse = async () => {
-            if (!response) return
-            try {
-                setLoading(true)
-                await handleGoogleResponse()
-                router.replace("/myroom/roomDashboard")
-            } catch (err) {
-                console.error("Google login error:", err)
-                setError("Google login failed. Please try again.")
-            } finally {
-                setLoading(false)
-            }
-        }
-        handleResponse()
-    }, [response])
+    // useEffect(() => {
+    //     const handleResponse = async () => {
+    //         if (!response) return
+    //         try {
+    //             setLoading(true)
+    //             await handleGoogleResponse()
+    //             router.replace("/myroom/roomDashboard")
+    //         } catch (err) {
+    //             console.error("Google login error:", err)
+    //             setError("Google login failed. Please try again.")
+    //         } finally {
+    //             setLoading(false)
+    //         }
+    //     }
+    //     handleResponse()
+    // }, [response])
 
     const onSubmit = async (data: LoginForm) => {
         setError("")
@@ -131,7 +132,7 @@ export default function Login() {
                 <Text className="text-white text-center text-lg font-bold">{loading ? "Logging in..." : "Log In"}</Text>
             </TouchableOpacity>
 
-            <View className="flex-row items-center my-4">
+            {/* <View className="flex-row items-center my-4">
                 <View className="flex-1 h-px bg-gray-300" />
                 <Text className="mx-3 text-gray-400 font-semibold">or continue with</Text>
                 <View className="flex-1 h-px bg-gray-300" />
@@ -144,10 +145,10 @@ export default function Login() {
             >
                 <IconGoogle />
                 <Text className="text-[#171717] font-bold">Google</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             <View className="flex-row justify-center mt-4 mb-12">
-                <Text className="text-[#404040] font-medium">Don’t have an account? </Text>
+                <Text className="text-[#404040] font-medium">Don't have an account? </Text>
                 <TouchableOpacity onPress={() => router.push("/auth/register")}>
                     <Text className="text-[#DC9010] font-semibold">Create an account</Text>
                 </TouchableOpacity>

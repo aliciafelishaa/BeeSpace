@@ -68,15 +68,33 @@ export const joinGroupChat = async (
   }
 };
 
-export const getGroupChat = async (
-  chatId: string
-): Promise<GroupChat | null> => {
+export const getGroupChat = async (chatId: string): Promise<any> => {
   try {
     const chatDoc = await getDoc(doc(db, "groupChats", chatId));
-    if (chatDoc.exists()) {
-      return chatDoc.data() as GroupChat;
+
+    if (!chatDoc.exists()) {
+      return null;
     }
-    return null;
+
+    const data = chatDoc.data();
+    let coverUrl = null;
+    if (data.roomId) {
+      try {
+        const roomDoc = await getDoc(doc(db, "roomEvents", data.roomId));
+        if (roomDoc.exists()) {
+          const roomData = roomDoc.data();
+          coverUrl = roomData?.cover || null;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    return {
+      id: chatDoc.id,
+      ...data,
+      cover: coverUrl,
+    };
   } catch (err) {
     console.error("Error:", err);
     return null;

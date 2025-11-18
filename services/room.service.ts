@@ -14,7 +14,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { updateRoomStats } from "./userService";
+import { updateRoomStats } from "@/services/userService";
 
 export const createRoom = async (payload: RoomEntry) => {
   if (!payload.fromUid) {

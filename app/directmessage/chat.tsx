@@ -1,10 +1,12 @@
 import { ChatWindow } from "@/components/directmessage/chat";
+import { db } from "@/config/firebaseConfig";
 import { COLORS } from "@/constants/utils/colors";
 import { getCurrentUserData } from "@/services/authService";
 import { getGroupChat } from "@/services/directmessage/groupChatService";
 import { getUserById } from "@/services/userService";
 import { Chat } from "@/types/directmessage/dm";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { doc, getDoc } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import {
@@ -41,6 +43,21 @@ export default function ChatDetailPage() {
         if (isGroup) {
           const groupChatData = await getGroupChat(id as string);
           if (groupChatData) {
+            let coverUrl = null;
+            if (groupChatData.roomId) {
+              try {
+                const roomDoc = await getDoc(
+                  doc(db, "roomEvents", groupChatData.roomId)
+                );
+                if (roomDoc.exists()) {
+                  const roomData = roomDoc.data();
+                  coverUrl = roomData?.cover || null;
+                }
+              } catch (err) {
+                console.error(err);
+              }
+            }
+
             const chatObj: Chat = {
               id: id as string,
               userId: groupChatData.hostUid,
@@ -58,6 +75,8 @@ export default function ChatDetailPage() {
                 name: groupChatData.name,
                 memberUids: groupChatData.memberUids,
                 roomId: groupChatData.roomId,
+                cover: coverUrl, 
+                profilePicture: coverUrl, 
               },
             };
             setChat(chatObj);
