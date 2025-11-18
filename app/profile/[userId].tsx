@@ -1,167 +1,264 @@
-import { ProfileActivity } from "@/components/profile/ProfileActivity";
-import { ProfileHeader } from "@/components/profile/ProfileHeader";
-import { ProfileStat } from "@/components/profile/ProfileStats";
-import { ProfileTopBar } from "@/components/profile/ProfileTopBar";
-import Text from "@/components/ui/Text";
-import { COLORS } from "@/constants/utils/colors";
-import { useAuth } from "@/context/AuthContext";
+import HeaderBack from "@/components/utils/HeaderBack"
+import SearchBar from "@/components/utils/SearchBar"
+import { COLORS } from "@/constants/utils/colors"
+import { useAuth } from "@/context/AuthContext"
+import { getRoomMembers } from "@/services/room.service"
 import {
-  followUser,
-  getFullUserProfile,
-  unfollowUser,
-} from "@/services/userService";
-import { UserProfile } from "@/types/profile/profile";
-import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, ScrollView, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+    followUser,
+    getFullUserProfile,
+    getUserById,
+    unfollowUser,
+} from "@/services/userService"
+import { useLocalSearchParams } from "expo-router"
+import React, { useEffect, useState } from "react"
+import {
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native"
+import {
+    SafeAreaView,
+    useSafeAreaInsets,
+} from "react-native-safe-area-context"
 
-export default function UserProfileScreen() {
-  const { userId } = useLocalSearchParams();
-  const { user: authUser } = useAuth();
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isUpdatingFollow, setIsUpdatingFollow] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+type Member = {
+    id: string
+    name: string
+    username: string
+    isFollowing?: boolean
+    isMe?: boolean
+}
 
-  const targetUserId = typeof userId === "string" ? userId : undefined;
-  const currentUserId = authUser?.uid;
+export default function AllMember() {
+    const { roomId } = useLocalSearchParams()
+    const { user: authUser } = useAuth()
+    const insets = useSafeAreaInsets()
+    const [search, setSearch] = useState("")
+    const [members, setMembers] = useState<Member[]>([])
+    const [loading, setLoading] = useState(false)
+    const [updatingFollowIds, setUpdatingFollowIds] = useState<Set<string>>(
+        new Set()
+    )
 
-  useEffect(() => {
-    if (targetUserId) {
-      fetchUserProfile();
-    }
-  }, [targetUserId, currentUserId]);
+    const currentUserId = authUser?.uid
 
-  const fetchUserProfile = async () => {
-    if (!targetUserId) {
-      setError("Missing user ID");
-      setLoading(false);
-      return;
-    }
+    useEffect(() => {
+        console.log("AllMember useEffect running, roomId:", roomId)
+        fetchMembers()
+    }, [roomId, currentUserId])
 
-    setLoading(true);
-    setError(null);
+    const fetchMembers = async () => {
+        setLoading(true)
+        try {
+            const roomMembers = await getRoomMembers(roomId)
+            console.log("roomMembers:", roomMembers)
 
-    try {
-      const profile = await getFullUserProfile(targetUserId, currentUserId);
+            const fetchedMembers: Member[] = []
 
-      if (profile) {
-        if (currentUserId && targetUserId === currentUserId) {
-          router.replace("/profile");
-          return;
+            for (const user of roomMembers) {
+                const userData = await getUserById(user.id)
+                if (userData) {
+                    let isFollowing = false
+                    const isMe = currentUserId === user.id
+
+                    if (currentUserId && !isMe) {
+                        try {
+                            const fullProfile = await getFullUserProfile(
+                                user.id,
+                                currentUserId
+                            )
+                            isFollowing = fullProfile?.relationship?.isFollowing ?? false
+                        } catch (err) {
+                            console.error("Error fetching follow status:", err)
+                        }
+                    }
+
+                    fetchedMembers.push({
+                        id: user.id,
+                        name: userData.name,
+                        username: userData.username,
+                        isFollowing,
+                        isMe,
+                    })
+                }
+            }
+
+            setMembers(fetchedMembers)
+        } catch (err) {
+            console.error("Failed to fetch members:", err)
+            setMembers([])
+        } finally {
+            setLoading(false)
         }
-        setUser(profile);
-        console.log("✅ Other profile loaded:", profile);
-      } else {
-        setError("User profile not found");
-      }
-    } catch (err) {
-      console.error("❌ Error loading other profile:", err);
-      setError("Failed to load user profile");
-    } finally {
-      setLoading(false);
     }
-  };
 
-  const handleFollowToggle = async (isCurrentlyFollowing: boolean) => {
-    if (!currentUserId || !targetUserId || isUpdatingFollow) return;
+    const handleFollowToggle = async (memberId: string, isFollowing: boolean) => {
+        if (!currentUserId || updatingFollowIds.has(memberId)) return
 
-    setIsUpdatingFollow(true);
+        setUpdatingFollowIds((prev) => new Set(prev).add(memberId))
 
-    try {
-      if (isCurrentlyFollowing) {
-        await unfollowUser(currentUserId, targetUserId);
-        Alert.alert(
-          "Success",
-          `You have unfollowed ${user?.username || "user"}`
-        );
-      } else {
-        await followUser(currentUserId, targetUserId);
-        Alert.alert(
-          "Success",
-          `You are now following ${user?.username || "user"}`
-        );
-      }
+        try {
+            if (isFollowing) {
+                await unfollowUser(currentUserId, memberId)
+                const memberName =
+                    members.find((m) => m.id === memberId)?.username || "user"
+                Alert.alert("Success", `You have unfollowed ${memberName}`)
+            } else {
+                await followUser(currentUserId, memberId)
+                const memberName =
+                    members.find((m) => m.id === memberId)?.username || "user"
+                Alert.alert("Success", `You are now following ${memberName}`)
+            }
 
-      await fetchUserProfile();
-    } catch (err) {
-      console.error("❌ Follow/Unfollow error:", err);
-      Alert.alert("Error", "Failed to update follow status. Please try again.");
-    } finally {
-      setIsUpdatingFollow(false);
+            setMembers((prev) =>
+                prev.map((member) =>
+                    member.id === memberId
+                        ? { ...member, isFollowing: !isFollowing }
+                        : member
+                )
+            )
+        } catch (err) {
+            console.error("Follow/Unfollow error:", err)
+            Alert.alert("Error", "Failed to update follow status. Please try again.")
+        } finally {
+            setUpdatingFollowIds((prev) => {
+                const newSet = new Set(prev)
+                newSet.delete(memberId)
+                return newSet
+            })
+        }
     }
-  };
 
-  if (loading) {
-    return (
-      <SafeAreaView
-        className="flex-1 items-center justify-center"
-        style={{ backgroundColor: COLORS.white }}
-      >
-        <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text className="mt-4" style={{ color: COLORS.neutral500 }}>
-          Loading profile...
-        </Text>
-      </SafeAreaView>
-    );
-  }
+    const filteredMembers = members.filter((member) =>
+        member.username.toLowerCase().includes(search.toLowerCase())
+    )
 
-  if (error || !user) {
     return (
-      <SafeAreaView
-        className="flex-1 items-center justify-center px-4"
-        style={{ backgroundColor: COLORS.white }}
-      >
-        <Text
-          className="text-lg font-semibold mb-2"
-          style={{ color: COLORS.neutral900 }}
+        <SafeAreaView
+            style={{
+                flex: 1,
+                backgroundColor: COLORS.white,
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+            }}
         >
-          {error || "User not found"}
-        </Text>
-        <Text style={{ color: COLORS.neutral500 }}>
-          Unable to load this profile
-        </Text>
-      </SafeAreaView>
-    );
-  }
+            <ScrollView
+                contentContainerStyle={{
+                    flexGrow: 1,
+                    paddingBottom: insets.bottom + 100,
+                }}
+                showsVerticalScrollIndicator={false}
+            >
+                <View>
+                    <View className="justify-center flex-row items-center">
+                        <HeaderBack />
+                        <Text className="items-center text-neutral-900 text-[28px] font-semibold pt-[45px]">
+                            Room Members
+                        </Text>
+                    </View>
 
-  return (
-    <SafeAreaView
-      className="bg-neutral-100"
-      style={{
-        backgroundColor: COLORS.white,
-        flex: 1,
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-      }}
-    >
-      <View style={{ flex: 1, backgroundColor: COLORS.white }}>
-        <ProfileTopBar
-          isOwnProfile={false}
-          userId={user.id}
-          userName={user.name}
-          title={user.name}
-          showMenu={false}
-          showShare={false}
-          onBack={() => router.back()}
-        />
+                    <View className="px-[15px] py-[35px]">
+                        <SearchBar
+                            placeholder="Search Username"
+                            containerStyle={{ marginRight: 8 }}
+                            onChangeText={(text) => setSearch(text)}
+                            value={search}
+                            onSearch={setSearch}
+                        />
 
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-          <ProfileHeader
-            user={user}
-            onPressFollow={handleFollowToggle}
-            isUpdatingFollow={isUpdatingFollow}
-          />
+                        {loading ? (
+                            <View className="items-center justify-center mt-8">
+                                <ActivityIndicator size="large" color={COLORS.primary2nd} />
+                            </View>
+                        ) : (
+                            <View className="gap-[32px] mt-6">
+                                {filteredMembers.map((member) => {
+                                    const isUpdating = updatingFollowIds.has(member.id)
+                                    const isFollowing = member.isFollowing ?? false
 
-          <ProfileStat stats={user.stats} />
+                                    return (
+                                        <View
+                                            key={member.id}
+                                            className="justify-between flex-row items-center"
+                                        >
+                                            <View className="flex-row gap-4 items-center">
+                                                <View className="w-[36px] h-[36px] rounded-full bg-primary2nd" />
+                                                <View className="gap-1">
+                                                    <Text className="font-inter font-normal text-[14px]">
+                                                        {member.name}
+                                                    </Text>
+                                                    <Text className="font-inter font-normal text-[12px] text-neutral-500">
+                                                        {member.username}
+                                                    </Text>
+                                                </View>
+                                            </View>
 
-          <ProfileActivity limit={3} userId={user.id} />
-        </ScrollView>
-      </View>
-    </SafeAreaView>
-  );
+                                            {member.isMe ? (
+                                                <View
+                                                    className="px-4 py-2 rounded-[10px] bg-neutral-100"
+                                                    style={{
+                                                        borderColor: COLORS.neutral300,
+                                                        borderWidth: 1,
+                                                    }}
+                                                >
+                                                    <Text
+                                                        className="text-[14px]"
+                                                        style={{ color: COLORS.neutral500 }}
+                                                    >
+                                                        You
+                                                    </Text>
+                                                </View>
+                                            ) : (
+                                                <TouchableOpacity
+                                                    onPress={() =>
+                                                        handleFollowToggle(member.id, isFollowing)
+                                                    }
+                                                    disabled={isUpdating}
+                                                    className={`px-4 py-2 rounded-[10px] ${isFollowing
+                                                            ? "bg-neutral-100 border"
+                                                            : "bg-primary2nd"
+                                                        }`}
+                                                    style={{
+                                                        borderColor: isFollowing
+                                                            ? COLORS.neutral300
+                                                            : "transparent",
+                                                    }}
+                                                >
+                                                    {isUpdating ? (
+                                                        <ActivityIndicator
+                                                            size="small"
+                                                            color={
+                                                                isFollowing ? COLORS.neutral900 : COLORS.white
+                                                            }
+                                                        />
+                                                    ) : (
+                                                        <Text
+                                                            className="text-[14px]"
+                                                            style={{
+                                                                color: isFollowing
+                                                                    ? COLORS.neutral900
+                                                                    : COLORS.white,
+                                                            }}
+                                                        >
+                                                            {isFollowing ? "Following" : "Follow"}
+                                                        </Text>
+                                                    )}
+                                                </TouchableOpacity>
+                                            )}
+                                        </View>
+                                    )
+                                })}
+                            </View>
+                        )}
+                    </View>
+                </View>
+            </ScrollView>
+        </SafeAreaView>
+    )
 }

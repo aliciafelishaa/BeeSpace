@@ -1,11 +1,11 @@
 import DatePickerInput from "@/components/createroom/DatePickerInput";
 import DropdownInput from "@/components/createroom/DropdownInput";
 import FormInput from "@/components/createroom/FormInput";
-import ImagePicker from "@/components/createroom/ImagePicker";
 import RadioGroup from "@/components/createroom/RadioGroup";
 import TimePickerInput from "@/components/createroom/TimePickerInput";
 import ToggleSwitch from "@/components/createroom/ToggleSwitch";
 import IconBack from "@/components/ui/icon-back";
+import IconUpload from "@/components/ui/icon-upload";
 import Text from "@/components/ui/Text";
 import { COLORS } from "@/constants/utils/colors";
 import { useAuthState } from "@/hooks/useAuthState";
@@ -14,7 +14,13 @@ import { useRoomCover } from "@/hooks/useRoomCover";
 import { useUserData } from "@/hooks/useUserData";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
-import { ScrollView, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -25,14 +31,17 @@ export default function CreateRoomPage() {
   const handleBack = () => router.back();
   const insets = useSafeAreaInsets();
   const { addRoom } = useRoom();
+  const [localImage, setLocalImage] = useState<string | null>(null);
+
   const { image, uploading, pickPhoto } = useRoomCover(undefined, (url) => {
     handleChange("cover", url);
+    setLocalImage(url);
   });
+
   const { user } = useAuthState();
   const { uid: paramUid } = useLocalSearchParams();
   const uid = paramUid || user?.uid;
   const { userData } = useUserData(uid);
-  // const { data, setField } = useSignupContext();
 
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -58,6 +67,11 @@ export default function CreateRoomPage() {
   };
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  const handleRemovePhoto = () => {
+    handleChange("cover", "");
+    setLocalImage(null);
+  };
 
   const handleNext = () => {
     let errors: Record<string, string> = {};
@@ -108,8 +122,16 @@ export default function CreateRoomPage() {
 
     const result = await addRoom(inputRoom);
     if (result.success) {
-      console.log("✅ Form Submitted:", result);
-      router.back();
+      try {
+        if (router.canGoBack()) {
+          router.back();
+        } else {
+          router.replace("/myroom/roomDashboard");
+        }
+      } catch (err) {
+        console.log(err);
+        router.replace("/myroom/roomDashboard");
+      }
     } else {
       setErrorMessage(result.message || "Failed to create room");
       setShowError(true);
@@ -189,13 +211,44 @@ export default function CreateRoomPage() {
         <View className="bg-white mx-5 rounded-2xl p-5">
           {step === 1 && (
             <View>
-              <ImagePicker
-                label="Cover"
-                imageUrl={image || formData.cover || undefined}
-                onChangeImage={(uri) => handleChange("cover", uri)}
-                size={120}
-                onEdit={false}
-              />
+              <View className="mb-5">
+                <Text className="text-lg font-medium text-[#171717] mb-2">
+                  Cover <Text className="text-[#EF4444]">*</Text>
+                </Text>
+
+                <TouchableOpacity
+                  onPress={() => pickPhoto("gallery")}
+                  disabled={uploading}
+                >
+                  {uploading ? (
+                    <View className="border border-gray-300 rounded-lg py-12 flex items-center justify-center">
+                      <ActivityIndicator size="large" color="#FCBC03" />
+                      <Text className="text-[#737373] mt-3">Uploading...</Text>
+                    </View>
+                  ) : localImage || image ? (
+                    <View className="relative">
+                      <Image
+                        source={{ uri: (localImage || image) as string }}
+                        className="w-full h-48 rounded-lg mb-2"
+                        resizeMode="cover"
+                      />
+                      <TouchableOpacity
+                        onPress={handleRemovePhoto}
+                        className="absolute top-2 right-2 bg-black/50 px-2 py-1 rounded-md"
+                      >
+                        <Text className="text-white text-sm">Remove</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <View className="border border-gray-300 rounded-lg py-6 flex items-center justify-center">
+                      <IconUpload />
+                      <Text className="text-[#737373] mt-3">
+                        Add photo of your plan
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              </View>
 
               <FormInput
                 label="Plan Name"
@@ -287,7 +340,6 @@ export default function CreateRoomPage() {
                         : "Enter onsite location..."
                     }
                     required
-                    // error={formErrors.locationDetail}
                     onEdit={false}
                   />
                 )}

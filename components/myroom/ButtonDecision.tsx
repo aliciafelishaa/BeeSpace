@@ -19,7 +19,8 @@ export default function ButtonDecision({
   onDeleteRoom,
   room,
   currentUser,
-}: ButtonDecisionProps & { room?: any; currentUser?: any }) {
+  onMembersUpdate,
+}: ButtonDecisionProps & { room?: any; currentUser?: any; onMembersUpdate?: () => void }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [joined, setJoined] = useState(hasJoined);
   const { uid, id } = useLocalSearchParams();
@@ -34,7 +35,6 @@ export default function ButtonDecision({
     }
   }, [room, currentUser]);
 
-  // Function Join Room jika diclick
   const handleJoinRoom = async () => {
     if (!room?.id || !currentUser?.id) {
       return;
@@ -61,12 +61,14 @@ export default function ButtonDecision({
         );
       }
       setJoined(true);
+      if (onMembersUpdate) {
+        onMembersUpdate();
+      }
     } catch (err) {
       console.error("Error:", err);
     }
   };
 
-  // Function Leave Room jika diclick
   const handleLeaveRoom = async () => {
     if (!room?.id || !currentUser?.id) {
       return;
@@ -82,12 +84,14 @@ export default function ButtonDecision({
       await leaveGroupChat(chatId, currentUser.id);
 
       setJoined(false);
+      if (onMembersUpdate) {
+        onMembersUpdate();
+      }
     } catch (err) {
       console.error("Error:", err);
     }
   };
 
-  // Logic filtering Group Chat
   const handleGroupChat = async () => {
     if (!room?.id || !currentUser?.id) {
       alert("Invalid data!");
@@ -172,7 +176,6 @@ export default function ButtonDecision({
     );
   }
 
-  // Kondisi 2: user bukan owner & belum join & belum berakhir
   if (!isOwner && !joined && !isEnded) {
     return (
       <View
@@ -215,7 +218,6 @@ export default function ButtonDecision({
     );
   }
 
-  // Kondisi 3: jika sudah ikut dan waktu event sudah lewat
   if (isEnded) {
     return (
       <View className="items-center w-full absolute bottom-0 left-0 right-0 py-4 bg-gray-100">
@@ -226,7 +228,6 @@ export default function ButtonDecision({
     );
   }
 
-  // Kondisi jika sudah join tapi event belum selesai
   if (joined && !isEnded) {
     return (
       <View
