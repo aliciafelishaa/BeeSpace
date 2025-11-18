@@ -41,6 +41,7 @@ export default function DetailRoom() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [hostName, setHostName] = useState<string>("")
+    const [hostAvatar, setHostAvatar] = useState<string | null>(null)
     const { getRoom, deleteRoom } = useRoom()
     const isOwner = true
     const [hasJoined, setHasJoined] = useState(false)
@@ -56,7 +57,39 @@ export default function DetailRoom() {
         try {
             const roomMembers = await getRoomMembers(room.id)
             console.log("Fetched members:", roomMembers)
-            setMembers(roomMembers as Member[])
+
+            const fullMembers: Member[] = []
+
+            for (const m of roomMembers) {
+                const userData = await getUserById(m.id)
+                if (userData) {
+                    fullMembers.push({
+                        id: m.id,
+                        name: userData.name,
+                        username: userData.username,
+                        avatarUrl: userData.avatarUrl,
+                    })
+                }
+            }
+
+            if (room.fromUid) {
+                const hostData = await getUserById(room.fromUid)
+                if (hostData) {
+                    const hostObj: Member = {
+                        id: room.fromUid,
+                        name: hostData.name,
+                        username: hostData.username,
+                        avatarUrl: hostData.avatarUrl,
+                    }
+
+                    const exists = fullMembers.some((m) => m.id === room.fromUid)
+                    if (!exists) {
+                        fullMembers.unshift(hostObj)
+                    }
+                }
+            }
+
+            setMembers(fullMembers)
         } catch (err) {
             console.error("Failed to fetch members:", err)
             setMembers([])
@@ -88,6 +121,7 @@ export default function DetailRoom() {
                         if (selectedRoom.fromUid) {
                             const userRes = await getUserById(selectedRoom.fromUid)
                             setHostName(userRes?.name || "Unknown Host")
+                            setHostAvatar(userRes?.avatarUrl || null)
                         }
                     }
                 }
@@ -381,7 +415,18 @@ export default function DetailRoom() {
                                     </Text>
                                     <View className="gap-4 mt-4 justify-between flex-row items-center">
                                         <View className="flex-row gap-3 items-center">
-                                            <View className="w-[36px] h-[36px] rounded-full bg-primary2nd" />
+                                            <Image
+                                                source={
+                                                    hostAvatar
+                                                        ? { uri: hostAvatar }
+                                                        : require("@/assets/profile/empty-profile.jpg")
+                                                }
+                                                style={{
+                                                    width: 36,
+                                                    height: 36,
+                                                    borderRadius: 18,
+                                                }}
+                                            />
                                             <Text className="font-inter font-normal text-[14px]">
                                                 {hostName || "Unknown Host"}
                                             </Text>

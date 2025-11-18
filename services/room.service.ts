@@ -277,32 +277,26 @@ export const leaveRoom = async (
 
 export const getRoomMembers = async (roomId: string) => {
   try {
-    const roomDoc = await getDoc(doc(db, "roomEvents", roomId));
-    console.log("test");
-    console.log("roomDoc exists:", roomDoc.exists());
-    console.log("room data:", roomDoc.data());
+    const roomRef = doc(db, "roomEvents", roomId);
+    const roomSnap = await getDoc(roomRef);
 
-    if (!roomDoc.exists()) return [];
+    if (!roomSnap.exists()) {
+      console.error("Room not found");
+      return [];
+    }
 
-    const joinedUids = roomDoc.data().joinedUids || [];
-    console.log("joinedUids:", joinedUids);
-    if (joinedUids.length === 0) return [];
+    const roomData = roomSnap.data() as RoomEntry;
 
-    const usersQuery = query(
-      collection(db, "users"),
-      where("__name__", "in", joinedUids)
-    );
+    const hostUid = roomData.fromUid;
+    const joinedUids: string[] = roomData.joinedUids || [];
 
-    const usersSnapshot = await getDocs(usersQuery);
-    const members = usersSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const allUids = [hostUid, ...joinedUids].filter(Boolean);
 
-    console.log("members fetched:", members);
-    return members;
+    const uniqueUids = [...new Set(allUids)];
+
+    return uniqueUids.map((uid) => ({ id: uid }));
   } catch (err) {
-    console.error(err);
+    console.error("Failed to get room members:", err);
     return [];
   }
 };
