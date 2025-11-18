@@ -2,6 +2,7 @@ export interface CoverProps {
   image: string | null;
   uploading: boolean;
   pickPhoto: (type: "camera" | "gallery") => Promise<void>;
+  removeImage: () => void;
 }
 
 export type FileProps = {

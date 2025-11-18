@@ -1,14 +1,19 @@
-//a
 import HeaderBack from "@/components/utils/HeaderBack";
 import SearchBar from "@/components/utils/SearchBar";
-import { FOLLOWSTATUS } from "@/constants/page/followStatus";
 import { COLORS } from "@/constants/utils/colors";
+import { useAuth } from "@/context/AuthContext";
 import { getRoomMembers } from "@/services/room.service";
-import { getUserById } from "@/services/userService";
+import {
+  followUser,
+  getFullUserProfile,
+  getUserById,
+  unfollowUser,
+} from "@/services/userService";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -23,58 +28,111 @@ type Member = {
   id: string;
   name: string;
   username: string;
-  isFollowed?: boolean;
+  isFollowing?: boolean;
+  isMe?: boolean;
 };
 
 export default function AllMember() {
   const { roomId } = useLocalSearchParams();
+  const { user: authUser } = useAuth();
   const insets = useSafeAreaInsets();
   const [search, setSearch] = useState("");
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(false);
+  const [updatingFollowIds, setUpdatingFollowIds] = useState<Set<string>>(
+    new Set()
+  );
 
-  const toggleFollow = (id: string) => {
-    setMembers((prev) =>
-      prev.map((member) =>
-        member.id === id
-          ? { ...member, isFollowed: !member.isFollowed }
-          : member
-      )
-    );
-  };
+  const currentUserId = authUser?.uid;
 
   useEffect(() => {
     console.log("AllMember useEffect running, roomId:", roomId);
-    const fetchMembers = async () => {
-      setLoading(true);
-      try {
-        const roomMembers = await getRoomMembers(roomId);
-        console.log("roomMembers:", roomMembers);
-
-        const fetchedMembers: Member[] = [];
-
-        for (const user of roomMembers) {
-          const userData = await getUserById(user.id);
-          if (userData) {
-            fetchedMembers.push({
-              id: user.id,
-              name: userData.name,
-              username: userData.username,
-            });
-          }
-        }
-
-        setMembers(fetchedMembers);
-      } catch (err) {
-        console.error("Failed to fetch members:", err);
-        setMembers([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchMembers();
-  }, [roomId]);
+  }, [roomId, currentUserId]);
+
+  const fetchMembers = async () => {
+    setLoading(true);
+    try {
+      const roomMembers = await getRoomMembers(roomId);
+      console.log("roomMembers:", roomMembers);
+
+      const fetchedMembers: Member[] = [];
+
+      for (const user of roomMembers) {
+        const userData = await getUserById(user.id);
+        if (userData) {
+          // Get full profile to check follow status
+          let isFollowing = false;
+          const isMe = currentUserId === user.id;
+
+          if (currentUserId && !isMe) {
+            try {
+              const fullProfile = await getFullUserProfile(
+                user.id,
+                currentUserId
+              );
+              isFollowing = fullProfile?.relationship?.isFollowing ?? false;
+            } catch (err) {
+              console.error("Error fetching follow status:", err);
+            }
+          }
+
+          fetchedMembers.push({
+            id: user.id,
+            name: userData.name,
+            username: userData.username,
+            isFollowing,
+            isMe,
+          });
+        }
+      }
+
+      setMembers(fetchedMembers);
+    } catch (err) {
+      console.error("Failed to fetch members:", err);
+      setMembers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFollowToggle = async (memberId: string, isFollowing: boolean) => {
+    if (!currentUserId || updatingFollowIds.has(memberId)) return;
+
+    setUpdatingFollowIds((prev) => new Set(prev).add(memberId));
+
+    try {
+      if (isFollowing) {
+        await unfollowUser(currentUserId, memberId);
+        const memberName =
+          members.find((m) => m.id === memberId)?.username || "user";
+        Alert.alert("Success", `You have unfollowed ${memberName}`);
+      } else {
+        await followUser(currentUserId, memberId);
+        const memberName =
+          members.find((m) => m.id === memberId)?.username || "user";
+        Alert.alert("Success", `You are now following ${memberName}`);
+      }
+
+      // Update local state
+      setMembers((prev) =>
+        prev.map((member) =>
+          member.id === memberId
+            ? { ...member, isFollowing: !isFollowing }
+            : member
+        )
+      );
+    } catch (err) {
+      console.error("❌ Follow/Unfollow error:", err);
+      Alert.alert("Error", "Failed to update follow status. Please try again.");
+    } finally {
+      setUpdatingFollowIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(memberId);
+        return newSet;
+      });
+    }
+  };
 
   const filteredMembers = members.filter((member) =>
     member.username.toLowerCase().includes(search.toLowerCase())
@@ -122,40 +180,83 @@ export default function AllMember() {
               </View>
             ) : (
               <View className="gap-[32px] mt-6">
-                {filteredMembers.map((member) => (
-                  <View
-                    key={member.id}
-                    className="justify-between flex-row items-center"
-                  >
-                    <View className="flex-row gap-4 items-center">
-                      <View className="w-[36px] h-[36px] rounded-full bg-primary2nd" />
-                      <View className="gap-1">
-                        <Text className="font-inter font-normal text-[14px]">
-                          {member.name}
-                        </Text>
-                        <Text className="font-inter font-normal text-[12px] text-neutral-500">
-                          {member.username}
-                        </Text>
-                      </View>
-                    </View>
-                    <TouchableOpacity
-                      onPress={() => toggleFollow(member.id)}
-                      className={`w-[90px] h-[40px] items-center justify-center rounded-[8px] border-2 ${
-                        member.isFollowed
-                          ? "bg-white border-primary2nd"
-                          : "bg-primary2nd border-primary2nd"
-                      }`}
+                {filteredMembers.map((member) => {
+                  const isUpdating = updatingFollowIds.has(member.id);
+                  const isFollowing = member.isFollowing ?? false;
+
+                  return (
+                    <View
+                      key={member.id}
+                      className="justify-between flex-row items-center"
                     >
-                      <Text
-                        className={`${member.isFollowed ? "text-primary2nd" : "text-white"}`}
-                      >
-                        {member.isFollowed
-                          ? FOLLOWSTATUS.FOLLOWING
-                          : FOLLOWSTATUS.FOLLOW}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                ))}
+                      <View className="flex-row gap-4 items-center">
+                        <View className="w-[36px] h-[36px] rounded-full bg-primary2nd" />
+                        <View className="gap-1">
+                          <Text className="font-inter font-normal text-[14px]">
+                            {member.name}
+                          </Text>
+                          <Text className="font-inter font-normal text-[12px] text-neutral-500">
+                            {member.username}
+                          </Text>
+                        </View>
+                      </View>
+
+                      {member.isMe ? (
+                        <View
+                          className="px-4 py-2 rounded-[10px] bg-neutral-100"
+                          style={{
+                            borderColor: COLORS.neutral300,
+                            borderWidth: 1,
+                          }}
+                        >
+                          <Text
+                            className="text-[14px]"
+                            style={{ color: COLORS.neutral500 }}
+                          >
+                            You
+                          </Text>
+                        </View>
+                      ) : (
+                        <TouchableOpacity
+                          onPress={() =>
+                            handleFollowToggle(member.id, isFollowing)
+                          }
+                          disabled={isUpdating}
+                          className={`px-4 py-2 rounded-[10px] ${
+                            isFollowing
+                              ? "bg-neutral-100 border"
+                              : "bg-primary2nd"
+                          }`}
+                          style={{
+                            borderColor: isFollowing
+                              ? COLORS.neutral300
+                              : "transparent",
+                          }}
+                        >
+                          {isUpdating ? (
+                            <ActivityIndicator
+                              size="small"
+                              color={
+                                isFollowing ? COLORS.neutral900 : COLORS.white
+                              }
+                            />
+                          ) : (
+                            <Text
+                              className="text-[14px]"
+                              style={{
+                                color: isFollowing
+                                  ? COLORS.neutral900
+                                  : COLORS.white,
+                              }}
+                            >
+                              {isFollowing ? "Following" : "Follow"}
+                            </Text>
+                          )}
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  );
+                })}
               </View>
             )}
           </View>
