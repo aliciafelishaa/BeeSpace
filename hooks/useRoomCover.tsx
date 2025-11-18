@@ -9,13 +9,17 @@ export function useRoomCover(
 ): CoverProps {
   const [image, setImage] = useState<string | null>(initialImageUrl || null);
   const [uploading, setUploading] = useState(false);
+  
+  const removeImage = () => {
+  setImage(null);
+  setUploading(false);
+};
 
   useEffect(() => {
     if (initialImageUrl) setImage(initialImageUrl);
   }, [initialImageUrl]);
 
   const pickPhoto = async (type: "camera" | "gallery") => {
-    console.log("test");
     try {
       console.log("testing");
       setUploading(true);
@@ -37,28 +41,34 @@ export function useRoomCover(
         });
       }
 
-      if (!result.canceled) {
+      if (!result.canceled && result.assets[0]) {
         setUploading(true);
 
         const file: FileProps = {
           uri: result.assets[0].uri,
           type: "image/jpeg",
-          name: "upload.jpg",
+          name: `room-cover-${Date.now()}.jpg`,
         };
 
         setImage(file.uri);
-        const url = await handleUpData(file);
-        if (url) {
-          setImage(url);
-          onChangeImage?.(url);
+        const cloudinaryUrl = await handleUpData(file);
+        if (cloudinaryUrl) {
+          setImage(cloudinaryUrl);
+          onChangeImage?.(cloudinaryUrl);
+        } else {
+          throw new Error("Upload failed");
         }
       }
     } catch (err: any) {
-      throw new Error(err.message || "Something went wrong.");
+      console.error(err);
+      setImage(null);
+      throw new Error(err.message || "Failed to upload image");
     } finally {
       setUploading(false);
     }
   };
 
-  return { image, uploading, pickPhoto };
+  
+
+  return { image, uploading, pickPhoto, removeImage };
 }
