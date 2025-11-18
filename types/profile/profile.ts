@@ -52,7 +52,7 @@ export interface UserProfile {
 
   bio?: string;
   tagline?: string;
-  avatarUrl?: Url;
+  avatarUrl?: string;
 
   isMe: boolean;
   relationship?: Relationship;

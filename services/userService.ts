@@ -86,7 +86,7 @@ export const getFullUserProfile = async (
             id: userId,
             name: data.fullName || "",
             username: data.username || "",
-            avatarUrl: data.profilePicture || null,
+            avatarUrl: data.profilePicture || undefined,
             bio: data.bio || "",
             isMe: currentUserId === userId,
             followStats: {
