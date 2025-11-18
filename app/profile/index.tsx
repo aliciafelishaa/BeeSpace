@@ -1,19 +1,19 @@
+import ChangePassword from "@/components/profile/ChangePassword"
 import { ProfileActivity } from "@/components/profile/ProfileActivity"
-import { ProfileInformation } from "@/components/profile/ProfileInformation"
 import { ProfileHeader } from "@/components/profile/ProfileHeader"
+import { ProfileInformation } from "@/components/profile/ProfileInformation"
 import { ProfileStat } from "@/components/profile/ProfileStats"
 import { ProfileTopBar } from "@/components/profile/ProfileTopBar"
-import ChangePassword from "@/components/profile/ChangePassword"
-import { COLORS } from "@/constants/utils/colors"
-import { router, Redirect } from "expo-router"
-import React, { useState, useEffect } from "react"
-import { Alert, ScrollView, View, ActivityIndicator } from "react-native"
-import { useAuth } from "@/context/AuthContext"
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
-import { getFullUserProfile, updateUserProfile } from "@/services/userService"
-import { logout } from "@/services/authService"
-import { UserProfile } from "@/types/profile/profile"
 import Text from "@/components/ui/Text"
+import { COLORS } from "@/constants/utils/colors"
+import { useAuth } from "@/context/AuthContext"
+import { logout } from "@/services/authService"
+import { getFullUserProfile, updateUserProfile } from "@/services/userService"
+import { UserProfile } from "@/types/profile/profile"
+import { Redirect, router } from "expo-router"
+import React, { useEffect, useState } from "react"
+import { ActivityIndicator, Alert, ScrollView, View } from "react-native"
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 
 type Mode = "view" | "profile" | "password"
 
@@ -65,7 +65,7 @@ export default function MyProfileScreen() {
 
             console.log("Profile saved to Firebase")
             await loadProfile()
-            setMode("view")
+            changeMode("view")
             Alert.alert("Success", "Your profile has been updated!")
         } catch (error: any) {
             console.error("Error saving profile:", error)
@@ -99,6 +99,20 @@ export default function MyProfileScreen() {
         }
     }
 
+    const isEditing = mode !== "view"
+
+    useEffect(() => {
+    const editing = mode !== "view"
+
+    if (typeof window !== "undefined") {
+        window.dispatchEvent(
+        new CustomEvent("profileEditChange", {
+            detail: { editing },
+        })
+        )
+    }
+    }, [mode])
+
     if (loading) {
         return (
             <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -120,18 +134,8 @@ export default function MyProfileScreen() {
         )
     }
 
-    const isEditing = mode !== "view"
-
     const changeMode = (newMode: Mode) => {
         setMode(newMode)
-
-        const isEditing = newMode !== "view"
-
-        if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('profileEditChange', {
-                detail: { editing: isEditing }
-            }))
-        }
     }
 
     const getTitle = () => {
@@ -144,7 +148,6 @@ export default function MyProfileScreen() {
         <SafeAreaView
             className="bg-[#FAFAFA]"
             style={{
-                backgroundColor: COLORS.white,
                 flex: 1,
                 position: "absolute",
                 top: 0,
@@ -153,38 +156,35 @@ export default function MyProfileScreen() {
                 bottom: 0,
             }}
         >
-            <ScrollView
-                contentContainerStyle={{
-                    flexGrow: 1,
-                    paddingBottom: insets.bottom + 100,
+            <ProfileTopBar
+                isOwnProfile
+                userId={user.id}
+                userName={user.name}
+                title={getTitle()}
+                showMenu={mode === 'view'}
+                showShare={mode === 'view'}
+                onBack={ mode === "view" ? undefined : () => changeMode("view")}
+                onMenuNavigate={(key) => {
+                    if (key === "profile") {
+                        changeMode("profile")
+                    }
+                    else if (key === "password") {
+                        changeMode("password")
+                    }
+                    else if (key === "logout") {
+                        handleLogout()
+                    }
                 }}
-                showsVerticalScrollIndicator={false}
-                className="bg-[#FAFAFA]"
-            >
-                <ProfileTopBar
-                    isOwnProfile
-                    userId={user.id}
-                    userName={user.name}
-                    title={getTitle()}
-                    showMenu={!isEditing}
-                    showShare={!isEditing}
-                    onBack={isEditing ? () => changeMode("view") : undefined}
-                    onMenuNavigate={(key) => {
-                        if (key === "profile") {
-                            changeMode("profile")
-                        }
-                        else if (key === "password") {
-                            changeMode("password")
-                        }
-                        else if (key === "logout") {
-                            handleLogout()
-                        }
-                    }}
-                />
+            />
 
-                {mode === 'view' && (
-                    <View
-                        style={{ flex: 1 }}
+            {mode === 'view' && (
+                <ScrollView
+                    style={{ flex: 1 }}
+                    contentContainerStyle={{
+                        paddingBottom: insets.bottom + 100,
+                    }}
+                    showsVerticalScrollIndicator={false}
+                    className="bg-[#FAFAFA]"
                     >
                         <ProfileHeader
                             user={user}
@@ -194,10 +194,11 @@ export default function MyProfileScreen() {
                         <ProfileStat stats={user.stats} />
 
                         <ProfileActivity limit={3} userId={user.id} />
-                    </View>
-                )}
+                </ScrollView>
+            )}
 
-                {mode === 'profile' && (
+            {mode === 'profile' && (
+                <View style={{ flex: 1 }}>
                     <ProfileInformation
                         initial={{
                             avatar: user.avatarUrl as any,
@@ -215,12 +216,22 @@ export default function MyProfileScreen() {
                         onCancel={() => setMode("view")}
                         loading={saving}
                     />
-                )}
+                </View>
+            )}
 
-                {mode === 'password' && (
-                    <ChangePassword email={authUser.email || ""} />
-                )}
+            {mode === 'password' && (
+                <ScrollView
+                style={{ flex: 1 }}
+                contentContainerStyle={{
+                flexGrow: 1,
+                padding: 20,
+                paddingBottom: insets.bottom + 40,
+                }}
+                showsVerticalScrollIndicator={false}
+            >
+                <ChangePassword email={authUser.email || ""} />
             </ScrollView>
+            )}
         </SafeAreaView>
     )
 }

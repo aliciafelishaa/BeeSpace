@@ -34,9 +34,13 @@ export const ProfileTopBar: React.FC<ProfileTopBarProps> = ({
     const [menuOpen, setMenuOpen] = useState(false)
 
     const handleBack = () => {
-        if (onBack) return onBack()
+        if (onBack) {
+            return onBack()
+        }
         router.back()
     }
+
+    const showBack = !!onBack
 
     return (
         <>
@@ -48,24 +52,30 @@ export const ProfileTopBar: React.FC<ProfileTopBarProps> = ({
                 }}
             >
                 <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                    <TouchableOpacity
-                        onPress={handleBack}
-                        accessibilityLabel="Back"
-                        style={{
-                            width: 40,
-                            height: 40,
-                            alignItems: "center",
-                            justifyContent: "center",
-                            borderRadius: 999,
-                        }}
-                        activeOpacity={0.7}
-                    >
-                        <Image
-                            source={require("@/assets/utils/arrow-left-back.png")}
-                            style={{ width: 24, height: 24 }}
-                            resizeMode="contain"
-                        />
-                    </TouchableOpacity>
+                    {showBack ? (
+                        <TouchableOpacity
+                            onPress={handleBack}
+                            accessibilityLabel="Back"
+                            
+                            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                            style={{
+                                width: 44,
+                                height: 44,
+                                alignItems: "center",
+                                justifyContent: "center",
+                                borderRadius: 999,
+                            }}
+                            activeOpacity={0.7}
+                        >
+                            <Image
+                                source={require("@/assets/utils/arrow-left-back.png")}
+                                style={{ width: 24, height: 24 }}
+                                resizeMode="contain"
+                            />
+                        </TouchableOpacity>
+                    ) : (
+                        <View style={{ width: 44, height: 44 }} />
+                    )}
 
                     {title ? (
                         <View
