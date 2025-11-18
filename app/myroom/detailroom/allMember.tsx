@@ -2,7 +2,6 @@ import HeaderBack from "@/components/utils/HeaderBack";
 import SearchBar from "@/components/utils/SearchBar";
 import { COLORS } from "@/constants/utils/colors";
 import { useAuth } from "@/context/AuthContext";
-import { useAuth } from "@/context/AuthContext";
 import { getRoomMembers } from "@/services/room.service";
 import {
     followUser,
