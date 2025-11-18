@@ -91,6 +91,13 @@ export const ChatList: React.FC<ChatListProps> = ({
             className="w-14 h-14 rounded-full"
           />
         );
+      } else if (chatUser?.avatar) {
+        return (
+          <Image
+            source={{ uri: chatUser.avatar }}
+            className="w-14 h-14 rounded-full"
+          />
+        );
       } else {
         return (
           <View

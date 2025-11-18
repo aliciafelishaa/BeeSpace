@@ -81,9 +81,6 @@ export function ProfileInformation({
       if (!result.canceled && result.assets[0]) {
         setAvatarLoading(true);
         try {
-          console.log("🔄 Uploading image to Cloudinary...");
-
-          // UPLOAD KE CLOUDINARY - INI STEP PENTING!
           const fileForUpload = {
             uri: result.assets[0].uri,
             name: `profile-${Date.now()}.jpg`,
@@ -92,19 +89,22 @@ export function ProfileInformation({
           const cloudinaryUrl = await handleUpData(fileForUpload);
 
           if (cloudinaryUrl) {
-            update("avatar")(cloudinaryUrl);
+            setForm((prev) => ({
+              ...prev,
+              avatar: cloudinaryUrl,
+            }));
           } else {
-            throw new Error("Upload failed - no URL returned");
+            throw new Error("Upload failed");
           }
-        } catch (error) {
-          console.error("❌ Cloudinary upload error:", error);
+        } catch (err) {
+          console.error("Cloudinary:", err);
           alert("Failed to upload image. Please try again.");
         } finally {
           setAvatarLoading(false);
         }
       }
-    } catch (error) {
-      console.error("Error picking image:", error);
+    } catch (err) {
+      console.error(err);
       alert("Failed to pick image. Please try again.");
       setAvatarLoading(false);
     }
