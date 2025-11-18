@@ -45,6 +45,7 @@ export const ProfileHeader: React.FC<Props> = memo(
     return (
       <View className="items-center px-6 pt-6 pb-5">
         <Image
+		 key={user.avatarUrl}
           source={
             toImageSource(user.avatarUrl) ??
             require("@/assets/profile/empty-profile.jpg")

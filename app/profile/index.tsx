@@ -78,7 +78,10 @@ export default function MyProfileScreen() {
       }
       await updateUserProfile(authUser.uid, updateData);
 
+      setUser(null);
+      await new Promise((resolve) => setTimeout(resolve, 100));
       await loadProfile();
+
       setMode("view");
     } catch (err: any) {
       console.log("Error Cloudinary:", err);
