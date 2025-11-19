@@ -157,8 +157,8 @@ export default function MessagesPage() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="justify-between items-start mt-8 px-4">
-          <Text className="text-lg font-semibold py-3 text-neutral-900">
+        <View className="justify-between items-start px-4">
+          <Text className="text-[20px] font-semibold py-5 text-neutral-900">
             Direct Message
           </Text>
         </View>
