@@ -45,7 +45,7 @@ export const ProfileHeader: React.FC<Props> = memo(
     return (
       <View className="items-center px-6 pt-6 pb-5">
         <Image
-		 key={user.avatarUrl}
+          key={user.avatarUrl}
           source={
             toImageSource(user.avatarUrl) ??
             require("@/assets/profile/empty-profile.jpg")
@@ -54,12 +54,12 @@ export const ProfileHeader: React.FC<Props> = memo(
         />
 
         <Text
-          className="text-[20px] font-semibold"
+          className="text-[24px] font-semibold"
           style={{ color: COLORS.neutral900 }}
         >
           {user.name}
         </Text>
-        <Text className="text-[13px] mb-3" style={{ color: COLORS.neutral500 }}>
+        <Text className="text-[14px] mb-3" style={{ color: COLORS.neutral500 }}>
           @{user.username}
         </Text>
 
@@ -79,7 +79,7 @@ export const ProfileHeader: React.FC<Props> = memo(
             <Text className="text-[16px] font-semibold">
               {user.followStats.following}
             </Text>
-            <Text className="text-[12px]">Following</Text>
+            <Text className="text-[14px]">Following</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -97,7 +97,7 @@ export const ProfileHeader: React.FC<Props> = memo(
             <Text className="text-[16px] font-semibold">
               {user.followStats.followers}
             </Text>
-            <Text className="text-[12px]">Followers</Text>
+            <Text className="text-[14px]">Followers</Text>
           </TouchableOpacity>
         </View>
 
@@ -119,7 +119,7 @@ export const ProfileHeader: React.FC<Props> = memo(
           <View className="flex flex-row gap-2">
             <TouchableOpacity
               onPress={onPressEdit}
-              className="px-4 py-2 rounded-[10px] bg-primary2nd"
+              className="px-4 py-3 rounded-[8px] bg-primary2nd"
               style={{ borderColor: COLORS.primary }}
             >
               <Text className="text-[14px] " style={{ color: COLORS.white }}>
@@ -128,7 +128,7 @@ export const ProfileHeader: React.FC<Props> = memo(
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.push("/yourroom/yourRoom")}
-              className="px-4 py-2 rounded-[10px] border"
+              className="px-4 py-3 rounded-[8px] border"
               style={{
                 borderColor: COLORS.primary,
                 backgroundColor: COLORS.white,

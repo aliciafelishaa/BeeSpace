@@ -99,7 +99,7 @@ export default function ModalEditDelete({
               >
                 <Image
                   source={require("@/assets/images/copylink.png")}
-                  className="w-[16px] h-[16px]"
+                  className="w-[48px] h-[48px]"
                   resizeMode="cover"
                 ></Image>
                 <Text className="font-interMedium font-[16px]">Copy Link</Text>
@@ -108,7 +108,7 @@ export default function ModalEditDelete({
             <TouchableOpacity className="flex flex-col gap-2 items-center justify-center">
               <Image
                 source={require("@/assets/images/share.png")}
-                className="w-[16px] h-[16px]"
+                className="w-[48px] h-[48px]"
                 resizeMode="cover"
               ></Image>
               <Text className="font-interMedium font-[16px]">Share</Text>
@@ -120,7 +120,7 @@ export default function ModalEditDelete({
               >
                 <Image
                   source={require("@/assets/images/report.png")}
-                  className="w-[16px] h-[16px] "
+                  className="w-[48px] h-[48px]"
                   resizeMode="cover"
                 ></Image>
                 <Text className="font-interMedium font-[16px] text-error">
@@ -135,7 +135,7 @@ export default function ModalEditDelete({
               >
                 <Image
                   source={require("@/assets/images/delete.png")}
-                  className="w-[16px] h-[16px]"
+                  className="w-[48px] h-[48px]"
                   resizeMode="cover"
                 ></Image>
                 <Text className="font-interMedium font-[16px]">Delete</Text>

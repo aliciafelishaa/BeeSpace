@@ -20,7 +20,11 @@ export default function ButtonDecision({
   room,
   currentUser,
   onMembersUpdate,
-}: ButtonDecisionProps & { room?: any; currentUser?: any; onMembersUpdate?: () => void }) {
+}: ButtonDecisionProps & {
+  room?: any;
+  currentUser?: any;
+  onMembersUpdate?: () => void;
+}) {
   const [modalVisible, setModalVisible] = useState(false);
   const [joined, setJoined] = useState(hasJoined);
   const { uid, id } = useLocalSearchParams();
@@ -129,7 +133,7 @@ export default function ButtonDecision({
   if (isOwner) {
     return (
       <View
-        className="items-center w-full h-30 bg-white shadow-slate-200 absolute bottom-0 left-0 right-0 py-4 px-2 gap-3 flex-row"
+        className="items-center w-full h-30 bg-white shadow-slate-200 absolute bottom-0 left-0 right-0 py-8 px-9 gap-3 flex-row"
         style={{
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -1 },
@@ -179,7 +183,7 @@ export default function ButtonDecision({
   if (!isOwner && !joined && !isEnded) {
     return (
       <View
-        className="items-center w-full h-30 bg-white shadow-slate-200 absolute bottom-0 left-0 right-0 py-4 px-2 gap-3 flex-row"
+        className="items-center w-full h-30 bg-white shadow-slate-200 absolute bottom-0 left-0 right-0 py-8 px-9  gap-3 flex-row"
         style={{
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -1 },
@@ -220,7 +224,7 @@ export default function ButtonDecision({
 
   if (isEnded) {
     return (
-      <View className="items-center w-full absolute bottom-0 left-0 right-0 py-4 bg-gray-100">
+      <View className="items-center w-full absolute bottom-0 left-0 right-0 py-8 bg-gray-100">
         <Text className="text-gray-500 font-medium text-[14px]">
           Activity has ended
         </Text>
@@ -231,7 +235,7 @@ export default function ButtonDecision({
   if (joined && !isEnded) {
     return (
       <View
-        className="items-center w-full bg-white shadow-slate-200 absolute bottom-0 left-0 right-0 py-4 px-2 gap-3 flex-row"
+        className="items-center w-full bg-white shadow-slate-200 absolute bottom-0 left-0 right-0 py-8 px-9  gap-3 flex-row"
         style={{
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -1 },

@@ -133,8 +133,8 @@ export default function StudentBoarding() {
     }
 
     return (
-        <ScrollView className="w-full bg-[#FAFAFA]" keyboardShouldPersistTaps="handled">
-            <View className="bg-[#FCBC03] py-3 px-3">
+        <ScrollView className="w-full bg-[#FAFAFA] " keyboardShouldPersistTaps="handled">
+            <View className="bg-[#FCBC03]  px-3 pt-16">
                 {renderProgress()}
                 <View className="flex flex-row items-center">
                     {step > 1 && (
