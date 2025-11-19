@@ -1,66 +1,82 @@
-// src/components/utils/SearchBar.tsx
-import { COLORS } from "@/constants/utils/colors";
-import React from "react";
+import React from "react"
 import {
-  Image,
-  TextInput,
-  TouchableOpacity,
-  View,
-  ViewStyle,
-} from "react-native";
+    Image,
+    Platform,
+    TextInput,
+    TouchableOpacity,
+    View,
+    ViewStyle,
+} from "react-native"
 
 type SearchBarProps = {
-  placeholder?: string;
-  containerStyle?: ViewStyle;
-  onChangeText?: (text: string) => void;
-  onSearch: (text: string) => void;
-  value?: string;
-};
+    placeholder?: string
+    containerStyle?: ViewStyle
+    onChangeText?: (text: string) => void
+    onSearch?: (text: string) => void
+    value?: string
+}
 
 export default function SearchBar({
-  placeholder = "Search",
-  containerStyle,
-  onChangeText,
-  onSearch,
-  value,
+    placeholder = "Search",
+    containerStyle,
+    onChangeText,
+    onSearch,
+    value,
 }: SearchBarProps) {
-  return (
-    <View
-      style={[
-        {
-          flexDirection: "row",
-          alignItems: "center",
-          borderWidth: 1,
-          borderColor: "#D1D5DB",
-          borderRadius: 8,
-          height: 44,
-          flex: 1,
-          paddingRight: 10,
-        },
-        containerStyle,
-      ]}
-    >
-      <TextInput
-        placeholder={placeholder}
-        style={{
-          flex: 1,
-          fontSize: 14,
-          color: COLORS.neutral500,
-          paddingHorizontal: 10,
-          height: 40,
-          borderRadius: 8,
-        }}
-        value={value}
-        onChangeText={(text) => {
-          onChangeText?.(text);
-        }}
-      />
-      <TouchableOpacity onPress={() => onSearch(value || "")}>
-        <Image
-          source={require("@/assets/utils/search-icon.png")}
-          style={{ width: 16, height: 16 }}
-        />
-      </TouchableOpacity>
-    </View>
-  );
+    return (
+        <View
+            style={[
+                {
+                    flexDirection: "row",
+                    alignItems: "center",
+                    borderWidth: 1,
+                    borderColor: "#D1D5DB",
+                    borderRadius: 12,
+                    height: 48,
+                    backgroundColor: "#FFFFFF",
+                    paddingHorizontal: 12,
+                },
+                containerStyle,
+            ]}
+        >
+            <Image
+                source={require("@/assets/utils/search-icon.png")}
+                style={{ width: 20, height: 20, marginRight: 8 }}
+            />
+
+            <TextInput
+                placeholder={placeholder}
+                placeholderTextColor="#9CA3AF"
+                style={{
+                    flex: 1,
+                    fontSize: 16,
+                    color: "#0F172A",
+                    height: 48,
+                    padding: 0,
+                    ...(Platform.OS === "android" && { includeFontPadding: false }),
+                    ...(Platform.OS === "web" && { outlineStyle: "none" } as any),
+                }}
+                underlineColorAndroid="transparent"
+                {...(Platform.OS === "android" && { cursorColor: "#0F172A" })}
+                value={value}
+                onChangeText={(text) => {
+                    onChangeText?.(text)
+                }}
+                onSubmitEditing={() => onSearch?.(value || "")}
+                returnKeyType="search"
+            />
+
+            {onSearch && (
+                <TouchableOpacity
+                    onPress={() => onSearch(value || "")}
+                    style={{ padding: 4 }}
+                >
+                    <Image
+                        source={require("@/assets/utils/search-icon.png")}
+                        style={{ width: 20, height: 20 }}
+                    />
+                </TouchableOpacity>
+            )}
+        </View>
+    )
 }
