@@ -175,6 +175,45 @@ export default function MyRoomDash() {
     setAvailableCategories(uniqueCategories);
   }, [rooms]);
 
+  const categoryIcons: Record<string, { icon: any; activeIcon: any }> = {
+    all: {
+      icon: require("@/assets/utils/passive-icon/globe.png"),
+      activeIcon: require("@/assets/utils/active-icon/globe.png"),
+    },
+    sport: {
+      icon: require("@/assets/utils/passive-icon/running.png"),
+      activeIcon: require("@/assets/utils/active-icon/running.png"),
+    },
+    academic: {
+      icon: require("@/assets/utils/passive-icon/learning.png"),
+      activeIcon: require("@/assets/utils/active-icon/learning.png"),
+    },
+    events: {
+      icon: require("@/assets/utils/passive-icon/events.png"),
+      activeIcon: require("@/assets/utils/active-icon/events.png"),
+    },
+    community: {
+      icon: require("@/assets/utils/passive-icon/hangout.png"),
+      activeIcon: require("@/assets/utils/active-icon/hangout.png"),
+    },
+    other: {
+      icon: require("@/assets/utils/passive-icon/hobby.png"),
+      activeIcon: require("@/assets/utils/active-icon/hobby.png"),
+    },
+    transportation: {
+      icon: require("@/assets/utils/passive-icon/trans.png"),
+      activeIcon: require("@/assets/utils/active-icon/trans.png"),
+    },
+    wellness: {
+      icon: require("@/assets/utils/passive-icon/wellness.png"),
+      activeIcon: require("@/assets/utils/active-icon/wellness.png"),
+    },
+    competition: {
+      icon: require("@/assets/utils/passive-icon/camp.png"),
+      activeIcon: require("@/assets/utils/active-icon/comp.png"),
+    },
+  };
+
   return (
     <SafeAreaView
       className="bg-neutral-100"
@@ -256,16 +295,20 @@ export default function MyRoomDash() {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={{ gap: 8 }}
               >
-                {availableCategories.map((cat) => (
-                  <TabButton
-                    key={cat}
-                    title={cat.charAt(0).toUpperCase() + cat.slice(1)}
-                    icon={require("@/assets/utils/passive-icon/globe.png")}
-                    activeIcon={require("@/assets/utils/active-icon/globe.png")}
-                    active={activeTab === cat}
-                    onPress={() => setActiveTab(cat as RoomCategory)}
-                  />
-                ))}
+                {availableCategories.map((cat) => {
+                  const icons = categoryIcons[cat] || categoryIcons["all"];
+
+                  return (
+                    <TabButton
+                      key={cat}
+                      title={cat.charAt(0).toUpperCase() + cat.slice(1)}
+                      icon={icons.icon}
+                      activeIcon={icons.activeIcon}
+                      active={activeTab === cat}
+                      onPress={() => setActiveTab(cat as RoomCategory)}
+                    />
+                  );
+                })}
               </ScrollView>
             </View>
 
