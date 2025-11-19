@@ -434,7 +434,7 @@ export default function DetailRoom() {
                                         <View>
                                             <TouchableOpacity onPress={handleInitiateChat}>
                                                 <Image
-                                                    source={require("@/assets/page/detailroom/chat.svg")}
+                                                    source={require("@/assets/page/detailroom/chat.png")}
                                                 />
                                             </TouchableOpacity>
                                         </View>
