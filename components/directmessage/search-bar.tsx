@@ -7,6 +7,7 @@ interface SearchBarProps {
   onChange: (value: string) => void;
   onFilterPress: () => void;
   selectedFilter: string;
+  onSearch?: (value: string) => void;
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
@@ -14,6 +15,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   onChange,
   onFilterPress,
   selectedFilter,
+  onSearch,
 }) => {
   const getFilterLabel = (filter: string) => {
     switch (filter) {
@@ -30,10 +32,14 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     }
   };
 
+  const handleSubmitEditing = () => {
+    onSearch?.(value);
+  };
+
   return (
     <View
       className="p-3 border-b border-gray-200"
-      style={{ backgroundColor: COLORS.white }} 
+      style={{ backgroundColor: COLORS.white }}
     >
       <View className="flex-row items-center gap-2">
         <View
@@ -54,6 +60,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             className="flex-1"
             style={{ color: COLORS.neutral900 }}
             placeholderTextColor={COLORS.neutral700}
+            onSubmitEditing={handleSubmitEditing}
+            returnKeyType="search"
           />
         </View>
 
