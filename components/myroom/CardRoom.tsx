@@ -79,7 +79,7 @@ export default function CardRoom({
                         </View>
                         <View className="flex-row items-center gap-2 mt-1">
                             <Image
-                                source={require("@/assets/page/myroom/calendar.png")}
+                                source={require("@/assets/page/myroom/time.png")}
                                 className="w-3 h-3"
                             />
                             <Text className="text-[12px] font-interRegular text-neutral-700">
