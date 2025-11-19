@@ -4,7 +4,7 @@
     "slug": "BeeSpace",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/share.png",
+    "icon": "./assets/images/logo-beespace-white.png",
     "scheme": "beespace",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
