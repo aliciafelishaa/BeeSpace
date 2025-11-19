@@ -371,7 +371,7 @@ export default function DetailRoom() {
                                     <View className="gap-4 mt-4">
                                         <View className="flex-row gap-3 items-center">
                                             <Image
-                                                source={require("@/assets/page/detailroom/date.svg")}
+                                                source={require("@/assets/page/detailroom/date.png")}
                                             />
                                             <View className="flex-col gap-1">
                                                 <Text className="text-neutral-500 font-inter text-[14px] font-regular">
@@ -389,7 +389,7 @@ export default function DetailRoom() {
                                         <View className="flex-row justify-between items-center">
                                             <View className="flex-row gap-3 items-center">
                                                 <Image
-                                                    source={require("@/assets/page/detailroom/map.svg")}
+                                                    source={require("@/assets/page/detailroom/map.png")}
                                                 />
                                                 <View className="flex-col gap-1">
                                                     <Text className="text-neutral-500 font-inter text-[14px] font-regular">

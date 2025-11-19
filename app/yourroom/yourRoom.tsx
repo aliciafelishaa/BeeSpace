@@ -138,7 +138,7 @@ export default function MyRoomDash({
       >
         {/* Header */}
         <View className="px-[16px]">
-          <Text className="text-[20px] font-semibold py-10 text-neutral-900 font-inter">
+          <Text className="text-[20px] font-bold py-5 text-neutral-900 font-inter">
             Your Room
           </Text>
 
@@ -176,6 +176,8 @@ export default function MyRoomDash({
                 imageSource={room.cover ? { uri: room.cover } : false}
                 isEdit={false}
                 imageAvatar={room.imageAvatar}
+                hostUid={room.fromUid}
+                currentUserId={uid || ""}
               />
             ))}
           </View>
