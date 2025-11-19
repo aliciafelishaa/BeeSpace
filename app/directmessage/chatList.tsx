@@ -19,7 +19,6 @@ import {
 
 export default function MessagesPage() {
   const router = useRouter();
-  const [searchValue, setSearchValue] = useState("");
   const [filters, setFilters] = useState<SearchFilters>({
     query: "",
     category: "all",
@@ -29,6 +28,7 @@ export default function MessagesPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const insets = useSafeAreaInsets();
+  const [searchInput, setSearchInput] = useState(filters.query);
 
   // Fetch User
   useEffect(() => {
@@ -59,15 +59,20 @@ export default function MessagesPage() {
   const filteredChats = useMemo(() => {
     let result = [...chats];
 
-    if (filters.query) {
+    if (filters.query.trim() !== "") {
       const query = filters.query.toLowerCase();
-      result = result.filter(
-        (chat) =>
-          chat.user?.name?.toLowerCase().includes(query) ||
-          chat.lastMessage.text.toLowerCase().includes(query) ||
-          (chat.isGroupChat &&
-            chat.groupData?.name?.toLowerCase().includes(query))
-      );
+
+      result = result.filter((chat) => {
+        const name = chat.user?.name?.toLowerCase() ?? "";
+        const lastMessage = chat.lastMessage?.text?.toLowerCase() ?? "";
+        const groupName = chat.groupData?.name?.toLowerCase() ?? "";
+
+        return (
+          name.includes(query) ||
+          lastMessage.includes(query) ||
+          (chat.isGroupChat && groupName.includes(query))
+        );
+      });
     }
 
     switch (filters.category) {
@@ -79,8 +84,8 @@ export default function MessagesPage() {
       case "oldest":
         result = result.sort(
           (a, b) =>
-            new Date(a.lastMessage.timestamp).getTime() -
-            new Date(b.lastMessage.timestamp).getTime()
+            new Date(a.lastMessage?.timestamp || 0).getTime() -
+            new Date(b.lastMessage?.timestamp || 0).getTime()
         );
         break;
       default:
@@ -92,10 +97,6 @@ export default function MessagesPage() {
 
   const handleSelectChat = (chat: Chat) => {
     router.push(`/directmessage/chat?id=${chat.id}&hostId=${chat.userId}`);
-  };
-
-  const handleSearchChange = (query: string) => {
-    setFilters((prev) => ({ ...prev, query }));
   };
 
   const handleFilterChange = (category: FilterType) => {
@@ -165,8 +166,11 @@ export default function MessagesPage() {
 
         <View>
           <SearchBar
-            value={searchValue}
-            onChange={handleSearchChange}
+            value={searchInput}
+            onChange={(text) => {
+              setSearchInput(text);
+              setFilters((prev) => ({ ...prev, query: text }));
+            }}
             onFilterPress={() => setIsFilterModalOpen(true)}
             selectedFilter={filters.category}
           />
