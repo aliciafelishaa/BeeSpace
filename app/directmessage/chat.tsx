@@ -64,6 +64,8 @@ export default function ChatDetailPage() {
                 senderId: "",
                 read: true,
                 type: "text",
+                status: "read",
+                readBy: []
               },
               unreadCount: 0,
               isGroupChat: true,
@@ -90,6 +92,8 @@ export default function ChatDetailPage() {
               senderId: "",
               read: true,
               type: "text",
+              status: "read",
+              readBy: []
             },
             unreadCount: 0,
             isGroupChat: false,
