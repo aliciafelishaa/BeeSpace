@@ -35,15 +35,18 @@ export const listenMessages = (
 export const sendMessage = async (
   chatId: string,
   text: string,
-  senderId: string
+  senderId: string,
+  type: "text" | "image" = "text",
+  mediaUrl?: string
 ) => {
-  if (!text.trim()) return;
+  if (!text.trim() && type === "text") return;
 
   const newMsg = {
     text: text.trim(),
     senderId,
     read: false,
-    type: "text",
+    type: type,
+    mediaUrl: mediaUrl || null,
     status: "delivered",
     createdAt: serverTimestamp(),
   };
@@ -77,16 +80,19 @@ export const sendGroupMessage = async (
   groupId: string,
   text: string,
   senderId: string,
-  senderName: string
+  senderName: string,
+  type: "text" | "image" = "text",
+  mediaUrl?: string
 ) => {
-  if (!text.trim()) return;
+  if (!text.trim() && type === "text") return;
 
   const newMsg = {
     text: text.trim(),
     senderId,
     senderName,
     read: false,
-    type: "text",
+    type: type,
+    mediaUrl: mediaUrl || null,
     status: "delivered",
     createdAt: serverTimestamp(),
   };
