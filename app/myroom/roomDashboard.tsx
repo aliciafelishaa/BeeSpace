@@ -24,7 +24,7 @@ import {
   Wellness,
   Competition
 } from "@/components/ui/IconCategory";
-import { Notification } from "@/components/ui/IconDash";
+import { Notification, Map } from "@/components/ui/IconDash";
 
 import {
   SafeAreaView,
@@ -229,10 +229,7 @@ export default function MyRoomDash() {
                   My Campus
                 </Text>
                 <View className="flex-row gap-2 items-center">
-                  <Image
-                    source={require("@/assets/utils/map.png")}
-                    className="w-[16px] h-[16px]"
-                  ></Image>
+                  <Map />
                   <Text className="text-neutral-700  text-[14px] font-interSemiBold">
                     {userData?.university || "-"}
                   </Text>

@@ -1,5 +1,5 @@
 import { COLORS } from "@/constants/utils/colors"
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef, ReactNode } from "react"
 import {
     Animated,
     Image,
@@ -10,6 +10,7 @@ import {
     View
 } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { User, ChangePassword, Logout } from "@/components/ui/IconDash";
 
 export type ProfileMenuKey =
     | "profile"
@@ -26,7 +27,7 @@ export interface ProfileMenuModalProps {
 type MenuItem = {
     key: ProfileMenuKey
     label: string
-    icon: any
+    icon: ReactNode
     destructive?: boolean
 }
 
@@ -74,17 +75,17 @@ export const ProfileMenuModal: React.FC<ProfileMenuModalProps> = ({
         {
             key: "profile",
             label: "Profile",
-            icon: require("@/assets/profile/icon-user.png"),
+            icon: <User />,
         },
         {
             key: "password",
             label: "Change Password",
-            icon: require("@/assets/profile/icon-password.png"),
+            icon: <ChangePassword />,
         },
         {
             key: "logout",
             label: "Logout",
-            icon: require("@/assets/profile/icon-logout.png"),
+            icon: <Logout />,
             destructive: true,
         },
     ]
@@ -169,11 +170,9 @@ export const ProfileMenuModal: React.FC<ProfileMenuModalProps> = ({
                                     accessibilityLabel={item.label}
                                     onPress={() => onPressItem(item.key)}
                                 >
-                                    <Image
-                                        source={item.icon}
-                                        style={{ width: 20, height: 20 }}
-                                        resizeMode="contain"
-                                    />
+                                    <View style={{ width: 20, height: 20 }}>
+                                        {item.icon}
+                                    </View>
 
                                     <Text
                                         style={{
