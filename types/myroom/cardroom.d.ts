@@ -3,7 +3,7 @@ export type CardRoomProps = {
   title: string;
   date: Date;
   location: string;
-  slotRemaining: string;
+  // slotRemaining: string;
   slotTotal: string;
   hostName?: string;
   imageSource?: ImageSourcePropType;
@@ -13,4 +13,5 @@ export type CardRoomProps = {
   timeStart: string;
   hostUid: string;
   currentUserId: string;
+  joinedUids?: string[];
 };

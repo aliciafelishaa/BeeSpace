@@ -181,9 +181,17 @@ export default function ButtonDecision({
   }
 
   if (!isOwner && !joined && !isEnded) {
+    const totalSlot = Number(room.maxMember) || 0;
+    const totalJoined = room.joinedUids?.length ?? 0;
+    const slotRemaining = totalSlot - totalJoined;
+    let isFull = false;
+    if (slotRemaining == 0) {
+      isFull = true;
+    }
+
     return (
       <View
-        className="items-center w-full h-30 bg-white shadow-slate-200 absolute bottom-0 left-0 right-0 py-8 px-9  gap-3 flex-row"
+        className="items-center w-full h-30 bg-white shadow-slate-200 absolute bottom-0 left-0 right-0 py-8 px-9 gap-3 flex-row"
         style={{
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -1 },
@@ -192,21 +200,37 @@ export default function ButtonDecision({
           elevation: 8,
         }}
       >
-        <TouchableOpacity
-          className="rounded-[8px] h-[45px] bg-primary2nd items-center justify-center py-4 flex-1"
-          onPress={handleJoinRoom}
-        >
-          <Text className="text-neutral-50 font-semibold text-[14px]">
-            Join Room
-          </Text>
-        </TouchableOpacity>
+        {!isFull ? (
+          <>
+            <TouchableOpacity
+              disabled={isFull}
+              className="rounded-[8px] h-[45px] flex-1 items-center justify-center py-4
+              bg-primary2nd"
+              onPress={handleJoinRoom}
+            >
+              <Text className="text-neutral-50 font-semibold text-[14px]">
+                Join Room
+              </Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <View
+              className="rounded-[8px] h-[45px] flex-1 items-center justify-center py-4
+            bg-gray-400"
+            >
+              <Text className="text-neutral-50 font-semibold text-[14px]">
+                Room Full
+              </Text>
+            </View>
+          </>
+        )}
+
         <TouchableOpacity
           className="rounded-[8px] w-[80px] h-[45px] bg-primary2nd items-center justify-center py-4"
           onPress={() => setModalVisible(true)}
         >
-          <Text className="text-neutral-50 font-semibold text-[14px]py-">
-            ...
-          </Text>
+          <Text className="text-neutral-50 font-semibold text-[14px]">...</Text>
         </TouchableOpacity>
 
         <ModalEditDelete
