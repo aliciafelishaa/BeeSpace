@@ -363,7 +363,6 @@ export default function MyRoomDash() {
                   title={room.planName}
                   date={new Date(room.date)}
                   location={room.place}
-                  slotRemaining={room.minMember}
                   timeStart={room.timeStart}
                   timeEnd={room.timeEnd}
                   slotTotal={room.maxMember}
@@ -373,6 +372,7 @@ export default function MyRoomDash() {
                   imageAvatar={room.imageAvatar}
                   hostUid={room.fromUid}
                   currentUserId={uid || ""}
+                  joinedUids={room.joinedUids || []}
                 />
               ))
             ) : (
