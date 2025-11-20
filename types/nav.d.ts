@@ -1,7 +1,6 @@
 export interface NavItem {
   id: string;
-  icon: any;
-  activeIcon: any;
+  icon: React.ComponentType<{ isActive?: boolean }>;
   route: string;
 }
 

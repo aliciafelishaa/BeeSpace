@@ -1,34 +1,36 @@
 import { NavItem } from "@/types/nav";
+import {
+    IconHome,
+    IconMyRoom,
+    IconCreateRoom,
+    IconDirectMessage,
+    IconProfile,
+} from "@/components/ui/IconNavbar";
 
 export const NAV_ITEMS: NavItem[] = [
-  {
-    id: "home",
-    icon: require("@/assets/utils/passive-icon/home.png"),
-    activeIcon: require("@/assets/utils/active-icon/home.png"),
-    route: "/",
-  },
-  {
-    id: "myroom",
-    icon: require("@/assets/utils/passive-icon/myroom.png"),
-    activeIcon: require("@/assets/utils/active-icon/myroom.png"),
-    route: "/yourroom/yourRoom",
-  },
-  {
-    id: "createroom",
-    icon: require("@/assets/utils/passive-icon/create.png"),
-    activeIcon: require("@/assets/utils/active-icon/create.png"),
-    route: "/createroom/page",
-  },
-  {
-    id: "directmessage",
-    icon: require("@/assets/utils/passive-icon/dm.png"),
-    activeIcon: require("@/assets/utils/active-icon/dm.png"),
-    route: "/directmessage/chatList",
-  },
-  {
-    id: "profile",
-    icon: require("@/assets/utils/passive-icon/profile.png"),
-    activeIcon: require("@/assets/utils/active-icon/profile.png"),
-    route: "/profile",
-  },
+    {
+        id: "home",
+        icon: IconHome,
+        route: "/",
+    },
+    {
+        id: "myroom",
+        icon: IconMyRoom,
+        route: "/yourroom/yourRoom",
+    },
+    {
+        id: "createroom",
+        icon: IconCreateRoom,
+        route: "/createroom/page",
+    },
+    {
+        id: "directmessage",
+        icon: IconDirectMessage,
+        route: "/directmessage/chatList",
+    },
+    {
+        id: "profile",
+        icon: IconProfile,
+        route: "/profile",
+    },
 ] as const;
