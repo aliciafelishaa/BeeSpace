@@ -161,6 +161,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ backgroundColor: COLORS.white, flex: 1 }}
+      keyboardVerticalOffset={Platform.select({
+        ios: 90,
+        android: 0,
+        default: 0,
+      })}
     >
       <View
         className="px-6 py-4 flex-row items-center"
@@ -213,8 +218,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           >
             {isGroupChat
               ? `${chat?.groupData?.memberUids?.length || 0} members`
-              : ""} 
-              {/* Online */}
+              : ""}
+            {/* Online */}
           </Text>
         </View>
       </View>
