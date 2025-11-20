@@ -1,4 +1,5 @@
 import { db } from "@/config/firebaseConfig";
+import { updateRoomStats } from "@/services/userService";
 import { RoomEntry } from "@/types/myroom/room";
 import {
   addDoc,
@@ -14,7 +15,6 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { updateRoomStats } from "@/services/userService";
 
 export const createRoom = async (payload: RoomEntry) => {
   if (!payload.fromUid) {
@@ -36,7 +36,7 @@ export const createRoom = async (payload: RoomEntry) => {
       planName: payload.planName,
       timeEnd: payload.timeEnd,
       timeStart: payload.timeStart,
-      joinedUids: [],
+      joinedUids: [payload.fromUid],
       status: "active",
       userUniv: payload.userUniv,
     };
