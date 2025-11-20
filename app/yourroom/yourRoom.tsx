@@ -118,7 +118,11 @@ export default function MyRoomDash({
       return roomDate;
     };
 
-    let result = rooms.filter((room) => {
+    const baseRooms = rooms.filter(
+      (room) => room.fromUid === uid || room.joinedUids?.includes(uid)
+    );
+
+    let result = baseRooms.filter((room) => {
       const roomDate = new Date(room.date);
       const roomStart = getRoomStart(room);
 
@@ -150,7 +154,7 @@ export default function MyRoomDash({
     result.sort((a, b) => {
       const aStart = getRoomStart(a).getTime();
       const bStart = getRoomStart(b).getTime();
-      return aStart - bStart; // ascending
+      return aStart - bStart;
     });
 
     return result;
