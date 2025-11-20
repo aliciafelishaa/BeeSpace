@@ -101,53 +101,41 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     const unsubscribe = isGroupChat
       ? listenGroupMessages(chat.id, (msgs: Message[]) => {
           setMessages(msgs);
-
-          if (currentUser) {
-            const receivedMessages = msgs.filter(
-              (msg) => msg.senderId !== currentUser.id && msg.status === "sent"
-            );
-            if (receivedMessages.length > 0) {
-              markAsDelivered(receivedMessages.map((m) => m.id));
-            }
-
-            const unreadMessages = msgs.filter((msg) => {
-              if (msg.senderId === currentUser.id) return false;
-
-              if (isGroupChat) {
-                return !msg.readBy?.includes(currentUser.id);
-              } else {
-                return msg.status !== "read";
-              }
-            });
-
-            if (unreadMessages.length > 0) {
-              markAsRead(unreadMessages.map((m) => m.id));
-            }
-          }
         })
       : listenMessages(chat.id, (msgs: Message[]) => {
           setMessages(msgs);
-
-          if (currentUser) {
-            const receivedMessages = msgs.filter(
-              (msg) => msg.senderId !== currentUser.id && msg.status === "sent"
-            );
-            if (receivedMessages.length > 0) {
-              markAsDelivered(receivedMessages.map((m) => m.id));
-            }
-
-            const unreadMessages = msgs.filter(
-              (msg) => msg.senderId !== currentUser.id && msg.status !== "read"
-            );
-
-            if (unreadMessages.length > 0) {
-              markAsRead(unreadMessages.map((m) => m.id));
-            }
-          }
         });
 
-    return () => unsubscribe();
-  }, [chat, isGroupChat, currentUser?.id, markAsDelivered, markAsRead]);
+    return () => {
+      unsubscribe();
+    };
+  }, [chat?.id, isGroupChat]);
+
+  useEffect(() => {
+    if (!currentUser || messages.length === 0) return;
+
+    const receivedMessages = messages.filter(
+      (msg) => msg.senderId !== currentUser.id && msg.status === "sent"
+    );
+
+    if (receivedMessages.length > 0) {
+      markAsDelivered(receivedMessages.map((m) => m.id));
+    }
+
+    const unreadMessages = messages.filter((msg) => {
+      if (msg.senderId === currentUser.id) return false;
+
+      if (isGroupChat) {
+        return !msg.readBy?.includes(currentUser.id);
+      } else {
+        return msg.status !== "read";
+      }
+    });
+
+    if (unreadMessages.length > 0) {
+      markAsRead(unreadMessages.map((m) => m.id));
+    }
+  }, [messages, currentUser?.id, isGroupChat, markAsDelivered, markAsRead]);
 
   useEffect(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
