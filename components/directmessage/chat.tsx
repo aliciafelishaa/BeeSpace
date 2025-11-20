@@ -61,6 +61,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     groupMembers: chat?.groupData?.memberUids || [],
   });
   const scrollViewRef = useRef<ScrollView>(null);
+  const processedMessagesRef = useRef<Set<string>>(new Set());
 
   // Get Current User
   useEffect(() => {
@@ -112,30 +113,40 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   }, [chat?.id, isGroupChat]);
 
   useEffect(() => {
-    if (!currentUser || messages.length === 0) return;
+    if (!currentUser?.id || !chat?.id || messages.length === 0) return;
 
-    const receivedMessages = messages.filter(
-      (msg) => msg.senderId !== currentUser.id && msg.status === "sent"
+    const otherUserMessages = messages.filter(
+      (msg) =>
+        msg.senderId !== currentUser.id &&
+        !processedMessagesRef.current.has(msg.id)
     );
 
-    if (receivedMessages.length > 0) {
-      markAsDelivered(receivedMessages.map((m) => m.id));
+    const sentMessages = otherUserMessages.filter(
+      (msg) => msg.status === "sent"
+    );
+    const deliveredMessages = otherUserMessages.filter(
+      (msg) => msg.status === "delivered"
+    );
+
+    if (sentMessages.length > 0) {
+      sentMessages.forEach((msg) => processedMessagesRef.current.add(msg.id));
+      markAsDelivered(sentMessages.map((m) => m.id));
     }
 
-    const unreadMessages = messages.filter((msg) => {
-      if (msg.senderId === currentUser.id) return false;
-
-      if (isGroupChat) {
-        return !msg.readBy?.includes(currentUser.id);
-      } else {
-        return msg.status !== "read";
-      }
-    });
-
-    if (unreadMessages.length > 0) {
-      markAsRead(unreadMessages.map((m) => m.id));
+    if (!isGroupChat && deliveredMessages.length > 0) {
+      deliveredMessages.forEach((msg) =>
+        processedMessagesRef.current.add(msg.id)
+      );
+      markAsRead(deliveredMessages.map((m) => m.id));
     }
-  }, [messages, currentUser?.id, isGroupChat, markAsDelivered, markAsRead]);
+  }, [
+    messages,
+    currentUser?.id,
+    chat?.id,
+    isGroupChat,
+    markAsDelivered,
+    markAsRead,
+  ]);
 
   useEffect(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
@@ -316,6 +327,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           {message.status === "sent" && (
             <>
               <Ionicons name="checkmark" size={12} color={COLORS.white} />
+              <Ionicons
+                name="checkmark"
+                size={12}
+                color={COLORS.white}
+                style={{ marginLeft: -6 }}
+              />
             </>
           )}
         </View>
