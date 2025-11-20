@@ -387,7 +387,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ backgroundColor: COLORS.white, flex: 1 }}
       keyboardVerticalOffset={Platform.select({
-        ios: 90,
+        ios: 45,
         android: 0,
         default: 0,
       })}
