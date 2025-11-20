@@ -61,6 +61,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     groupMembers: chat?.groupData?.memberUids || [],
   });
   const scrollViewRef = useRef<ScrollView>(null);
+  const processedMessagesRef = useRef<Set<string>>(new Set());
 
   // Get Current User
   useEffect(() => {
@@ -100,54 +101,50 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
     const unsubscribe = isGroupChat
       ? listenGroupMessages(chat.id, (msgs: Message[]) => {
-          setMessages(msgs);
-
-          if (currentUser) {
-            const receivedMessages = msgs.filter(
-              (msg) => msg.senderId !== currentUser.id && msg.status === "sent"
-            );
-            if (receivedMessages.length > 0) {
-              markAsDelivered(receivedMessages.map((m) => m.id));
-            }
-
-            const unreadMessages = msgs.filter((msg) => {
-              if (msg.senderId === currentUser.id) return false;
-
-              if (isGroupChat) {
-                return !msg.readBy?.includes(currentUser.id);
-              } else {
-                return msg.status !== "read";
-              }
-            });
-
-            if (unreadMessages.length > 0) {
-              markAsRead(unreadMessages.map((m) => m.id));
-            }
-          }
+          setMessages(JSON.parse(JSON.stringify(msgs)));
         })
       : listenMessages(chat.id, (msgs: Message[]) => {
-          setMessages(msgs);
-
-          if (currentUser) {
-            const receivedMessages = msgs.filter(
-              (msg) => msg.senderId !== currentUser.id && msg.status === "sent"
-            );
-            if (receivedMessages.length > 0) {
-              markAsDelivered(receivedMessages.map((m) => m.id));
-            }
-
-            const unreadMessages = msgs.filter(
-              (msg) => msg.senderId !== currentUser.id && msg.status !== "read"
-            );
-
-            if (unreadMessages.length > 0) {
-              markAsRead(unreadMessages.map((m) => m.id));
-            }
-          }
+          setMessages(JSON.parse(JSON.stringify(msgs)));
         });
 
     return () => unsubscribe();
-  }, [chat, isGroupChat, currentUser?.id, markAsDelivered, markAsRead]);
+  }, [chat?.id, isGroupChat]);
+
+  useEffect(() => {
+    if (!currentUser?.id || !chat?.id || messages.length === 0) return;
+
+    const otherUserMessages = messages.filter(
+      (msg) => msg.senderId !== currentUser.id
+    );
+
+    const sentMessages = otherUserMessages.filter(
+      (msg) => msg.status === "sent"
+    );
+    if (sentMessages.length > 0) {
+      markAsDelivered(sentMessages.map((m) => m.id));
+    }
+
+    if (sentMessages.length > 0) {
+      sentMessages.forEach((msg) => processedMessagesRef.current.add(msg.id));
+      markAsDelivered(sentMessages.map((m) => m.id));
+    }
+
+    if (!isGroupChat) {
+      const deliveredMessages = otherUserMessages.filter(
+        (msg) => msg.status === "delivered"
+      );
+      if (deliveredMessages.length > 0) {
+        markAsRead(deliveredMessages.map((m) => m.id));
+      }
+    }
+  }, [
+    messages,
+    currentUser?.id,
+    chat?.id,
+    isGroupChat,
+    markAsDelivered,
+    markAsRead,
+  ]);
 
   useEffect(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
@@ -289,11 +286,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             </>
           ) : (
             <>
-              <Ionicons name="checkmark" size={12} color={COLORS.white} />
+              <Ionicons name="checkmark" size={12} color="#DC9010" />
               <Ionicons
                 name="checkmark"
                 size={12}
-                color={COLORS.white}
+                color="#DC9010"
                 style={{ marginLeft: -6 }}
               />
             </>
@@ -328,6 +325,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           {message.status === "sent" && (
             <>
               <Ionicons name="checkmark" size={12} color={COLORS.white} />
+              <Ionicons
+                name="checkmark"
+                size={12}
+                color={COLORS.white}
+                style={{ marginLeft: -6 }}
+              />
             </>
           )}
         </View>
@@ -384,7 +387,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ backgroundColor: COLORS.white, flex: 1 }}
       keyboardVerticalOffset={Platform.select({
-        ios: 90,
+        ios: 45,
         android: 0,
         default: 0,
       })}
