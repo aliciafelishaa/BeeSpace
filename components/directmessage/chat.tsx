@@ -101,43 +101,41 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
     const unsubscribe = isGroupChat
       ? listenGroupMessages(chat.id, (msgs: Message[]) => {
-          setMessages(msgs);
+          setMessages(JSON.parse(JSON.stringify(msgs)));
         })
       : listenMessages(chat.id, (msgs: Message[]) => {
-          setMessages(msgs);
+          setMessages(JSON.parse(JSON.stringify(msgs)));
         });
 
-    return () => {
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, [chat?.id, isGroupChat]);
 
   useEffect(() => {
     if (!currentUser?.id || !chat?.id || messages.length === 0) return;
 
     const otherUserMessages = messages.filter(
-      (msg) =>
-        msg.senderId !== currentUser.id &&
-        !processedMessagesRef.current.has(msg.id)
+      (msg) => msg.senderId !== currentUser.id
     );
 
     const sentMessages = otherUserMessages.filter(
       (msg) => msg.status === "sent"
     );
-    const deliveredMessages = otherUserMessages.filter(
-      (msg) => msg.status === "delivered"
-    );
+    if (sentMessages.length > 0) {
+      markAsDelivered(sentMessages.map((m) => m.id));
+    }
 
     if (sentMessages.length > 0) {
       sentMessages.forEach((msg) => processedMessagesRef.current.add(msg.id));
       markAsDelivered(sentMessages.map((m) => m.id));
     }
 
-    if (!isGroupChat && deliveredMessages.length > 0) {
-      deliveredMessages.forEach((msg) =>
-        processedMessagesRef.current.add(msg.id)
+    if (!isGroupChat) {
+      const deliveredMessages = otherUserMessages.filter(
+        (msg) => msg.status === "delivered"
       );
-      markAsRead(deliveredMessages.map((m) => m.id));
+      if (deliveredMessages.length > 0) {
+        markAsRead(deliveredMessages.map((m) => m.id));
+      }
     }
   }, [
     messages,
@@ -288,11 +286,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             </>
           ) : (
             <>
-              <Ionicons name="checkmark" size={12} color={COLORS.white} />
+              <Ionicons name="checkmark" size={12} color="#DC9010" />
               <Ionicons
                 name="checkmark"
                 size={12}
-                color={COLORS.white}
+                color="#DC9010"
                 style={{ marginLeft: -6 }}
               />
             </>
