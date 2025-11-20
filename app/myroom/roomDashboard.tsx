@@ -239,7 +239,7 @@ export default function MyRoomDash() {
                 <TouchableOpacity
                   onPress={() => router.push("/notifications/notification")}
                 >
-                  <Notification/>
+                  <Notification />
                 </TouchableOpacity>
               </View>
             </View>
@@ -280,6 +280,7 @@ export default function MyRoomDash() {
 
                   return (
                     <TabButton
+                      key={cat}
                       title={cat.charAt(0).toUpperCase() + cat.slice(1)}
                       icon={<IconComponent isActive={false} />}
                       activeIcon={<IconComponent isActive={true} />}
@@ -288,6 +289,7 @@ export default function MyRoomDash() {
                     />
                   );
                 })}
+
               </ScrollView>
             </View>
 
