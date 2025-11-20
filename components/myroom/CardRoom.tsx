@@ -115,13 +115,13 @@ export default function CardRoom({
           <View className="flex-row justify-between items-center">
             {!isFull ? (
               <>
-                <Text className="text-[12px] font-interRegular">
-                  Slot Remaining: {slotRemaining}/{slotTotal}
+                <Text className="text-[10px] font-interMedium text-primary">
+                  Slot Remaining: {slotRemaining}
                 </Text>
               </>
             ) : (
               <>
-                <Text className="text-[12px] font-interRegular text-red-500">Full Member</Text>
+                <Text className="text-[10px] font-interRegular text-red-500">Full Member</Text>
               </>
             )}
 
