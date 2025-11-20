@@ -112,10 +112,18 @@ export default function CardRoom({
             </View>
           </View>
 
-          <View className="flex-row justify-between items-center mt-2">
-            <Text className="text-[10px] font-interRegular">
-              Slot Remaining: {slotRemaining}/{slotTotal}
-            </Text>
+          <View className="flex-row justify-between items-center">
+            {!isFull ? (
+              <>
+                <Text className="text-[12px] font-interRegular">
+                  Slot Remaining: {slotRemaining}/{slotTotal}
+                </Text>
+              </>
+            ) : (
+              <>
+                <Text className="text-[12px] font-interRegular text-red-500">Full Member</Text>
+              </>
+            )}
 
             {!isHost ? (
               <View className="flex-row items-center gap-1">
