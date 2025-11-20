@@ -149,7 +149,7 @@ export const ProfileActivity: React.FC<Props> = ({
 
             {loading ? (
                 <View className="py-8 items-center">
-                    <ActivityIndicator color={COLORS.primary} />
+                    <ActivityIndicator color={COLORS.primary2nd} />
                     <Text className="mt-2 text-[12px]" style={{ color: COLORS.neutral500 }}>
                         Loading activities...
                     </Text>
