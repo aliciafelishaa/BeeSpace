@@ -13,6 +13,18 @@ import { RoomEntry } from "@/types/myroom/room";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  All,
+  Sport,
+  Transportation,
+  Academic,
+  Events,
+  Hangout,
+  Community,
+  Wellness,
+  Competition
+} from "@/components/ui/IconCategory";
+import { Notification, Map } from "@/components/ui/IconDash";
 
 import {
   SafeAreaView,
@@ -175,44 +187,18 @@ export default function MyRoomDash() {
     setAvailableCategories(uniqueCategories);
   }, [rooms]);
 
-  const categoryIcons: Record<string, { icon: any; activeIcon: any }> = {
-    all: {
-      icon: require("@/assets/utils/passive-icon/globe.png"),
-      activeIcon: require("@/assets/utils/active-icon/globe.png"),
-    },
-    sport: {
-      icon: require("@/assets/utils/passive-icon/running.png"),
-      activeIcon: require("@/assets/utils/active-icon/running.png"),
-    },
-    academic: {
-      icon: require("@/assets/utils/passive-icon/learning.png"),
-      activeIcon: require("@/assets/utils/active-icon/learning.png"),
-    },
-    events: {
-      icon: require("@/assets/utils/passive-icon/events.png"),
-      activeIcon: require("@/assets/utils/active-icon/events.png"),
-    },
-    community: {
-      icon: require("@/assets/utils/passive-icon/hangout.png"),
-      activeIcon: require("@/assets/utils/active-icon/hangout.png"),
-    },
-    other: {
-      icon: require("@/assets/utils/passive-icon/hobby.png"),
-      activeIcon: require("@/assets/utils/active-icon/hobby.png"),
-    },
-    transportation: {
-      icon: require("@/assets/utils/passive-icon/trans.png"),
-      activeIcon: require("@/assets/utils/active-icon/trans.png"),
-    },
-    wellness: {
-      icon: require("@/assets/utils/passive-icon/wellness.png"),
-      activeIcon: require("@/assets/utils/active-icon/wellness.png"),
-    },
-    competition: {
-      icon: require("@/assets/utils/passive-icon/camp.png"),
-      activeIcon: require("@/assets/utils/active-icon/comp.png"),
-    },
+  const categoryIcons: Record<string, React.FC<{ isActive?: boolean }>> = {
+    all: All,
+    sport: Sport,
+    academic: Academic,
+    events: Events,
+    hangout: Hangout,
+    community: Community,
+    transportation: Transportation,
+    wellness: Wellness,
+    competition: Competition,
   };
+
 
   return (
     <SafeAreaView
@@ -243,10 +229,7 @@ export default function MyRoomDash() {
                   My Campus
                 </Text>
                 <View className="flex-row gap-2 items-center">
-                  <Image
-                    source={require("@/assets/utils/map.png")}
-                    className="w-[16px] h-[16px]"
-                  ></Image>
+                  <Map />
                   <Text className="text-neutral-700  text-[14px] font-interSemiBold">
                     {userData?.university || "-"}
                   </Text>
@@ -256,10 +239,7 @@ export default function MyRoomDash() {
                 <TouchableOpacity
                   onPress={() => router.push("/notifications/notification")}
                 >
-                  <Image
-                    source={require("@/assets/utils/notifications.png")}
-                    className="w-[40px] h-[40px]"
-                  />
+                  <Notification/>
                 </TouchableOpacity>
               </View>
             </View>
@@ -296,14 +276,13 @@ export default function MyRoomDash() {
                 contentContainerStyle={{ gap: 8 }}
               >
                 {availableCategories.map((cat) => {
-                  const icons = categoryIcons[cat] || categoryIcons["all"];
+                  const IconComponent = categoryIcons[cat] || All;
 
                   return (
                     <TabButton
-                      key={cat}
                       title={cat.charAt(0).toUpperCase() + cat.slice(1)}
-                      icon={icons.icon}
-                      activeIcon={icons.activeIcon}
+                      icon={<IconComponent isActive={false} />}
+                      activeIcon={<IconComponent isActive={true} />}
                       active={activeTab === cat}
                       onPress={() => setActiveTab(cat as RoomCategory)}
                     />

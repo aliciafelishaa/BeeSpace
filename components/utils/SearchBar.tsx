@@ -7,6 +7,7 @@ import {
     View,
     ViewStyle,
 } from "react-native"
+import { Search } from "@/components/ui/IconDash";
 
 type SearchBarProps = {
     placeholder?: string
@@ -39,10 +40,6 @@ export default function SearchBar({
                 containerStyle,
             ]}
         >
-            <Image
-                source={require("@/assets/utils/search-icon.png")}
-                style={{ width: 20, height: 20, marginRight: 8 }}
-            />
 
             <TextInput
                 placeholder={placeholder}
@@ -71,10 +68,7 @@ export default function SearchBar({
                     onPress={() => onSearch(value || "")}
                     style={{ padding: 4 }}
                 >
-                    <Image
-                        source={require("@/assets/utils/search-icon.png")}
-                        style={{ width: 20, height: 20 }}
-                    />
+                    <Search />
                 </TouchableOpacity>
             )}
         </View>

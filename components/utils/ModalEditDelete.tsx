@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { CopyLink, Share, Report, Delete } from "@/components/ui/IconDash";
 
 type ModalFilteringDynamicProps = {
   visible: boolean;
@@ -97,20 +98,12 @@ export default function ModalEditDelete({
                 className="flex flex-col gap-2 items-center justify-center"
                 onPress={handleCopyLink}
               >
-                <Image
-                  source={require("@/assets/images/copylink.png")}
-                  className="w-[48px] h-[48px]"
-                  resizeMode="cover"
-                ></Image>
+                <CopyLink />
                 <Text className="font-interMedium font-[16px]">Copy Link</Text>
               </TouchableOpacity>
             )}
             <TouchableOpacity className="flex flex-col gap-2 items-center justify-center">
-              <Image
-                source={require("@/assets/images/share.png")}
-                className="w-[48px] h-[48px]"
-                resizeMode="cover"
-              ></Image>
+              <Share />
               <Text className="font-interMedium font-[16px]">Share</Text>
             </TouchableOpacity>
             {isReport && (
@@ -118,11 +111,7 @@ export default function ModalEditDelete({
                 className="flex flex-col gap-2 items-center justify-center"
                 onPress={handleReport}
               >
-                <Image
-                  source={require("@/assets/images/report.png")}
-                  className="w-[48px] h-[48px]"
-                  resizeMode="cover"
-                ></Image>
+                <Report />
                 <Text className="font-interMedium font-[16px] text-error">
                   Report
                 </Text>
@@ -133,11 +122,7 @@ export default function ModalEditDelete({
                 className="flex flex-col gap-2 items-center justify-center"
                 onPress={onDelete}
               >
-                <Image
-                  source={require("@/assets/images/delete.png")}
-                  className="w-[48px] h-[48px]"
-                  resizeMode="cover"
-                ></Image>
+                <Delete />
                 <Text className="font-interMedium font-[16px]">Delete</Text>
               </TouchableOpacity>
             )}

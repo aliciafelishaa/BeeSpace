@@ -22,6 +22,7 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
+import { Calendar, Location, Message } from "@/components/ui/IconDash";
 
 type Member = {
   id: string;
@@ -370,9 +371,7 @@ export default function DetailRoom() {
 
                   <View className="gap-4 mt-4">
                     <View className="flex-row gap-3 items-center">
-                      <Image
-                        source={require("@/assets/page/detailroom/date.png")}
-                      />
+                      <Calendar/>
                       <View className="flex-col gap-1">
                         <Text className="text-neutral-500 font-inter text-[14px] font-regular">
                           {room?.date.toLocaleDateString("id-ID", {
@@ -388,9 +387,7 @@ export default function DetailRoom() {
                     </View>
                     <View className="flex-row justify-between items-center">
                       <View className="flex-row gap-3 items-center">
-                        <Image
-                          source={require("@/assets/page/detailroom/map.png")}
-                        />
+                        <Location/>
                         <View className="flex-col gap-1">
                           <Text className="text-neutral-500 font-inter text-[14px] font-regular">
                             Location
@@ -433,9 +430,7 @@ export default function DetailRoom() {
                     </View>
                     <View>
                       <TouchableOpacity onPress={handleInitiateChat}>
-                        <Image
-                          source={require("@/assets/page/detailroom/chat.png")}
-                        />
+                        <Message/>
                       </TouchableOpacity>
                     </View>
                   </View>

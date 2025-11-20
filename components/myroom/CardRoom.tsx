@@ -3,6 +3,7 @@ import { CardRoomProps } from "@/types/myroom/cardroom";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Calendar, Location, Time } from "@/components/ui/IconDash";
 
 export default function CardRoom({
   id,
@@ -83,29 +84,21 @@ export default function CardRoom({
             <Text className="text-[12px] font-interSemiBold">{title}</Text>
 
             <View className="flex-row items-center gap-2 mt-1">
-              <Image
-                source={require("@/assets/page/myroom/calendar.png")}
-                className="w-3 h-3"
-              />
+              <Calendar width={11} height={11}/>
               <Text className="text-[12px] font-interRegular text-neutral-700">
                 {formattedDate}
               </Text>
             </View>
             <View className="flex-row items-center gap-2 mt-1">
-              <Image
-                source={require("@/assets/page/myroom/time.png")}
-                className="w-3 h-3"
-              />
+              <Time width={11} height={11}/>
               <Text className="text-[12px] font-interRegular text-neutral-700">
                 {formattedTime}
               </Text>
             </View>
 
             <View className="flex-row items-center gap-2 mt-1">
-              <Image
-                source={require("@/assets/page/myroom/map.png")}
-                className="w-3 h-3"
-              />
+              <Location width={11} height={11} />
+
               <Text className="text-[12px] text-neutral-700 font-interRegular">
                 {location}
               </Text>

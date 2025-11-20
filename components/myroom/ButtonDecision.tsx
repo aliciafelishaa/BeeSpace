@@ -10,6 +10,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import ModalEditDelete from "../utils/ModalEditDelete";
+import { Message } from "@/components/ui/IconDash";
 
 export default function ButtonDecision({
   isOwner = false,
@@ -155,7 +156,7 @@ export default function ButtonDecision({
           className="rounded-[8px] w-[80px] h-[45px] bg-primary4th border border-primary2nd items-center justify-center py-4"
           onPress={handleGroupChat}
         >
-          <Image source={require("@/assets/images/dm.png")}></Image>
+          <Message/>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -274,7 +275,7 @@ export default function ButtonDecision({
           onPress={handleLeaveRoom}
         >
           <Text className="text-neutral-50 font-semibold text-[14px]">
-            Leave Group
+            Leave Room
           </Text>
         </TouchableOpacity>
 
@@ -282,7 +283,7 @@ export default function ButtonDecision({
           className="rounded-[8px] w-[80px] h-[45px] bg-primary4th border border-primary2nd items-center justify-center py-4"
           onPress={handleGroupChat}
         >
-          <Image source={require("@/assets/images/dm.png")}></Image>
+          <Message/>
         </TouchableOpacity>
 
         <TouchableOpacity
