@@ -183,7 +183,11 @@ export const ChatList: React.FC<ChatListProps> = ({
           style={{ backgroundColor: COLORS.red }}
           onPress={() => {
             swipeableRefs.current[chat.id]?.close();
-            onDeleteChat(chat.id);
+            if (chat.isGroupChat) {
+              alert("To delete group chat, Please leave the group first.");
+            } else {
+              onDeleteChat(chat.id);
+            }
           }}
         >
           <Image
