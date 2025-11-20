@@ -75,24 +75,29 @@ export default function MessagesPage() {
       });
     }
 
-    switch (filters.category) {
-      case "not-read":
-        result = result.filter((chat) => chat.unreadCount > 0);
-        break;
-      case "newest":
-        break;
-      case "oldest":
-        result = result.sort(
-          (a, b) =>
-            new Date(a.lastMessage?.timestamp || 0).getTime() -
-            new Date(b.lastMessage?.timestamp || 0).getTime()
-        );
-        break;
-      default:
-        break;
+    if (filters.category === "not-read") {
+      result = result.filter((chat) => chat.unreadCount > 0);
     }
 
-    return result;
+    const sortedResult = [...result].sort((a, b) => {
+      const timeA = a.lastMessage?.timestamp;
+      const timeB = b.lastMessage?.timestamp;
+
+      const dateA = timeA?.toDate
+        ? timeA.toDate().getTime()
+        : new Date(timeA).getTime();
+      const dateB = timeB?.toDate
+        ? timeB.toDate().getTime()
+        : new Date(timeB).getTime();
+
+      if (filters.category === "oldest") {
+        return dateA - dateB;
+      } else {
+        return dateB - dateA;
+      }
+    });
+
+    return sortedResult;
   }, [chats, filters]);
 
   const handleSelectChat = (chat: Chat) => {
