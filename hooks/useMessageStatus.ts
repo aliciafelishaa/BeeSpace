@@ -2,6 +2,7 @@ import { auth, db } from "@/config/firebaseConfig";
 import {
   arrayUnion,
   doc,
+  getDoc,
   serverTimestamp,
   updateDoc,
 } from "firebase/firestore";
@@ -20,14 +21,14 @@ export const useMessageStatus = ({
 }: UseMessageStatusProps) => {
   const currentUserId = auth.currentUser?.uid;
 
-  const getMessageRef = (messageId: string) => {
-    const collectionPath = isGroupChat ? "groupChats" : "chats";
-    return doc(db, collectionPath, chatId!, "messages", messageId);
-  };
-
   const markAsDelivered = useCallback(
     async (messageIds: string[]) => {
       if (!chatId || !messageIds.length) return;
+
+      const getMessageRef = (messageId: string) => {
+        const collectionPath = isGroupChat ? "groupChats" : "chats";
+        return doc(db, collectionPath, chatId!, "messages", messageId);
+      };
 
       try {
         for (const messageId of messageIds) {
@@ -48,6 +49,11 @@ export const useMessageStatus = ({
     async (messageIds: string[]) => {
       if (!chatId || !currentUserId || !messageIds.length) return;
 
+      const getMessageRef = (messageId: string) => {
+        const collectionPath = isGroupChat ? "groupChats" : "chats";
+        return doc(db, collectionPath, chatId!, "messages", messageId);
+      };
+
       try {
         for (const messageId of messageIds) {
           const messageRef = getMessageRef(messageId);
@@ -56,6 +62,23 @@ export const useMessageStatus = ({
             await updateDoc(messageRef, {
               readBy: arrayUnion(currentUserId),
             });
+
+            const messageDoc = await getDoc(messageRef);
+            if (messageDoc.exists()) {
+              const messageData = messageDoc.data();
+              const currentReadBy = messageData.readBy || [];
+              const allMembers = groupMembers;
+
+              const allMembersRead = allMembers.every((member) =>
+                currentReadBy.includes(member)
+              );
+
+              if (allMembersRead) {
+                await updateDoc(messageRef, {
+                  status: "read",
+                });
+              }
+            }
           } else {
             await updateDoc(messageRef, {
               status: "read",
@@ -68,7 +91,7 @@ export const useMessageStatus = ({
         console.log(err);
       }
     },
-    [chatId, isGroupChat, currentUserId]
+    [chatId, isGroupChat, currentUserId, groupMembers]
   );
 
   return {
