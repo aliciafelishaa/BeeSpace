@@ -72,7 +72,6 @@ const useOnlineStatus = (): void => {
 
     return (): void => {
       subscription.remove();
-      setOffline();
     };
   }, []);
 };
