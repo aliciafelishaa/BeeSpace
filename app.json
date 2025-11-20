@@ -16,9 +16,9 @@
       "package": "com.beespace",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/share.png",
-        "backgroundImage": "./assets/images/share.png",
-        "monochromeImage": "./assets/images/share.png"
+        "foregroundImage": "./assets/images/logo-beespace-white.png",
+        "backgroundImage": "./assets/images/logo-beespace-white.png",
+        "monochromeImage": "./assets/images/logo-beespace-white.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
@@ -26,7 +26,7 @@
     "web": {
       "output": "static",
       "bundler": "metro",
-      "favicon": "./assets/images/share.png"
+      "favicon": "./assets/images/logo-beespace-white.png"
     },
     "plugins": [
       "expo-router",

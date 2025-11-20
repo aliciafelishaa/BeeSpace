@@ -116,6 +116,29 @@ export const ChatList: React.FC<ChatListProps> = ({
     }
   };
 
+  // Last Message
+  const getLastMessagePreview = (chat: Chat) => {
+    if (!chat.lastMessage) return "Start a message...";
+
+    const rawText = chat.lastMessage.text;
+    let messageText = "";
+
+    if (typeof rawText === "string") {
+      messageText = rawText;
+    } else if (typeof rawText === "object" && rawText !== null) {
+      messageText = (rawText as any).text || "";
+    }
+
+    if (messageText.trim()) {
+      return messageText;
+    }
+    if (chat.lastMessage.type === "image") {
+      return "🖼️ Image";
+    }
+
+    return "Start a message...";
+  };
+
   // Bisa dipakai buat hitung min max member
   const getMemberCountText = (chat: Chat) => {
     if (chat.isGroupChat) {
@@ -249,7 +272,7 @@ export const ChatList: React.FC<ChatListProps> = ({
                       }}
                       numberOfLines={1}
                     >
-                      {chat.lastMessage.text}
+                      {getLastMessagePreview(chat)}
                     </Text>
 
                     {chat.unreadCount > 0 && (

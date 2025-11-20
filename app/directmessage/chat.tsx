@@ -8,11 +8,8 @@ import { Chat } from "@/types/directmessage/dm";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { doc, getDoc } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { ActivityIndicator, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ChatDetailPage() {
   const { id, hostId } = useLocalSearchParams();
@@ -20,7 +17,6 @@ export default function ChatDetailPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [chat, setChat] = useState<Chat | null>(null);
   const [isGroupChat, setIsGroupChat] = useState(false);
-  const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -75,8 +71,8 @@ export default function ChatDetailPage() {
                 name: groupChatData.name,
                 memberUids: groupChatData.memberUids,
                 roomId: groupChatData.roomId,
-                cover: coverUrl, 
-                profilePicture: coverUrl, 
+                cover: coverUrl,
+                profilePicture: coverUrl,
               },
             };
             setChat(chatObj);
@@ -143,7 +139,6 @@ export default function ChatDetailPage() {
 
   return (
     <SafeAreaView
-      className="bg-neutral-100"
       style={{
         backgroundColor: COLORS.white,
         flex: 1,
@@ -154,15 +149,7 @@ export default function ChatDetailPage() {
         bottom: 0,
       }}
     >
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingBottom: insets.bottom,
-        }}
-        showsVerticalScrollIndicator={false}
-      >
-        <ChatWindow chat={chat} onBack={handleBack} isGroupChat={isGroupChat} />
-      </ScrollView>
+      <ChatWindow chat={chat} onBack={handleBack} isGroupChat={isGroupChat} />
     </SafeAreaView>
   );
 }

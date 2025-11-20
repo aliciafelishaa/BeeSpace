@@ -130,8 +130,7 @@ export default function MyProfileScreen() {
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={{ marginTop: 10 }}>Loading...</Text>
+        <ActivityIndicator size="large" color={COLORS.primary2nd} />
       </View>
     );
   }

@@ -154,7 +154,7 @@ export default function EditRoom() {
   if (loading) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color={COLORS.primary} />
+        <ActivityIndicator size="large" color={COLORS.primary2nd} /> 
       </SafeAreaView>
     );
   }
