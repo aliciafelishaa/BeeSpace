@@ -9,7 +9,7 @@ export default function CardRoom({
   title,
   date,
   location,
-  slotRemaining,
+  joinedUids,
   slotTotal,
   hostName,
   imageSource,
@@ -51,6 +51,16 @@ export default function CardRoom({
 
     fetchHost();
   }, [hostUid]);
+
+  const trimmedHostName =
+    hostName && hostName.length > 8 ? hostName.slice(0, 8) + "..." : hostName;
+
+  const totalSlot = Number(slotTotal) || 0;
+  const totalJoined = joinedUids?.length ?? 0;
+
+  console.log("JoinedUID " + joinedUids);
+  const slotRemaining = totalSlot - totalJoined;
+  const isFull = slotRemaining <= 0;
 
   return (
     <TouchableOpacity
@@ -112,21 +122,22 @@ export default function CardRoom({
                 <Text className="text-[10px] font-interRegular">Host by</Text>
 
                 {isLoadingAvatar ? (
-                  <View className="w-4 h-4 bg-gray-300 rounded-[8px]" />
+                  <View className="w-6 h-6 bg-gray-300 rounded-full" />
                 ) : hostAvatarUrl ? (
                   <Image
                     source={{ uri: hostAvatarUrl }}
-                    className="w-4 h-4 rounded-[8px]"
+                    className="w-4 h-4 rounded-full"
                   />
                 ) : (
-                  <Image
-                    source={require("@/assets/profile/empty-profile.jpg")}
-                    className="w-4 h-4 rounded-[8px]"
-                  />
+                  // <Image
+                  //   source={require("@/assets/page/myroom/emptyprofile.png")}
+                  //   className="w-2 h-2 rounded-full contain-content"
+                  // />
+                  <View className="w-4 h-4 bg-primary2nd rounded-full"></View>
                 )}
 
                 <Text className="text-[10px] font-interRegular">
-                  {hostName}
+                  {trimmedHostName}
                 </Text>
               </View>
             ) : (
