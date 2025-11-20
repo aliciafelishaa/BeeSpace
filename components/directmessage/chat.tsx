@@ -484,7 +484,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             </TouchableOpacity>
             {uploading && (
               <View className="absolute inset-0 bg-black bg-opacity-50 rounded-12 items-center justify-center">
-                <ActivityIndicator size="small" color="white" />
+                <ActivityIndicator size="small" color="#FCBC03" />
               </View>
             )}
           </View>
