@@ -1,6 +1,6 @@
 import { COLORS } from "@/constants/utils/colors";
 import { FilterType } from "@/types/directmessage/dm";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -33,6 +33,14 @@ export const FilterModal: React.FC<FilterModalProps> = ({
   onFilterChange,
 }) => {
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const [tempSelectedFilter, setTempSelectedFilter] =
+    useState<FilterType>(selectedFilter);
+
+  useEffect(() => {
+    if (isOpen) {
+      setTempSelectedFilter(selectedFilter);
+    }
+  }, [isOpen, selectedFilter]);
 
   useEffect(() => {
     if (isOpen) {
@@ -50,6 +58,11 @@ export const FilterModal: React.FC<FilterModalProps> = ({
       }).start();
     }
   }, [isOpen]);
+
+  const handleApply = () => {
+    onFilterChange(tempSelectedFilter);
+    onClose();
+  };
 
   return (
     <Modal
@@ -85,7 +98,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
             {filters.map((filter, index) => (
               <View key={filter.value}>
                 <TouchableOpacity
-                  onPress={() => onFilterChange(filter.value)}
+                  onPress={() => setTempSelectedFilter(filter.value)}
                   className="flex-row items-center justify-between py-4"
                   activeOpacity={0.7}
                 >
@@ -99,7 +112,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                     className="w-5 h-5 rounded-full justify-center items-center border-2"
                     style={{ borderColor: COLORS.neutral300 }}
                   >
-                    {selectedFilter === filter.value && (
+                    {tempSelectedFilter === filter.value && (
                       <View
                         className="w-3 h-3 rounded-full"
                         style={{ backgroundColor: COLORS.primary }}
@@ -119,7 +132,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
 
           <View className="px-6 py-5 pb-8">
             <TouchableOpacity
-              onPress={onClose}
+              onPress={handleApply}
               className="py-3 rounded-xl active:opacity-80"
               style={{ backgroundColor: COLORS.primary }}
             >
