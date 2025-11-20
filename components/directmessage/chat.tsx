@@ -2,6 +2,7 @@ import ChatImagePicker from "@/components/directmessage/ChatImagePicker";
 import { COLORS } from "@/constants/utils/colors";
 import useUserStatus from "@/hooks/status/useUserStatus";
 import handleUpData from "@/hooks/useCloudinary";
+import { useMessageStatus } from "@/hooks/useMessageStatus";
 import { getCurrentUserData } from "@/services/authService";
 import {
   listenGroupMessages,
@@ -11,6 +12,7 @@ import {
 } from "@/services/directmessage/dmService";
 import { getUserById } from "@/services/userService";
 import { Chat, Message, User } from "@/types/directmessage/dm";
+import { formatLastSeen } from "@/utils/dateUtils";
 import {
   formatDateSeparator,
   formatMessageTime,
@@ -53,6 +55,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const [localImage, setLocalImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const { isOnline, lastSeen } = useUserStatus(chat?.userId || null);
+  const { markAsDelivered, markAsRead } = useMessageStatus({
+    chatId: chat?.id || null,
+    isGroupChat,
+    groupMembers: chat?.groupData?.memberUids || [],
+  });
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Get Current User
@@ -94,13 +101,53 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     const unsubscribe = isGroupChat
       ? listenGroupMessages(chat.id, (msgs: Message[]) => {
           setMessages(msgs);
+
+          if (currentUser) {
+            const receivedMessages = msgs.filter(
+              (msg) => msg.senderId !== currentUser.id && msg.status === "sent"
+            );
+            if (receivedMessages.length > 0) {
+              markAsDelivered(receivedMessages.map((m) => m.id));
+            }
+
+            const unreadMessages = msgs.filter((msg) => {
+              if (msg.senderId === currentUser.id) return false;
+
+              if (isGroupChat) {
+                return !msg.readBy?.includes(currentUser.id);
+              } else {
+                return msg.status !== "read";
+              }
+            });
+
+            if (unreadMessages.length > 0) {
+              markAsRead(unreadMessages.map((m) => m.id));
+            }
+          }
         })
       : listenMessages(chat.id, (msgs: Message[]) => {
           setMessages(msgs);
+
+          if (currentUser) {
+            const receivedMessages = msgs.filter(
+              (msg) => msg.senderId !== currentUser.id && msg.status === "sent"
+            );
+            if (receivedMessages.length > 0) {
+              markAsDelivered(receivedMessages.map((m) => m.id));
+            }
+
+            const unreadMessages = msgs.filter(
+              (msg) => msg.senderId !== currentUser.id && msg.status !== "read"
+            );
+
+            if (unreadMessages.length > 0) {
+              markAsRead(unreadMessages.map((m) => m.id));
+            }
+          }
         });
 
     return () => unsubscribe();
-  }, [chat, isGroupChat]);
+  }, [chat, isGroupChat, currentUser?.id, markAsDelivered, markAsRead]);
 
   useEffect(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
@@ -222,6 +269,72 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     );
   };
 
+  const renderMessageStatus = (message: Message, isOwnMessage: boolean) => {
+    if (!isOwnMessage) return null;
+
+    if (isGroupChat) {
+      const isFullyRead = message.status === "read";
+
+      return (
+        <View className="ml-1 flex-row items-center">
+          {isFullyRead ? (
+            <>
+              <Ionicons name="checkmark" size={12} color="#DC9010" />
+              <Ionicons
+                name="checkmark"
+                size={12}
+                color="#DC9010"
+                style={{ marginLeft: -6 }}
+              />
+            </>
+          ) : (
+            <>
+              <Ionicons name="checkmark" size={12} color={COLORS.white} />
+              <Ionicons
+                name="checkmark"
+                size={12}
+                color={COLORS.white}
+                style={{ marginLeft: -6 }}
+              />
+            </>
+          )}
+        </View>
+      );
+    } else {
+      return (
+        <View className="ml-1 flex-row items-center">
+          {message.status === "read" && (
+            <>
+              <Ionicons name="checkmark" size={12} color="#DC9010" />
+              <Ionicons
+                name="checkmark"
+                size={12}
+                color="#DC9010"
+                style={{ marginLeft: -6 }}
+              />
+            </>
+          )}
+          {message.status === "delivered" && (
+            <>
+              <Ionicons name="checkmark" size={12} color={COLORS.white} />
+              <Ionicons
+                name="checkmark"
+                size={12}
+                color={COLORS.white}
+                style={{ marginLeft: -6 }}
+              />
+            </>
+          )}
+          {message.status === "sent" && (
+            <>
+              <Ionicons name="checkmark" size={12} color={COLORS.white} />
+            </>
+          )}
+        </View>
+      );
+    }
+  };
+
   // Get Name
   const fetchSenderUser = useCallback(
     async (senderId: string) => {
@@ -265,30 +378,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       });
     }
   }, [messages, isGroupChat, currentUser, fetchSenderUser, senderUsers]);
-
-  // Online Status
-  const formatLastSeen = (timestamp: any): string => {
-    if (!timestamp) return "recently";
-
-    try {
-      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-      const now = new Date();
-      const diffMs = now.getTime() - date.getTime();
-      const diffMins = Math.floor(diffMs / 60000);
-      const diffHours = Math.floor(diffMs / 3600000);
-      const diffDays = Math.floor(diffMs / 86400000);
-
-      if (diffMins < 1) return "just now";
-      if (diffMins < 60) return `${diffMins}m ago`;
-      if (diffHours < 24) return `${diffHours}h ago`;
-      if (diffDays < 7) return `${diffDays}d ago`;
-
-      return date.toLocaleDateString();
-    } catch (err) {
-      console.log(err);
-      return "recently";
-    }
-  };
 
   return (
     <KeyboardAvoidingView
@@ -452,53 +541,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                         >
                           {formatMessageTime(message.timestamp)}
                         </Text>
-                        {isOwnMessage && !isGroupChat && (
-                          <View className="ml-1 flex-row items-center">
-                            {message.status === "read" && (
-                              <>
-                                <Ionicons
-                                  name="checkmark"
-                                  size={12}
-                                  color="#DC9010"
-                                />
-                                <Ionicons
-                                  name="checkmark"
-                                  size={12}
-                                  color="#DC9010"
-                                  style={{ marginLeft: -6 }}
-                                />
-                                <Text
-                                  className="text-[10px] ml-1"
-                                  style={{ color: "#DC9010" }}
-                                >
-                                  Read
-                                </Text>
-                              </>
-                            )}
-                            {message.status === "delivered" && (
-                              <>
-                                <Ionicons
-                                  name="checkmark"
-                                  size={12}
-                                  color={COLORS.white}
-                                />
-                                <Ionicons
-                                  name="checkmark"
-                                  size={12}
-                                  color={COLORS.white}
-                                  style={{ marginLeft: -6 }}
-                                />
-                              </>
-                            )}
-                            {message.status === "sent" && (
-                              <Ionicons
-                                name="checkmark"
-                                size={12}
-                                color={COLORS.white}
-                              />
-                            )}
-                          </View>
-                        )}
+                        {isOwnMessage &&
+                          renderMessageStatus(message, isOwnMessage)}
                       </View>
                     </View>
                   </View>

@@ -71,7 +71,8 @@ export const sendMessage = async (
     read: false,
     type: type,
     mediaUrl: mediaUrl || null,
-    status: "delivered",
+    status: "sent" as const,
+    readBy: [],
     createdAt: serverTimestamp(),
   };
 
@@ -105,7 +106,8 @@ export const sendGroupMessage = async (
     read: false,
     type: type,
     mediaUrl: mediaUrl || null,
-    status: "delivered",
+    status: "sent" as const,
+    readBy: [],
     createdAt: serverTimestamp(),
   };
 

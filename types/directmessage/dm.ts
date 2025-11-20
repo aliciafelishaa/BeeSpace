@@ -17,8 +17,13 @@ export interface Message {
   fileName?: string;
   fileSize?: number;
   replyTo?: string;
-  status?: "sent" | "delivered" | "read";
   senderName?: string;
+
+  status: "sent" | "delivered" | "read";
+  readBy: string[];
+  readAt?: Date | any;
+  deliveredAt?: Date | any;
+  createdAt?: Date | any;
 }
 
 export interface Chat {
