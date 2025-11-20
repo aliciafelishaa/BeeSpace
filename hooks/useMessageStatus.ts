@@ -23,72 +23,79 @@ export const useMessageStatus = ({
 
   const markAsDelivered = useCallback(
     async (messageIds: string[]) => {
-      if (!chatId || !messageIds.length) return;
-
-      const getMessageRef = (messageId: string) => {
-        const collectionPath = isGroupChat ? "groupChats" : "chats";
-        return doc(db, collectionPath, chatId!, "messages", messageId);
-      };
+      if (!chatId || !messageIds.length || !currentUserId) return;
 
       try {
-        for (const messageId of messageIds) {
-          const messageRef = getMessageRef(messageId);
-          await updateDoc(messageRef, {
+        const updates = messageIds.map(async (messageId) => {
+          const messageRef = doc(
+            db,
+            isGroupChat ? "groupChats" : "chats",
+            chatId,
+            "messages",
+            messageId
+          );
+
+          const messageDoc = await getDoc(messageRef);
+          if (!messageDoc.exists() || messageDoc.data().status !== "sent")
+            return null;
+
+          return updateDoc(messageRef, {
             status: "delivered",
             deliveredAt: serverTimestamp(),
           });
-        }
+        });
+
+        await Promise.all(updates.filter((update) => update !== null));
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     },
-    [chatId, isGroupChat]
+    [chatId, isGroupChat, currentUserId]
   );
 
   const markAsRead = useCallback(
     async (messageIds: string[]) => {
-      if (!chatId || !currentUserId || !messageIds.length) return;
+      if (!chatId || !currentUserId || !messageIds.length) {
+        return;
+      }
 
       const getMessageRef = (messageId: string) => {
         const collectionPath = isGroupChat ? "groupChats" : "chats";
-        return doc(db, collectionPath, chatId!, "messages", messageId);
+        return doc(db, collectionPath, chatId, "messages", messageId);
       };
 
       try {
         for (const messageId of messageIds) {
           const messageRef = getMessageRef(messageId);
 
+          const messageDoc = await getDoc(messageRef);
+          if (!messageDoc.exists()) continue;
+
+          const messageData = messageDoc.data();
+
           if (isGroupChat) {
-            await updateDoc(messageRef, {
-              readBy: arrayUnion(currentUserId),
-            });
+            const currentReadBy = messageData.readBy || [];
 
-            const messageDoc = await getDoc(messageRef);
-            if (messageDoc.exists()) {
-              const messageData = messageDoc.data();
-              const currentReadBy = messageData.readBy || [];
-              const allMembers = groupMembers;
-
-              const allMembersRead = allMembers.every((member) =>
-                currentReadBy.includes(member)
-              );
-
-              if (allMembersRead) {
-                await updateDoc(messageRef, {
-                  status: "read",
-                });
-              }
+            if (!currentReadBy.includes(currentUserId)) {
+              await updateDoc(messageRef, {
+                readBy: arrayUnion(currentUserId),
+              });
             }
           } else {
-            await updateDoc(messageRef, {
-              status: "read",
-              readBy: arrayUnion(currentUserId),
-              readAt: serverTimestamp(),
-            });
+            if (
+              messageData.status === "delivered" ||
+              messageData.status === "sent"
+            ) {
+              await updateDoc(messageRef, {
+                status: "read",
+                readBy: arrayUnion(currentUserId),
+                readAt: serverTimestamp(),
+              });
+            }
           }
         }
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     },
     [chatId, isGroupChat, currentUserId, groupMembers]
