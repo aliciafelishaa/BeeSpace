@@ -1,5 +1,6 @@
 import ChatImagePicker from "@/components/directmessage/ChatImagePicker";
 import { COLORS } from "@/constants/utils/colors";
+import useUserStatus from "@/hooks/status/useUserStatus";
 import handleUpData from "@/hooks/useCloudinary";
 import { getCurrentUserData } from "@/services/authService";
 import {
@@ -51,6 +52,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [localImage, setLocalImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const { isOnline, lastSeen } = useUserStatus(chat?.userId || null);
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Get Current User
@@ -264,6 +266,30 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   }, [messages, isGroupChat, currentUser, fetchSenderUser, senderUsers]);
 
+  // Online Status
+  const formatLastSeen = (timestamp: any): string => {
+    if (!timestamp) return "recently";
+
+    try {
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      if (diffMins < 1) return "just now";
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays < 7) return `${diffDays}d ago`;
+
+      return date.toLocaleDateString();
+    } catch (err) {
+      console.log(err);
+      return "recently";
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -319,15 +345,39 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             {chatUser?.name || "Loading..."}
             {isGroupChat && " (Group)"}
           </Text>
-          <Text
-            className="text-xs font-medium"
-            style={{ color: COLORS.success }}
-          >
-            {isGroupChat
-              ? `${chat?.groupData?.memberUids?.length || 0} members`
-              : ""}
-            {/* Online */}
-          </Text>
+
+          {!isGroupChat ? (
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <View
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: isOnline
+                    ? COLORS.success
+                    : COLORS.neutral500,
+                  marginRight: 6,
+                }}
+              />
+              <Text
+                className="text-xs font-medium"
+                style={{
+                  color: isOnline ? COLORS.success : COLORS.neutral500,
+                }}
+              >
+                {isOnline ? "Online" : `Last seen ${formatLastSeen(lastSeen)}`}
+              </Text>
+            </View>
+          ) : (
+            <Text
+              className="text-xs font-medium"
+              style={{ color: COLORS.success }}
+            >
+              {isGroupChat
+                ? `${chat?.groupData?.memberUids?.length || 0} members`
+                : ""}
+            </Text>
+          )}
         </View>
       </View>
       <ScrollView
