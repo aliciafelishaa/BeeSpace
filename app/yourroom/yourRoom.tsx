@@ -105,16 +105,55 @@ export default function MyRoomDash({
 
   // Filter rooms berdasarkan section
   const filteredRooms = useMemo(() => {
-    switch (section) {
-      case "upcoming":
-        return rooms.filter((room) => new Date(room.date) >= new Date());
-      case "hosted":
-        return rooms.filter((room) => room.fromUid === uid);
-      case "history":
-        return rooms.filter((room) => new Date(room.date) < new Date());
-      default:
-        return rooms;
-    }
+    const now = new Date();
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Helper: mengubah room menjadi Date Start lengkap
+    const getRoomStart = (room: any) => {
+      const roomDate = new Date(room.date);
+      const [h, m] = (room.timeStart ?? "00:00").split(":");
+      roomDate.setHours(Number(h), Number(m), 0, 0);
+      return roomDate;
+    };
+
+    let result = rooms.filter((room) => {
+      const roomDate = new Date(room.date);
+      const roomStart = getRoomStart(room);
+
+      // UPCOMING
+      if (section === "upcoming") {
+        if (roomDate > today) return true;
+
+        if (
+          roomDate.toDateString() === now.toDateString() &&
+          roomStart >= now
+        ) {
+          return true;
+        }
+
+        return false;
+      }
+      // HOSTED
+      if (section === "hosted") {
+        return room.fromUid === uid;
+      }
+      // HISTORY
+      if (section === "history") {
+        return getRoomStart(room) < now;
+      }
+
+      return true;
+    });
+
+    result.sort((a, b) => {
+      const aStart = getRoomStart(a).getTime();
+      const bStart = getRoomStart(b).getTime();
+      return aStart - bStart; // ascending
+    });
+
+    return result;
   }, [rooms, section, uid]);
 
   return (
@@ -168,7 +207,7 @@ export default function MyRoomDash({
                 title={room.planName}
                 date={new Date(room.date)}
                 location={room.place}
-                slotRemaining={room.minMember}
+                joinedUids={room.joinedUids || []}
                 timeStart={room.timeStart}
                 timeEnd={room.timeEnd}
                 slotTotal={room.maxMember}
