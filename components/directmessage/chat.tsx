@@ -1,4 +1,6 @@
+import ChatImagePicker from "@/components/directmessage/ChatImagePicker";
 import { COLORS } from "@/constants/utils/colors";
+import handleUpData from "@/hooks/useCloudinary";
 import { getCurrentUserData } from "@/services/authService";
 import {
   listenGroupMessages,
@@ -16,8 +18,10 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   ScrollView,
   Text,
@@ -44,6 +48,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const [senderUsers, setSenderUsers] = useState<{ [userId: string]: User }>(
     {}
   );
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [localImage, setLocalImage] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Get Current User
@@ -97,7 +104,62 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     scrollViewRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
 
+  // Image
+  const handleSendImage = useCallback(
+    async (imageUri: string) => {
+      if (chat && currentUser) {
+        try {
+          setUploading(true);
+
+          const file = {
+            uri: imageUri,
+            name: `chat_${Date.now()}.jpg`,
+            type: "image/jpeg",
+          };
+
+          const cloudinaryUrl = await handleUpData(file);
+
+          if (cloudinaryUrl) {
+            const messageText = newMessage.trim() ? newMessage : "🖼️ Image";
+
+            if (isGroupChat) {
+              await sendGroupMessage(
+                chat.id,
+                messageText,
+                currentUser.id,
+                currentUser.name || currentUser.email,
+                "image",
+                cloudinaryUrl
+              );
+            } else {
+              await sendMessage(
+                chat.id,
+                messageText,
+                currentUser.id,
+                "image",
+                cloudinaryUrl
+              );
+            }
+
+            setLocalImage(null);
+            setNewMessage("");
+          }
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setUploading(false);
+        }
+      }
+    },
+    [chat, currentUser, isGroupChat, newMessage]
+  );
+
   const handleSendMessage = async () => {
+    if (localImage) {
+      await handleSendImage(localImage);
+      return;
+    }
+
     if (chat && newMessage.trim() && currentUser) {
       if (isGroupChat) {
         await sendGroupMessage(
@@ -111,6 +173,51 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       }
       setNewMessage("");
     }
+  };
+
+  const renderMessageContent = (message: Message, isOwnMessage: boolean) => {
+    if (message.type === "image" && message.mediaUrl) {
+      return (
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => setSelectedImage(message.mediaUrl!)}
+        >
+          <Image
+            source={{ uri: message.mediaUrl }}
+            style={{
+              width: 200,
+              height: 150,
+              borderRadius: 12,
+              marginBottom: 4,
+            }}
+            resizeMode="cover"
+          />
+          {message.text && (
+            <Text
+              style={{
+                color: isOwnMessage ? COLORS.white : COLORS.neutral900,
+                fontSize: 14,
+                lineHeight: 20,
+              }}
+            >
+              {message.text}
+            </Text>
+          )}
+        </TouchableOpacity>
+      );
+    }
+    // Text
+    return (
+      <Text
+        style={{
+          color: isOwnMessage ? COLORS.white : COLORS.neutral900,
+          fontSize: 14,
+          lineHeight: 20,
+        }}
+      >
+        {message.text}
+      </Text>
+    );
   };
 
   // Get Name
@@ -223,7 +330,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           </Text>
         </View>
       </View>
-
       <ScrollView
         ref={scrollViewRef}
         style={{
@@ -284,17 +390,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                           : COLORS.white,
                       }}
                     >
-                      <Text
-                        className="text-sm leading-5 mb-1"
-                        style={{
-                          color: isOwnMessage
-                            ? COLORS.white
-                            : COLORS.neutral900,
-                        }}
-                      >
-                        {message.text}
-                      </Text>
-
+                      {renderMessageContent(message, isOwnMessage)}
                       <View className="flex-row items-center justify-end gap-1">
                         <Text
                           className="text-[10px]"
@@ -361,7 +457,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             })}
         </View>
       </ScrollView>
-
       <View
         className="px-4 py-3 border-t"
         style={{
@@ -369,16 +464,37 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           borderTopColor: COLORS.neutral100,
         }}
       >
+        {/* Preview - Image */}
+        {localImage && (
+          <View className="mb-3 relative">
+            <Image
+              source={{ uri: localImage }}
+              style={{
+                width: 120,
+                height: 120,
+                borderRadius: 12,
+              }}
+              resizeMode="cover"
+            />
+            <TouchableOpacity
+              onPress={() => setLocalImage(null)}
+              className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1"
+            >
+              <Ionicons name="close" size={16} color="white" />
+            </TouchableOpacity>
+            {uploading && (
+              <View className="absolute inset-0 bg-black bg-opacity-50 rounded-12 items-center justify-center">
+                <ActivityIndicator size="small" color="white" />
+              </View>
+            )}
+          </View>
+        )}
+
         <View
           className="flex-row items-center rounded-full px-3 py-2"
           style={{ backgroundColor: COLORS.neutral100 }}
         >
-          <TouchableOpacity className="mr-2" activeOpacity={0.7}>
-            <Image
-              source={require("../../assets/directmessage/LogoImg.png")}
-              className="w-6 h-6"
-            />
-          </TouchableOpacity>
+          <ChatImagePicker onImageSelected={setLocalImage} />
 
           <TextInput
             value={newMessage}
@@ -388,23 +504,67 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             style={{ color: COLORS.neutral900 }}
             placeholderTextColor={COLORS.neutral500}
             multiline={false}
+            editable={!uploading}
           />
 
           <TouchableOpacity
             onPress={handleSendMessage}
-            disabled={!newMessage.trim()}
+            disabled={(!newMessage.trim() && !localImage) || uploading}
             activeOpacity={0.7}
           >
             <Image
               source={require("../../assets/directmessage/LogoSend.png")}
               className="w-6 h-6"
               style={{
-                opacity: newMessage.trim() ? 1 : 0.4,
+                opacity:
+                  (newMessage.trim() || localImage) && !uploading ? 1 : 0.4,
               }}
             />
           </TouchableOpacity>
         </View>
       </View>
+
+      <Modal
+        visible={!!selectedImage}
+        transparent={true}
+        animationType="fade"
+        statusBarTranslucent={true}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.95)",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 20,
+          }}
+        >
+          <TouchableOpacity
+            style={{
+              position: "absolute",
+              top: Platform.OS === "ios" ? 60 : 40,
+              right: 20,
+              backgroundColor: "rgba(255,255,255,0.2)",
+              borderRadius: 20,
+              padding: 8,
+            }}
+            onPress={() => setSelectedImage(null)}
+          >
+            <Ionicons name="close" size={24} color="white" />
+          </TouchableOpacity>
+
+          {selectedImage && (
+            <Image
+              source={{ uri: selectedImage }}
+              style={{
+                width: "100%",
+                height: "80%",
+              }}
+              resizeMode="contain"
+            />
+          )}
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 };
