@@ -1,51 +1,37 @@
-# Welcome to your Expo app 👋
+# 🌼 BeeSpace Overview
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+BeeSpace adalah aplikasi mobile yang membantu mahasiswa menemukan, membuat, dan mengoordinasikan aktivitas informal secara real time. Dibangun menggunakan React Native, Expo, Firebase, dan Cloudinary, BeeSpace memudahkan pengguna untuk merencanakan kegiatan spontan seperti belajar bersama, olahraga, nongkrong, hingga berbagi transportasi. Aplikasi ini menekankan interaksi cepat dan penanganan media yang efisien.
 
-## Get started
+BeeSpace menyediakan fitur seperti room discovery, pembuatan dan pengelolaan aktivitas, serta sistem chat realtime yang lengkap dengan online status, typing indicator, dan message seen. Pengguna juga dapat mengedit profil, mengunggah gambar menggunakan Cloudinary, dan menerima push notification melalui FCM untuk undangan, pesan baru, dan pengingat aktivitas. Semua ini dioptimalkan agar aplikasi tetap ringan dan responsif.
 
-1. Install dependencies
+Dengan kombinasi React Native + Expo untuk frontend, Firebase untuk backend, serta Cloudinary untuk media, BeeSpace menghadirkan arsitektur modern yang scalable, cepat, dan mudah dikembangkan. Global state dikelola menggunakan Zustand atau Context API, sementara navigasi dibangun dengan Expo Router dan React Navigation untuk pengalaman pengguna yang intuitif.
 
-   ```bash
-   npm install
-   ```
+## 🧩 Core Features
+- Room Discovery
+- Create and Manage Room Planning
+- Realtime Chat
+- Student Profile and Followers Statistics
+- Notification
 
-2. Start the app
+## 🛠️ Tech Stack
 
-   ```bash
-   npx expo start
-   ```
+| TechStack               |                               |
+| ----------------------  | --------------------------    |
+| React Native            | Mobile app (Android & iOS)    |
+| Expo                    | Build tools, bundling, EAS    |
+| React Navigation        | Stack & tab navigation        |
+| TypeScript              | Type safety                   |
+| Firebase Authentication | Login & user auth             |
+| Firestore               | Data rooms, users, activities |
+| Realtime Database       | Chat realtime                 |
+| Cloudinary              | Media upload & CDN            |
 
-In the output, you'll find options to open the app in a
+## 👨‍💻 Developer Team
+| Name                         | Role                                                       |
+| ------------------           | ---------------------------------------------------------- |
+| **Alicia Felisha**           | Product Manager, FE Developer, BE Developer,UI/UX Designer |
+| **Akbar Zaidan R.**          | Scrum Master, FE Developer, BE Developer                   |
+| **Bryan Cornelius S.**       | FE Developer, BE Developer,UI/UX Designer                  |
+| **Balqis Putri M.**          | FE Developer, UI/UX Designer                               |
+| **Tasya Pandiya L.**         | FE Developer, UI/UX Designer                               |
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
-"# BeeSpace" 
