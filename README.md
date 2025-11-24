@@ -31,7 +31,7 @@ Dengan kombinasi React Native + Expo untuk frontend, Firebase untuk backend, ser
 | ------------------           | ---------------------------------------------------------- |
 | **Alicia Felisha**           | Product Manager, FE Developer, BE Developer,UI/UX Designer |
 | **Akbar Zaidan R.**          | Scrum Master, FE Developer, BE Developer                   |
-| **Bryan Cornelius S.**       | FE Developer, BE Developer,UI/UX Designer                  |
+| **Bryan Cornelius S.**       | FE Developer, BE Developer                                 |
 | **Balqis Putri M.**          | FE Developer, UI/UX Designer                               |
 | **Tasya Pandiya L.**         | FE Developer, UI/UX Designer                               |
 
